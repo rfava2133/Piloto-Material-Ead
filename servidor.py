@@ -71,6 +71,9 @@ def api_processar():
     if not (word_path or pdf_path):
         return jsonify({"ok": False, "erro": "Envie ao menos um arquivo (Word ou PDF)."}), 400
 
+    print(f"\n[DEBUG] Processando: curso={curso}, codigo={codigo}, disciplina={disciplina}, aula={aula_num}")
+    print(f"[DEBUG] word_path={word_path}, pdf_path={pdf_path}, forcar={forcar}")
+
     resultado = processar_mod.processar(
         codigo, disciplina, aula_num,
         str(word_path) if word_path else None,
@@ -78,6 +81,8 @@ def api_processar():
         forcar,
         curso,
     )
+
+    print(f"[DEBUG] Resultado: {resultado.get('texto', {})}")
     return jsonify(resultado)
 
 
