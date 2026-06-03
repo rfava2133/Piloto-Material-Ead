@@ -1,0 +1,41 @@
+# config.yml — Configuração da esteira UNIGRAN EAD
+# Edite os valores conforme seu ambiente.
+
+# Caminho raiz do projeto (pasta sincronizada no Google Drive)
+raiz: "/Users/rfava/PROJETOS IA/piloto-extrator"
+
+# Curso padrão (usado se não especificado)
+curso_padrao: "EAD"
+
+# Google Sheets — painel de produção
+# Deixe SHEET_ID vazio enquanto a planilha não existir.
+# O sistema funciona sem ele (modo piloto manual).
+sheets:
+  sheet_id: ""               # cole o ID quando a planilha existir
+  aba_aulas: "aulas"
+  aba_disciplinas: "disciplinas"
+  habilitado: false          # mude para true quando sheet_id estiver preenchido
+
+# Estrutura de subpastas criada para cada aula
+subpastas:
+  - "01_source"
+  - "02_markdown"
+  - "03_reformulado"
+  - "04_imagens/antigas"
+  - "04_imagens/prontas"
+  - "05_output"
+  - "06_revisao"
+  - "07_incubadora/material_atualizado"
+  - "07_incubadora/historico"
+
+# Extração
+extracao:
+  pandoc_extract_media: true       # extrai imagens embutidas no Word
+  pymupdf_min_largura: 100         # ignora imagens menores que 100px (ícones, ruído)
+  pymupdf_min_altura: 100
+  formatos_imagem: ["png", "jpg", "jpeg"]
+
+# Servidor da interface (piloto)
+servidor:
+  host: "127.0.0.1"
+  porta: 5000
