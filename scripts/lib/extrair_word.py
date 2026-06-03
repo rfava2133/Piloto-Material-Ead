@@ -6,16 +6,18 @@ import subprocess
 from pathlib import Path
 
 
-def converter_word(docx: Path, pasta_aula: Path, id_aula: str) -> dict:
+def converter_word(docx: Path, pasta_aula: Path, codigo: str, numero_aula: int) -> dict:
     """
     Converte .docx para Markdown limpo e extrai imagens embutidas.
 
-    - Markdown vai para 02_markdown/{id_aula}.md
+    - Markdown vai para 02_markdown/{codigo}_aula{NN}.md
     - Imagens extraídas vão para 04_imagens/antigas/
 
     Retorna dict com resultado.
     """
-    md_destino = pasta_aula / "02_markdown" / f"{id_aula}.md"
+    from lib import pastas
+    nome_arquivo = pastas.nome_arquivo_md(codigo, numero_aula)
+    md_destino = pasta_aula / "02_markdown" / nome_arquivo
     midia_destino = pasta_aula / "04_imagens" / "antigas"
     midia_destino.mkdir(parents=True, exist_ok=True)
 

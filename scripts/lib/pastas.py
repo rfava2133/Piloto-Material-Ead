@@ -27,6 +27,11 @@ def id_aula(codigo: str, numero: int) -> str:
     return f"{codigo.upper()}-{numero:02d}"
 
 
+def nome_arquivo_md(codigo: str, numero: int) -> str:
+    """ADM + 1 → 'adm_aula01.md' (minúsculo, underscore)."""
+    return f"{codigo.lower()}_aula{numero:02d}.md"
+
+
 def criar_estrutura(raiz: Path, codigo: str, nome_disc: str,
                     numero_aula: int, subpastas: list, nome_curso: str = "EAD") -> Path:
     """

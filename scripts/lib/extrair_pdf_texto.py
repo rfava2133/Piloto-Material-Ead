@@ -5,6 +5,11 @@ Usa pymupdf4llm para preservação de formatação.
 Instalar: pip install pymupdf4llm
 """
 from pathlib import Path
+import sys
+
+# Import local para funcionar como módulo
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from lib import pastas
 
 try:
     import pymupdf4llm
@@ -12,11 +17,11 @@ except ImportError:
     pymupdf4llm = None
 
 
-def extrair_texto_pdf(pdf: Path, pasta_aula: Path, id_aula: str) -> dict:
+def extrair_texto_pdf(pdf: Path, pasta_aula: Path, codigo: str, numero_aula: int) -> dict:
     """
     Extrai texto de um PDF e salva como Markdown.
 
-    - Markdown vai para 02_markdown/{id_aula}.md
+    - Markdown vai para 02_markdown/{codigo}_aula{NN}.md
 
     Retorna dict com resultado.
     """
@@ -27,7 +32,8 @@ def extrair_texto_pdf(pdf: Path, pasta_aula: Path, id_aula: str) -> dict:
             "etapa": "pymupdf4llm"
         }
 
-    md_destino = pasta_aula / "02_markdown" / f"{id_aula}.md"
+    nome_arquivo = pastas.nome_arquivo_md(codigo, numero_aula)
+    md_destino = pasta_aula / "02_markdown" / nome_arquivo
     md_destino.parent.mkdir(parents=True, exist_ok=True)
 
     try:

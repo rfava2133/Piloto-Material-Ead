@@ -68,11 +68,11 @@ def processar(codigo, disciplina, numero_aula, word_path=None, pdf_path=None,
 
     # 3. Extrair texto (Word → Pandoc OU PDF → pymupdf4llm)
     if word_path:
-        r_word = extrair_word.converter_word(word_path, pasta_aula, aid)
+        r_word = extrair_word.converter_word(word_path, pasta_aula, codigo, numero_aula)
         resultado["texto"] = r_word
         resultado["texto"]["fonte"] = "word"
     elif pdf_path:
-        r_pdf_texto = extrair_pdf_texto.extrair_texto_pdf(pdf_path, pasta_aula, aid)
+        r_pdf_texto = extrair_pdf_texto.extrair_texto_pdf(pdf_path, pasta_aula, codigo, numero_aula)
         resultado["texto"] = r_pdf_texto
         resultado["texto"]["fonte"] = "pdf"
     else:
