@@ -65,16 +65,28 @@ servidor:
   porta: 5000
 ```
 
-## Como Usar — Interface Visual
+## Como Usar — Interface Visual (Hub de Entrada)
 
 ```bash
 python3 servidor.py
 # abre http://127.0.0.1:5000
 ```
 
-1. Preencha: Curso, Código, Nome da disciplina, Número da aula
-2. Arraste o Word **ou** o PDF (uma aula vem em um único formato)
-3. Clique **"Processar material"**
+**Fluxo:**
+1. **Identifique a aula:**
+   - Selecione o **Curso** (carrega do catálogo `dados/catalogo.csv`)
+   - Selecione a **Disciplina** (filtra pelo curso, ordena por semestre)
+   - Selecione o número da **Aula** (1 a 8)
+   - Info de semestre e professor aparece automaticamente
+
+2. **Suba o material:**
+   - Escolha: **"Já diagramado"** (com imagens) ou **"Texto novo"**
+   - Arraste o arquivo Word (.docx) ou PDF
+   - Opcional: adicione imagens separadas (.png/.jpg ou .zip)
+
+3. **Escolha o próximo passo:**
+   - **Analisar conteúdo primeiro** (Recomendado) → M02 avalia substância
+   - **Extrair direto — Módulo 01** → Gera .md + imagens imediatamente
 
 ## Como Usar — Linha de Comando
 

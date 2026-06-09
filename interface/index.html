@@ -1,355 +1,946 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>UNIGRAN EAD — Esteira · Etapa 1</title>
-<style>
-  :root {
-    --azul: #0046A8;
-    --azul-claro: #1E70D6;
-    --tinta: #1A1A1A;
-    --titulo: #0D1117;
-    --papel: #FBFAF7;
-    --sepia: #F5EFE3;
-    --verde: #1A472A;
-    --gold: #C9A84C;
-    --vermelho: #C53030;
-    --cinza: #6B7280;
-    --borda: #E2D8C3;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    background: var(--papel);
-    color: var(--tinta);
-    line-height: 1.5;
-    min-height: 100vh;
-  }
-  header {
-    background: var(--titulo);
-    color: #fff;
-    padding: 20px 32px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    border-bottom: 3px solid var(--gold);
-  }
-  .logo {
-    width: 40px; height: 40px;
-    background: linear-gradient(135deg, var(--azul), var(--azul-claro));
-    border-radius: 6px;
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 700; font-size: 18px;
-  }
-  header h1 { font-size: 14px; font-weight: 600; letter-spacing: 2px; }
-  header .sub { font-size: 10px; color: var(--gold); letter-spacing: 1.5px; }
-  main {
-    max-width: 720px;
-    margin: 40px auto;
-    padding: 0 24px;
-  }
-  .etapa-badge {
-    display: inline-block;
-    background: var(--azul);
-    color: #fff;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    padding: 4px 12px;
-    border-radius: 20px;
-    margin-bottom: 8px;
-  }
-  h2 { font-size: 24px; color: var(--titulo); margin-bottom: 4px; }
-  .desc { color: var(--cinza); font-size: 14px; margin-bottom: 32px; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Upload de Material — UNIGRAN EAD</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Literata:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    /* =============================================================================
+       IDENTIDADE VISUAL — ALINHADA AO LAUDO.HTML
+       ============================================================================= */
+    :root {
+      --ink: #1A1A1A;
+      --ink-strong: #0D1117;
+      --ink-muted: #6B7280;
+      --ink-faint: #9CA3AF;
+      --paper: #FFFFFF;
+      --paper-warm: #FBFAF7;
+      --line: #E5E2DC;
+      --unigran-blue: #0046A8;
+      --unigran-yellow: #FFC629;
+      --aprovar: #15803D;
+      --radius: 2px;
+      --topbar-h: 52px;
+    }
 
-  .campo { margin-bottom: 20px; }
-  .campo label {
-    display: block;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--titulo);
-    margin-bottom: 6px;
-    letter-spacing: 0.3px;
-  }
-  .campo input {
-    width: 100%;
-    padding: 10px 14px;
-    border: 1.5px solid var(--borda);
-    border-radius: 8px;
-    font-size: 14px;
-    font-family: inherit;
-    background: #fff;
-  }
-  .campo input:focus { outline: none; border-color: var(--azul); }
-  .linha { display: flex; gap: 16px; }
-  .linha .campo { flex: 1; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      background: var(--paper-warm);
+      color: var(--ink);
+      font-family: 'Literata', Georgia, serif;
+      line-height: 1.62;
+      -webkit-font-smoothing: antialiased;
+    }
 
-  .dropzone {
-    border: 2.5px dashed var(--borda);
-    border-radius: 12px;
-    padding: 32px 24px;
-    text-align: center;
-    background: #fff;
-    transition: all 0.2s;
-    cursor: pointer;
-    margin-bottom: 16px;
-  }
-  .dropzone:hover, .dropzone.over {
-    border-color: var(--azul);
-    background: #F5F9FF;
-  }
-  .dropzone .icon { font-size: 32px; margin-bottom: 8px; }
-  .dropzone .titulo-dz { font-weight: 600; color: var(--titulo); font-size: 14px; }
-  .dropzone .hint { font-size: 12px; color: var(--cinza); margin-top: 4px; }
-  .dropzone.tem-arquivo {
-    border-style: solid;
-    border-color: var(--verde);
-    background: #F0F9F0;
-  }
-  .arquivo-info {
-    font-size: 13px;
-    color: var(--verde);
-    font-weight: 600;
-    margin-top: 8px;
-  }
+    /* =============================================================================
+       TOPBAR
+       ============================================================================= */
+    .topbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: var(--topbar-h);
+      background: var(--paper-warm);
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      gap: 24px;
+      z-index: 100;
+    }
 
-  .opcao {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    color: var(--cinza);
-    margin-bottom: 24px;
-  }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--unigran-blue);
+      text-decoration: none;
+      flex-shrink: 0;
+    }
 
-  .btn {
-    width: 100%;
-    padding: 14px;
-    border: none;
-    border-radius: 8px;
-    font-size: 15px;
-    font-weight: 600;
-    font-family: inherit;
-    cursor: pointer;
-    background: var(--azul);
-    color: #fff;
-    transition: background 0.2s;
-  }
-  .btn:hover { background: var(--azul-claro); }
-  .btn:disabled { background: var(--cinza); cursor: not-allowed; opacity: 0.6; }
+    .brand-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--unigran-yellow);
+      display: inline-block;
+    }
 
-  .resultado {
-    margin-top: 28px;
-    padding: 20px;
-    border-radius: 12px;
-    background: #fff;
-    border: 1px solid var(--borda);
-    display: none;
-  }
-  .resultado.show { display: block; }
-  .resultado.ok { border-left: 4px solid var(--verde); }
-  .resultado.erro { border-left: 4px solid var(--vermelho); }
-  .resultado h3 { font-size: 16px; margin-bottom: 12px; color: var(--titulo); }
-  .resultado .item { font-size: 13px; padding: 4px 0; color: var(--tinta); }
-  .resultado .item b { color: var(--titulo); }
-  .resultado .path {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    background: var(--sepia);
-    padding: 6px 10px;
-    border-radius: 6px;
-    margin-top: 8px;
-    word-break: break-all;
-    color: var(--cinza);
-  }
-  .spinner {
-    display: none;
-    text-align: center;
-    padding: 20px;
-    color: var(--cinza);
-    font-size: 14px;
-  }
-  .spinner.show { display: block; }
-  .futuro {
-    margin-top: 32px;
-    padding: 16px;
-    background: var(--sepia);
-    border-radius: 8px;
-    font-size: 12px;
-    color: var(--cinza);
-  }
-  .futuro b { color: var(--titulo); }
-</style>
+    .brand-sep {
+      color: var(--ink-faint);
+      font-weight: 400;
+    }
+
+    .topbar-crumb {
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      color: var(--ink-muted);
+      flex: 1;
+    }
+
+    .topbar-link {
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      color: var(--ink-muted);
+      text-decoration: none;
+      padding: 6px 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      transition: all 0.15s;
+    }
+
+    .topbar-link:hover {
+      background: var(--line);
+      color: var(--ink-strong);
+    }
+
+    /* =============================================================================
+       CONTAINER
+       ============================================================================= */
+    .main-container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: calc(var(--topbar-h) + 48px) 24px 80px;
+    }
+
+    @media (max-width: 640px) {
+      .topbar { padding: 0 16px; }
+      .main-container { padding: calc(var(--topbar-h) + 32px) 16px 48px; }
+    }
+
+    /* =============================================================================
+       CABEÇALHO
+       ============================================================================= */
+    .page-header {
+      margin-bottom: 40px;
+      padding-bottom: 24px;
+      border-bottom: 1.5px solid var(--ink-strong);
+    }
+
+    .eyebrow {
+      font-family: 'Inter', sans-serif;
+      font-size: 9px;
+      font-weight: 500;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--unigran-blue);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 16px;
+      height: 1.5px;
+      background: var(--unigran-blue);
+    }
+
+    .page-title {
+      font-family: 'Inter', sans-serif;
+      font-size: clamp(20px, 4vw, 28px);
+      font-weight: 700;
+      letter-spacing: -0.4px;
+      line-height: 1.15;
+      color: var(--ink-strong);
+      margin-bottom: 8px;
+    }
+
+    .page-subtitle {
+      font-family: 'Literata', serif;
+      font-size: 14px;
+      color: var(--ink-muted);
+    }
+
+    /* =============================================================================
+       SEÇÕES
+       ============================================================================= */
+    .section {
+      margin-bottom: 40px;
+    }
+
+    .section-title {
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+      margin-bottom: 16px;
+    }
+
+    /* =============================================================================
+       COMBOS (SELECT)
+       ============================================================================= */
+    .combos-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.5fr 80px;
+      gap: 12px;
+    }
+
+    @media (max-width: 640px) {
+      .combos-grid { grid-template-columns: 1fr; }
+    }
+
+    .combo-wrapper {
+      position: relative;
+    }
+
+    .combo-wrapper label {
+      display: block;
+      font-family: 'Inter', sans-serif;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+      margin-bottom: 6px;
+    }
+
+    select {
+      width: 100%;
+      padding: 10px 12px;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--paper);
+      color: var(--ink-strong);
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+
+    select:hover {
+      border-color: var(--ink-faint);
+    }
+
+    select:focus {
+      outline: none;
+      border-color: var(--unigran-blue);
+    }
+
+    /* Info de semestre/professor */
+    .info-bloco {
+      margin-top: 12px;
+      padding: 10px 14px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      color: var(--ink-muted);
+    }
+
+    .info-bloco strong {
+      color: var(--ink-strong);
+      font-weight: 600;
+    }
+
+    /* =============================================================================
+       SELETOR DE TIPO (RADIO)
+       ============================================================================= */
+    .tipo-seletor {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 16px;
+    }
+
+    .radio-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      color: var(--ink-strong);
+      cursor: pointer;
+    }
+
+    .radio-label input[type="radio"] {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+
+    .tipo-aviso {
+      font-family: 'Literata', serif;
+      font-size: 12px;
+      color: var(--ink-muted);
+      font-style: italic;
+      margin-top: 8px;
+    }
+
+    /* =============================================================================
+       DROPZONE
+       ============================================================================= */
+    .dropzone {
+      border: 2px dashed var(--line);
+      border-radius: var(--radius);
+      padding: 32px 24px;
+      text-align: center;
+      background: var(--paper);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .dropzone:hover {
+      border-color: var(--unigran-blue);
+      background: #F8FAFC;
+    }
+
+    .dropzone.dragover {
+      border-color: var(--unigran-blue);
+      background: #EFF6FF;
+    }
+
+    .dropzone.com-filtro {
+      border-style: solid;
+      border-color: var(--aprovar);
+      background: #F0FDF4;
+    }
+
+    .dropzone-icon {
+      font-size: 32px;
+      margin-bottom: 12px;
+    }
+
+    .dropzone-text {
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      color: var(--ink-muted);
+    }
+
+    .dropzone-text strong {
+      color: var(--unigran-blue);
+      font-weight: 600;
+    }
+
+    .dropzone-arquivo {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--aprovar);
+      margin-top: 8px;
+    }
+
+    .dropzone input[type="file"] {
+      display: none;
+    }
+
+    /* Link colapsável de imagens */
+    .imagens-collapse {
+      margin-top: 16px;
+    }
+
+    .collapse-btn {
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      color: var(--unigran-blue);
+      background: none;
+      border: none;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    .collapse-content {
+      display: none;
+      margin-top: 12px;
+    }
+
+    .collapse-content.aberto {
+      display: block;
+    }
+
+    /* =============================================================================
+       AÇÕES (BOTÕES)
+       ============================================================================= */
+    .acoes-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 32px;
+    }
+
+    .acao-card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      cursor: pointer;
+      transition: all 0.15s;
+      background: var(--paper);
+    }
+
+    .acao-card:hover {
+      border-color: var(--ink-faint);
+    }
+
+    .acao-card.primario {
+      border-width: 1.5px;
+      border-color: var(--unigran-blue);
+    }
+
+    .acao-card.primario:hover {
+      background: #F0F7FF;
+    }
+
+    .acao-card.disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .acao-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+
+    .acao-titulo {
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ink-strong);
+    }
+
+    .acao-tag {
+      font-family: 'Inter', sans-serif;
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--unigran-blue);
+      background: #EFF6FF;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    .acao-desc {
+      font-family: 'Literata', serif;
+      font-size: 12px;
+      color: var(--ink-muted);
+    }
+
+    .acao-disabled-text {
+      font-family: 'Literata', serif;
+      font-size: 12px;
+      color: var(--ink-faint);
+      font-style: italic;
+    }
+
+    /* Spinner */
+    .spinner-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(255,255,255,0.9);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--line);
+      border-top-color: var(--unigran-blue);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .spinner-text {
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      color: var(--ink-muted);
+    }
+
+    /* =============================================================================
+       PIPELINE (STATUS)
+       ============================================================================= */
+    .pipeline-section {
+      margin-top: 40px;
+      padding-top: 32px;
+      border-top: 1px solid var(--line);
+    }
+
+    .pipeline-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    @media (max-width: 640px) {
+      .pipeline-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    .pipeline-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 12px 8px;
+      border-radius: var(--radius);
+    }
+
+    .pipeline-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--ink-faint);
+    }
+
+    .pipeline-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--ink-faint);
+    }
+
+    .pipeline-dot.ativo {
+      background: var(--unigran-blue);
+    }
+
+    .pipeline-dot.aguardando {
+      background: var(--ink-faint);
+    }
+
+    .pipeline-dot.slot {
+      background: transparent;
+      border: 2px dashed var(--ink-faint);
+    }
+
+    .pipeline-nome {
+      font-family: 'Inter', sans-serif;
+      font-size: 9px;
+      text-align: center;
+      color: var(--ink-muted);
+    }
+
+    /* =============================================================================
+       RODAPÉ
+       ============================================================================= */
+    .rodape {
+      margin-top: 48px;
+      padding-top: 24px;
+      border-top: 1px solid var(--line);
+      text-align: center;
+      font-family: 'Literata', serif;
+      font-size: 12px;
+      font-style: italic;
+      color: var(--ink-muted);
+    }
+  </style>
 </head>
 <body>
-<header>
-  <div class="logo">U</div>
-  <div>
-    <h1>UNIGRAN EAD — ESTEIRA DE PRODUÇÃO</h1>
-    <div class="sub">ETAPA 1 · EXTRAÇÃO DE MATERIAL</div>
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <a href="#" class="brand">
+      <span class="brand-dot"></span>
+      UNIGRAN EAD
+      <span class="brand-sep">·</span>
+      Esteira de Produção
+    </a>
+    <div class="topbar-crumb"></div>
+    <a href="#" class="topbar-link">Histórico</a>
+  </header>
+
+  <!-- CONTAINER -->
+  <main class="main-container">
+
+    <!-- CABEÇALHO -->
+    <header class="page-header">
+      <div class="eyebrow">Upload de material</div>
+      <h1 class="page-title">Upload de material</h1>
+      <p class="page-subtitle">Identifique a aula, suba o material e escolha o próximo passo.</p>
+    </header>
+
+    <!-- 1. IDENTIFICAÇÃO -->
+    <section class="section">
+      <h2 class="section-title">Identificação</h2>
+      <div class="combos-grid">
+        <div class="combo-wrapper">
+          <label for="combo-curso">Curso</label>
+          <select id="combo-curso" disabled>
+            <option value="">Carregando...</option>
+          </select>
+        </div>
+        <div class="combo-wrapper">
+          <label for="combo-disciplina">Disciplina</label>
+          <select id="combo-disciplina" disabled>
+            <option value="">Selecione o curso</option>
+          </select>
+        </div>
+        <div class="combo-wrapper">
+          <label for="combo-aula">Aula</label>
+          <select id="combo-aula" disabled>
+            <option value="">Selecione</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+          </select>
+        </div>
+      </div>
+      <div id="info-professor" class="info-bloco" style="display: none;">
+        <strong>Semestre:</strong> <span id="info-semestre">—</span>
+        &nbsp;&nbsp;·&nbsp;&nbsp;
+        <strong>Professor:</strong> <span id="info-professor-nome">—</span>
+      </div>
+    </section>
+
+    <!-- 2. MATERIAL -->
+    <section class="section">
+      <h2 class="section-title">Material</h2>
+
+      <!-- Seletor de tipo -->
+      <div class="tipo-seletor">
+        <label class="radio-label">
+          <input type="radio" name="tipo-material" value="diagramado" checked>
+          Já diagramado
+        </label>
+        <label class="radio-label">
+          <input type="radio" name="tipo-material" value="texto-novo">
+          Texto novo
+        </label>
+      </div>
+      <p id="aviso-texto-novo" class="tipo-aviso" style="display: none;">
+        Placeholders de imagem serão propostos pelo Módulo 04.
+      </p>
+
+      <!-- Dropzone principal -->
+      <div id="dropzone-principal" class="dropzone">
+        <div class="dropzone-icon">📄</div>
+        <p class="dropzone-text">
+          Arraste um arquivo <strong>.docx</strong> ou <strong>.pdf</strong><br>
+          ou clique para selecionar
+        </p>
+        <div id="dropzone-arquivo" class="dropzone-arquivo"></div>
+        <input type="file" id="input-documento" accept=".docx,.pdf">
+      </div>
+
+      <!-- Link colapsável para imagens -->
+      <div id="imagens-collapse" class="imagens-collapse" style="display: none;">
+        <button class="collapse-btn" onclick="toggleImagens()">
+          Material tem imagens separadas? Adicionar arquivos de imagem
+        </button>
+        <div id="collapse-conteudo" class="collapse-content">
+          <div class="dropzone" id="dropzone-imagens">
+            <div class="dropzone-icon">🖼️</div>
+            <p class="dropzone-text">
+              Arraste imagens <strong>.png/.jpg</strong> ou <strong>.zip</strong><br>
+              ou clique para selecionar
+            </p>
+            <input type="file" id="input-imagens" accept=".png,.jpg,.jpeg,.zip" multiple>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. PRÓXIMO PASSO (AÇÕES) -->
+    <section class="section">
+      <h2 class="section-title">Próximo passo</h2>
+      <div id="acoes-disabled" class="acao-disabled-text">
+        Preencha curso, disciplina, aula e suba o material para continuar.
+      </div>
+      <div id="acoes-container" class="acoes-container" style="display: none;">
+        <!-- Ação primária -->
+        <div class="acao-card primario" onclick="processar('analise')">
+          <div class="acao-header">
+            <span class="acao-titulo">Analisar conteúdo primeiro</span>
+            <span class="acao-tag">Recomendado</span>
+          </div>
+          <p class="acao-desc">Avalia substância antes de processar.</p>
+        </div>
+
+        <!-- Ação secundária -->
+        <div class="acao-card" onclick="processar('extrator')">
+          <div class="acao-header">
+            <span class="acao-titulo">📥 Extrair direto — Módulo 01</span>
+            <span style="font-size: 16px;">→</span>
+          </div>
+          <p class="acao-desc">Pula a análise, gera .md + imagens imediatamente.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. PIPELINE DA AULA -->
+    <section class="pipeline-section">
+      <h2 class="section-title">Pipeline da aula</h2>
+      <div class="pipeline-grid">
+        <div class="pipeline-item">
+          <span class="pipeline-num">00</span>
+          <div class="pipeline-dot slot"></div>
+          <span class="pipeline-nome">Upload</span>
+        </div>
+        <div class="pipeline-item">
+          <span class="pipeline-num">01</span>
+          <div class="pipeline-dot slot"></div>
+          <span class="pipeline-nome">Extrator</span>
+        </div>
+        <div class="pipeline-item">
+          <span class="pipeline-num">02</span>
+          <div class="pipeline-dot slot"></div>
+          <span class="pipeline-nome">Análise</span>
+        </div>
+        <div class="pipeline-item">
+          <span class="pipeline-num">03</span>
+          <div class="pipeline-dot slot"></div>
+          <span class="pipeline-nome">Texto</span>
+        </div>
+        <div class="pipeline-item">
+          <span class="pipeline-num">04</span>
+          <div class="pipeline-dot slot"></div>
+          <span class="pipeline-nome">Imagens</span>
+        </div>
+        <div class="pipeline-item">
+          <span class="pipeline-num">05</span>
+          <div class="pipeline-dot slot"></div>
+          <span class="pipeline-nome">Montagem</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- RODAPÉ -->
+    <footer class="rodape">
+      "O módulo recomenda. O coordenador decide."
+    </footer>
+
+  </main>
+
+  <!-- SPINNER OVERLAY -->
+  <div id="spinner-overlay" class="spinner-overlay">
+    <div class="spinner"></div>
+    <p class="spinner-text" id="spinner-mensagem">Processando...</p>
   </div>
-</header>
 
-<main>
-  <span class="etapa-badge">PILOTO · ENTRADA MANUAL</span>
-  <h2>Processar material da aula</h2>
-  <p class="desc">Arraste o Word e/ou PDF da aula. O sistema extrai o texto (Markdown), separa as imagens e cria a estrutura de pastas automaticamente.</p>
+  <!-- SCRIPT -->
+  <script>
+    // Estado
+    let catalogo = { cursos: [], disciplinas: {} };
+    let arquivoDocumento = null;
+    let arquivoImagens = null;
 
-  <div class="linha">
-    <div class="campo">
-      <label>Curso</label>
-      <input type="text" id="curso" placeholder="ex: Administracao" value="EAD">
-    </div>
-    <div class="campo">
-      <label>Código da disciplina</label>
-      <input type="text" id="codigo" placeholder="ex: ADM" maxlength="4">
-    </div>
-  </div>
+    // Elementos
+    const comboCurso = document.getElementById('combo-curso');
+    const comboDisciplina = document.getElementById('combo-disciplina');
+    const comboAula = document.getElementById('combo-aula');
+    const infoBloco = document.getElementById('info-professor');
+    const infoSemestre = document.getElementById('info-semestre');
+    const infoProfessor = document.getElementById('info-professor-nome');
+    const dropzonePrincipal = document.getElementById('dropzone-principal');
+    const inputDocumento = document.getElementById('input-documento');
+    const dropzoneArquivo = document.getElementById('dropzone-arquivo');
+    const imagensCollapse = document.getElementById('imagens-collapse');
+    const acoesDisabled = document.getElementById('acoes-disabled');
+    const acoesContainer = document.getElementById('acoes-container');
+    const spinnerOverlay = document.getElementById('spinner-overlay');
+    const spinnerMensagem = document.getElementById('spinner-mensagem');
 
-  <div class="linha">
-    <div class="campo">
-      <label>Número da aula</label>
-      <input type="number" id="aula" placeholder="ex: 1" min="1" max="99">
-    </div>
-    <div class="campo">
-      <label>Nome completo da disciplina</label>
-      <input type="text" id="disciplina" placeholder="ex: Fundamentos de Administração">
-    </div>
-  </div>
+    // Carregar catálogo
+    async function carregarCatalogo() {
+      try {
+        const res = await fetch('/api/catalogo');
+        if (!res.ok) throw new Error('Erro ao carregar catálogo');
+        catalogo = await res.json();
 
-  <!-- Dropzone Word -->
-  <div class="dropzone" id="dz-word" data-tipo="word">
-    <div class="icon">📄</div>
-    <div class="titulo-dz">Arraste o Word (.docx) aqui</div>
-    <div class="hint">ou clique para escolher</div>
-    <div class="arquivo-info" id="info-word"></div>
-    <input type="file" id="file-word" accept=".docx" hidden>
-  </div>
+        // Preencher combo de cursos
+        comboCurso.innerHTML = '<option value="">Selecione...</option>';
+        catalogo.cursos.forEach(curso => {
+          comboCurso.innerHTML += `<option value="${curso}">${curso}</option>`;
+        });
+        comboCurso.disabled = false;
+      } catch (err) {
+        comboCurso.innerHTML = '<option value="">Erro ao carregar</option>';
+        console.error(err);
+      }
+    }
 
-  <!-- Dropzone PDF -->
-  <div class="dropzone" id="dz-pdf" data-tipo="pdf">
-    <div class="icon">📕</div>
-    <div class="titulo-dz">Arraste o PDF original aqui</div>
-    <div class="hint">ou clique para escolher · usado para extrair imagens</div>
-    <div class="arquivo-info" id="info-pdf"></div>
-    <input type="file" id="file-pdf" accept=".pdf" hidden>
-  </div>
+    // Evento: curso selecionado
+    comboCurso.addEventListener('change', () => {
+      const curso = comboCurso.value;
+      if (!curso) {
+        comboDisciplina.innerHTML = '<option value="">Selecione o curso</option>';
+        comboDisciplina.disabled = true;
+        infoBloco.style.display = 'none';
+        return;
+      }
 
-  <label class="opcao">
-    <input type="checkbox" id="forcar"> Reprocessar se a aula já existir
-  </label>
+      const disciplinas = catalogo.disciplinas[curso] || [];
+      comboDisciplina.innerHTML = '<option value="">Selecione...</option>';
 
-  <button class="btn" id="btn-processar">Processar material</button>
+      // Agrupar por nome de disciplina (pode ter múltiplos professores)
+      const discMap = new Map();
+      disciplinas.forEach(d => {
+        const key = d.disciplina.toLowerCase();
+        if (!discMap.has(key)) discMap.set(key, []);
+        discMap.get(key).push(d);
+      });
 
-  <div class="spinner" id="spinner">⏳ Processando… extraindo texto e imagens…</div>
+      // Ordenar e criar opções
+      const sortedKeys = Array.from(discMap.keys()).sort();
+      sortedKeys.forEach(key => {
+        const disc = discMap.get(key)[0]; // usa primeira ocorrência
+        comboDisciplina.innerHTML += `<option value="${disc.disciplina}">${disc.disciplina} (${disc.semestre})</option>`;
+      });
 
-  <div class="resultado" id="resultado"></div>
+      comboDisciplina.disabled = false;
+      infoBloco.style.display = 'none';
+    });
 
-  <div class="futuro">
-    <b>Versão final:</b> quando a planilha de cursos/disciplinas/professores estiver disponível, os campos acima viram um combo de seleção com filtro — o operador escolhe da lista em vez de digitar. A estrutura de pastas continua sendo criada automaticamente.
-  </div>
-</main>
+    // Evento: disciplina selecionada
+    comboDisciplina.addEventListener('change', () => {
+      const disciplina = comboDisciplina.value;
+      const curso = comboCurso.value;
+      if (!disciplina || !curso) {
+        infoBloco.style.display = 'none';
+        return;
+      }
 
-<script>
-  const arquivos = { word: null, pdf: null };
+      const disciplinas = catalogo.disciplinas[curso] || [];
+      const encontrada = disciplinas.find(d => d.disciplina === disciplina);
+      if (encontrada) {
+        infoSemestre.textContent = encontrada.semestre;
+        infoProfessor.textContent = encontrada.professor;
+        infoBloco.style.display = 'block';
+      }
+      verificarFormulario();
+    });
 
-  function setupDropzone(tipo) {
-    const dz = document.getElementById('dz-' + tipo);
-    const input = document.getElementById('file-' + tipo);
-    const info = document.getElementById('info-' + tipo);
+    // Evento: aula selecionada
+    comboAula.addEventListener('change', verificarFormulario);
 
-    dz.addEventListener('click', () => input.click());
-    dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('over'); });
-    dz.addEventListener('dragleave', () => dz.classList.remove('over'));
-    dz.addEventListener('drop', e => {
-      e.preventDefault();
-      dz.classList.remove('over');
-      if (e.dataTransfer.files.length) {
-        input.files = e.dataTransfer.files;
-        registrar(tipo, e.dataTransfer.files[0], dz, info);
+    // Dropzone principal
+    dropzonePrincipal.addEventListener('click', () => inputDocumento.click());
+    inputDocumento.addEventListener('change', (e) => {
+      arquivoDocumento = e.target.files[0];
+      atualizarDropzone();
+      verificarFormulario();
+    });
+
+    // Drag & drop
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+      dropzonePrincipal.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      });
+    });
+
+    dropzonePrincipal.addEventListener('dragover', () => dropzonePrincipal.classList.add('dragover'));
+    dropzonePrincipal.addEventListener('dragleave', () => dropzonePrincipal.classList.remove('dragover'));
+    dropzonePrincipal.addEventListener('drop', (e) => {
+      dropzonePrincipal.classList.remove('dragover');
+      const files = e.dataTransfer.files;
+      if (files.length > 0 && (files[0].name.endsWith('.docx') || files[0].name.endsWith('.pdf'))) {
+        arquivoDocumento = files[0];
+        inputDocumento.files = files;
+        atualizarDropzone();
+        verificarFormulario();
       }
     });
-    input.addEventListener('change', () => {
-      if (input.files.length) registrar(tipo, input.files[0], dz, info);
+
+    function atualizarDropzone() {
+      if (arquivoDocumento) {
+        dropzonePrincipal.classList.add('com-filtro');
+        dropzoneArquivo.textContent = `📎 ${arquivoDocumento.name}`;
+      } else {
+        dropzonePrincipal.classList.remove('com-filtro');
+        dropzoneArquivo.textContent = '';
+      }
+    }
+
+    // Toggle imagens
+    function toggleImagens() {
+      const conteudo = document.getElementById('collapse-conteudo');
+      conteudo.classList.toggle('aberto');
+    }
+
+    // Seletor de tipo
+    document.querySelectorAll('input[name="tipo-material"]').forEach(radio => {
+      radio.addEventListener('change', () => {
+        const aviso = document.getElementById('aviso-texto-novo');
+        const imagensCollapse = document.getElementById('imagens-collapse');
+        if (radio.value === 'texto-novo') {
+          aviso.style.display = 'block';
+          imagensCollapse.style.display = 'none';
+        } else {
+          aviso.style.display = 'none';
+          imagensCollapse.style.display = 'block';
+        }
+      });
     });
-  }
 
-  function registrar(tipo, file, dz, info) {
-    arquivos[tipo] = file;
-    dz.classList.add('tem-arquivo');
-    info.textContent = '✓ ' + file.name;
-  }
-
-  setupDropzone('word');
-  setupDropzone('pdf');
-
-  document.getElementById('btn-processar').addEventListener('click', async () => {
-    const curso = document.getElementById('curso').value.trim();
-    const codigo = document.getElementById('codigo').value.trim();
-    const disciplina = document.getElementById('disciplina').value.trim();
-    const aula = document.getElementById('aula').value.trim();
-    const forcar = document.getElementById('forcar').checked;
-
-    if (!curso || !codigo || !disciplina || !aula) {
-      alert('Preencha curso, código, disciplina e número da aula.');
-      return;
-    }
-    if (!arquivos.word && !arquivos.pdf) {
-      alert('Arraste ao menos um arquivo (Word ou PDF).');
-      return;
+    // Verificar formulário completo
+    function verificarFormulario() {
+      const completo = comboCurso.value && comboDisciplina.value && comboAula.value && arquivoDocumento;
+      if (completo) {
+        acoesDisabled.style.display = 'none';
+        acoesContainer.style.display = 'flex';
+      } else {
+        acoesDisabled.style.display = 'block';
+        acoesContainer.style.display = 'none';
+      }
     }
 
-    const fd = new FormData();
-    fd.append('curso', curso);
-    fd.append('codigo', codigo);
-    fd.append('disciplina', disciplina);
-    fd.append('aula', aula);
-    fd.append('forcar', forcar);
-    if (arquivos.word) fd.append('word', arquivos.word);
-    if (arquivos.pdf) fd.append('pdf', arquivos.pdf);
+    // Processar
+    async function processar(modulo) {
+      const formData = new FormData();
+      formData.append('curso', comboCurso.value);
+      formData.append('codigo', gerarCodigo(comboDisciplina.value));
+      formData.append('disciplina', comboDisciplina.value);
+      formData.append('aula', comboAula.value);
+      formData.append('modulo', modulo);
+      formData.append('documento', arquivoDocumento);
 
-    const btn = document.getElementById('btn-processar');
-    const spinner = document.getElementById('spinner');
-    const resultado = document.getElementById('resultado');
-    btn.disabled = true;
-    spinner.classList.add('show');
-    resultado.classList.remove('show');
+      spinnerMensagem.textContent = modulo === 'analise'
+        ? 'Enviando para análise...'
+        : 'Extraindo material...';
+      spinnerOverlay.style.display = 'flex';
 
-    try {
-      const resp = await fetch('/api/processar', { method: 'POST', body: fd });
-      const data = await resp.json();
-      mostrarResultado(data);
-    } catch (err) {
-      mostrarResultado({ ok: false, erro: 'Erro de conexão com o servidor: ' + err.message });
-    } finally {
-      btn.disabled = false;
-      spinner.classList.remove('show');
+      try {
+        const res = await fetch('/api/processar', {
+          method: 'POST',
+          body: formData
+        });
+        const resultado = await res.json();
+
+        if (modulo === 'analise' && resultado.redirect) {
+          window.location.href = resultado.redirect;
+        } else if (modulo === 'extrator') {
+          spinnerMensagem.textContent = 'Concluído! Redirecionando...';
+          setTimeout(() => {
+            spinnerOverlay.style.display = 'none';
+            alert(`Extração concluída!\n\nMarkdown: ${resultado.texto?.path || 'N/A'}\nImagens: ${resultado.imagens?.length || 0}`);
+          }, 1000);
+        }
+      } catch (err) {
+        spinnerOverlay.style.display = 'none';
+        alert('Erro ao processar: ' + err.message);
+      }
     }
-  });
 
-  function mostrarResultado(data) {
-    const r = document.getElementById('resultado');
-    r.className = 'resultado show ' + (data.ok ? 'ok' : 'erro');
-
-    if (!data.ok) {
-      r.innerHTML = '<h3>⚠ Não processado</h3><div class="item">' +
-        (data.aviso || data.erro || 'Erro desconhecido') + '</div>';
-      return;
+    // Gerar código da disciplina (3 letras maiúsculas)
+    function gerarCodigo(nome) {
+      return nome.substring(0, 3).toUpperCase().replace(/[^A-Z]/g, '');
     }
 
-    let html = '<h3>✅ ' + data.aula_id + ' processada</h3>';
-    if (data.word && data.word.ok) {
-      html += '<div class="item"><b>Markdown gerado</b> · ' +
-        data.word.qtd_imagens_word + ' imagem(ns) do Word</div>';
-    }
-    if (data.pdf && data.pdf.ok) {
-      html += '<div class="item"><b>Imagens do PDF:</b> ' + data.pdf.qtd_imagens_pdf +
-        ' (descartadas pequenas: ' + data.pdf.descartadas_pequenas + ')</div>';
-    }
-    html += '<div class="path">' + data.pasta + '</div>';
-    r.innerHTML = html;
-  }
-</script>
+    // Inicializar
+    carregarCatalogo();
+  </script>
 </body>
 </html>

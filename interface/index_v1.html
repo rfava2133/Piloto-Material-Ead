@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UNIGRAN EAD — Esteira · Etapa 1</title>
+<style>
+  :root {
+    --azul: #0046A8;
+    --azul-claro: #1E70D6;
+    --tinta: #1A1A1A;
+    --titulo: #0D1117;
+    --papel: #FBFAF7;
+    --sepia: #F5EFE3;
+    --verde: #1A472A;
+    --gold: #C9A84C;
+    --vermelho: #C53030;
+    --cinza: #6B7280;
+    --borda: #E2D8C3;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--papel);
+    color: var(--tinta);
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+  header {
+    background: var(--titulo);
+    color: #fff;
+    padding: 20px 32px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border-bottom: 3px solid var(--gold);
+  }
+  .logo {
+    width: 40px; height: 40px;
+    background: linear-gradient(135deg, var(--azul), var(--azul-claro));
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 18px;
+  }
+  header h1 { font-size: 14px; font-weight: 600; letter-spacing: 2px; }
+  header .sub { font-size: 10px; color: var(--gold); letter-spacing: 1.5px; }
+  main {
+    max-width: 720px;
+    margin: 40px auto;
+    padding: 0 24px;
+  }
+  .etapa-badge {
+    display: inline-block;
+    background: var(--azul);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 8px;
+  }
+  h2 { font-size: 24px; color: var(--titulo); margin-bottom: 4px; }
+  .desc { color: var(--cinza); font-size: 14px; margin-bottom: 32px; }
+
+  .campo { margin-bottom: 20px; }
+  .campo label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--titulo);
+    margin-bottom: 6px;
+    letter-spacing: 0.3px;
+  }
+  .campo input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid var(--borda);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    background: #fff;
+  }
+  .campo input:focus { outline: none; border-color: var(--azul); }
+  .linha { display: flex; gap: 16px; }
+  .linha .campo { flex: 1; }
+
+  .dropzone {
+    border: 2.5px dashed var(--borda);
+    border-radius: 12px;
+    padding: 32px 24px;
+    text-align: center;
+    background: #fff;
+    transition: all 0.2s;
+    cursor: pointer;
+    margin-bottom: 16px;
+  }
+  .dropzone:hover, .dropzone.over {
+    border-color: var(--azul);
+    background: #F5F9FF;
+  }
+  .dropzone .icon { font-size: 32px; margin-bottom: 8px; }
+  .dropzone .titulo-dz { font-weight: 600; color: var(--titulo); font-size: 14px; }
+  .dropzone .hint { font-size: 12px; color: var(--cinza); margin-top: 4px; }
+  .dropzone.tem-arquivo {
+    border-style: solid;
+    border-color: var(--verde);
+    background: #F0F9F0;
+  }
+  .arquivo-info {
+    font-size: 13px;
+    color: var(--verde);
+    font-weight: 600;
+    margin-top: 8px;
+  }
+
+  .opcao {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--cinza);
+    margin-bottom: 24px;
+  }
+
+  .btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    background: var(--azul);
+    color: #fff;
+    transition: background 0.2s;
+  }
+  .btn:hover { background: var(--azul-claro); }
+  .btn:disabled { background: var(--cinza); cursor: not-allowed; opacity: 0.6; }
+
+  .resultado {
+    margin-top: 28px;
+    padding: 20px;
+    border-radius: 12px;
+    background: #fff;
+    border: 1px solid var(--borda);
+    display: none;
+  }
+  .resultado.show { display: block; }
+  .resultado.ok { border-left: 4px solid var(--verde); }
+  .resultado.erro { border-left: 4px solid var(--vermelho); }
+  .resultado h3 { font-size: 16px; margin-bottom: 12px; color: var(--titulo); }
+  .resultado .item { font-size: 13px; padding: 4px 0; color: var(--tinta); }
+  .resultado .item b { color: var(--titulo); }
+  .resultado .path {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    background: var(--sepia);
+    padding: 6px 10px;
+    border-radius: 6px;
+    margin-top: 8px;
+    word-break: break-all;
+    color: var(--cinza);
+  }
+  .spinner {
+    display: none;
+    text-align: center;
+    padding: 20px;
+    color: var(--cinza);
+    font-size: 14px;
+  }
+  .spinner.show { display: block; }
+  .futuro {
+    margin-top: 32px;
+    padding: 16px;
+    background: var(--sepia);
+    border-radius: 8px;
+    font-size: 12px;
+    color: var(--cinza);
+  }
+  .futuro b { color: var(--titulo); }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">U</div>
+  <div>
+    <h1>UNIGRAN EAD — ESTEIRA DE PRODUÇÃO</h1>
+    <div class="sub">ETAPA 1 · EXTRAÇÃO DE MATERIAL</div>
+  </div>
+</header>
+
+<main>
+  <span class="etapa-badge">PILOTO · ENTRADA MANUAL</span>
+  <h2>Processar material da aula</h2>
+  <p class="desc">Arraste o Word e/ou PDF da aula. O sistema extrai o texto (Markdown), separa as imagens e cria a estrutura de pastas automaticamente.</p>
+
+  <div class="linha">
+    <div class="campo">
+      <label>Curso</label>
+      <input type="text" id="curso" placeholder="ex: Administracao" value="EAD">
+    </div>
+    <div class="campo">
+      <label>Código da disciplina</label>
+      <input type="text" id="codigo" placeholder="ex: ADM" maxlength="4">
+    </div>
+  </div>
+
+  <div class="linha">
+    <div class="campo">
+      <label>Número da aula</label>
+      <input type="number" id="aula" placeholder="ex: 1" min="1" max="99">
+    </div>
+    <div class="campo">
+      <label>Nome completo da disciplina</label>
+      <input type="text" id="disciplina" placeholder="ex: Fundamentos de Administração">
+    </div>
+  </div>
+
+  <!-- Dropzone Word -->
+  <div class="dropzone" id="dz-word" data-tipo="word">
+    <div class="icon">📄</div>
+    <div class="titulo-dz">Arraste o Word (.docx) aqui</div>
+    <div class="hint">ou clique para escolher</div>
+    <div class="arquivo-info" id="info-word"></div>
+    <input type="file" id="file-word" accept=".docx" hidden>
+  </div>
+
+  <!-- Dropzone PDF -->
+  <div class="dropzone" id="dz-pdf" data-tipo="pdf">
+    <div class="icon">📕</div>
+    <div class="titulo-dz">Arraste o PDF original aqui</div>
+    <div class="hint">ou clique para escolher · usado para extrair imagens</div>
+    <div class="arquivo-info" id="info-pdf"></div>
+    <input type="file" id="file-pdf" accept=".pdf" hidden>
+  </div>
+
+  <label class="opcao">
+    <input type="checkbox" id="forcar"> Reprocessar se a aula já existir
+  </label>
+
+  <button class="btn" id="btn-processar">Processar material</button>
+
+  <div class="spinner" id="spinner">⏳ Processando… extraindo texto e imagens…</div>
+
+  <div class="resultado" id="resultado"></div>
+
+  <div class="futuro">
+    <b>Versão final:</b> quando a planilha de cursos/disciplinas/professores estiver disponível, os campos acima viram um combo de seleção com filtro — o operador escolhe da lista em vez de digitar. A estrutura de pastas continua sendo criada automaticamente.
+  </div>
+</main>
+
+<script>
+  const arquivos = { word: null, pdf: null };
+
+  function setupDropzone(tipo) {
+    const dz = document.getElementById('dz-' + tipo);
+    const input = document.getElementById('file-' + tipo);
+    const info = document.getElementById('info-' + tipo);
+
+    dz.addEventListener('click', () => input.click());
+    dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('over'); });
+    dz.addEventListener('dragleave', () => dz.classList.remove('over'));
+    dz.addEventListener('drop', e => {
+      e.preventDefault();
+      dz.classList.remove('over');
+      if (e.dataTransfer.files.length) {
+        input.files = e.dataTransfer.files;
+        registrar(tipo, e.dataTransfer.files[0], dz, info);
+      }
+    });
+    input.addEventListener('change', () => {
+      if (input.files.length) registrar(tipo, input.files[0], dz, info);
+    });
+  }
+
+  function registrar(tipo, file, dz, info) {
+    arquivos[tipo] = file;
+    dz.classList.add('tem-arquivo');
+    info.textContent = '✓ ' + file.name;
+  }
+
+  setupDropzone('word');
+  setupDropzone('pdf');
+
+  document.getElementById('btn-processar').addEventListener('click', async () => {
+    const curso = document.getElementById('curso').value.trim();
+    const codigo = document.getElementById('codigo').value.trim();
+    const disciplina = document.getElementById('disciplina').value.trim();
+    const aula = document.getElementById('aula').value.trim();
+    const forcar = document.getElementById('forcar').checked;
+
+    if (!curso || !codigo || !disciplina || !aula) {
+      alert('Preencha curso, código, disciplina e número da aula.');
+      return;
+    }
+    if (!arquivos.word && !arquivos.pdf) {
+      alert('Arraste ao menos um arquivo (Word ou PDF).');
+      return;
+    }
+
+    const fd = new FormData();
+    fd.append('curso', curso);
+    fd.append('codigo', codigo);
+    fd.append('disciplina', disciplina);
+    fd.append('aula', aula);
+    fd.append('forcar', forcar);
+    if (arquivos.word) fd.append('word', arquivos.word);
+    if (arquivos.pdf) fd.append('pdf', arquivos.pdf);
+
+    const btn = document.getElementById('btn-processar');
+    const spinner = document.getElementById('spinner');
+    const resultado = document.getElementById('resultado');
+    btn.disabled = true;
+    spinner.classList.add('show');
+    resultado.classList.remove('show');
+
+    try {
+      const resp = await fetch('/api/processar', { method: 'POST', body: fd });
+      const data = await resp.json();
+      mostrarResultado(data);
+    } catch (err) {
+      mostrarResultado({ ok: false, erro: 'Erro de conexão com o servidor: ' + err.message });
+    } finally {
+      btn.disabled = false;
+      spinner.classList.remove('show');
+    }
+  });
+
+  function mostrarResultado(data) {
+    const r = document.getElementById('resultado');
+    r.className = 'resultado show ' + (data.ok ? 'ok' : 'erro');
+
+    if (!data.ok) {
+      r.innerHTML = '<h3>⚠ Não processado</h3><div class="item">' +
+        (data.aviso || data.erro || 'Erro desconhecido') + '</div>';
+      return;
+    }
+
+    let html = '<h3>✅ ' + data.aula_id + ' processada</h3>';
+    if (data.word && data.word.ok) {
+      html += '<div class="item"><b>Markdown gerado</b> · ' +
+        data.word.qtd_imagens_word + ' imagem(ns) do Word</div>';
+    }
+    if (data.pdf && data.pdf.ok) {
+      html += '<div class="item"><b>Imagens do PDF:</b> ' + data.pdf.qtd_imagens_pdf +
+        ' (descartadas pequenas: ' + data.pdf.descartadas_pequenas + ')</div>';
+    }
+    html += '<div class="path">' + data.pasta + '</div>';
+    r.innerHTML = html;
+  }
+</script>
+</body>
+</html>

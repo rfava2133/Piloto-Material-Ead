@@ -362,8 +362,14 @@
 
     .indicador-calculo {
       font-family: var(--font-mono);
-      font-size: 11px;
-      color: var(--ink-muted);
+      font-size: 13px;
+      color: var(--ink-strong);
+      font-weight: 500;
+    }
+
+    .indicador-calculo .coeficiente {
+      font-weight: 600;
+      color: var(--ink-strong);
     }
 
     .indicador-barra-bg {
@@ -584,39 +590,71 @@
       width: 100%;
       border-collapse: collapse;
       font-family: var(--font-ui);
-      font-size: 12px;
+      font-size: 14px;
     }
 
     .tabela-auditavel thead th {
       text-align: left;
-      padding: 10px 12px;
-      border-bottom: 1.5px solid var(--ink-strong);
+      padding: 14px 16px;
+      background: #F9FAFB;
+      border-bottom: 2px solid var(--ink-strong);
       font-weight: 600;
+      font-size: 12px;
+      letter-spacing: 0.5px;
       color: var(--ink-strong);
+      text-transform: uppercase;
     }
 
     .tabela-auditavel tbody td {
-      padding: 12px;
+      padding: 14px 16px;
       border-bottom: 1px solid var(--line);
       color: var(--ink);
     }
 
-    .tabela-auditavel tbody td:last-child {
-      font-family: var(--font-mono);
-      font-size: 11px;
+    .tabela-auditavel tbody td:first-child {
       font-weight: 500;
     }
 
-    .tabela-auditavel tfoot td {
-      padding: 12px;
-      font-weight: 700;
+    .tabela-auditavel tbody td:nth-child(2),
+    .tabela-auditavel tbody td:nth-child(3) {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--ink-muted);
+    }
+
+    .tabela-auditavel tbody td:last-child {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 600;
       color: var(--ink-strong);
-      border-top: 1.5px solid var(--ink-strong);
+    }
+
+    /* Destaque para contribuições (cores de semáforo) */
+    .tabela-auditavel tbody tr.contrib-alta td:last-child {
+      color: var(--aprovar);
+    }
+
+    .tabela-auditavel tbody tr.contrib-media td:last-child {
+      color: var(--aprovar-ressalva);
+    }
+
+    .tabela-auditavel tbody tr.contrib-baixa td:last-child {
+      color: var(--intervencao);
+    }
+
+    .tabela-auditavel tfoot td {
+      padding: 16px;
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--ink-strong);
+      border-top: 2px solid var(--ink-strong);
+      background: #F9FAFB;
     }
 
     .tabela-auditavel tfoot td:last-child {
       font-family: var(--font-mono);
-      font-size: 12px;
+      font-size: 16px;
+      color: var(--unigran-blue);
     }
 
     /* =============================================================================
@@ -971,7 +1009,7 @@
           <div class="indicador-item">
             <div class="indicador-header">
               <span class="indicador-nome">${key} — ${nome} ${tagMaior}${tagMenor}</span>
-              <span class="indicador-calculo">${nota.toFixed(1).replace('.', ',')} × ${(peso * 100).toFixed(0)}% = ${contribuicao.toFixed(2).replace('.', ',')}</span>
+              <span class="indicador-calculo">${nota.toFixed(1).replace('.', ',')} × ${(peso * 100).toFixed(0)}% = <span class="coeficiente">${contribuicao.toFixed(2).replace('.', ',')}</span></span>
             </div>
             <div class="indicador-barra-bg">
               <div class="indicador-barra-fill" style="width: ${pct}%; background: ${v.cor}"></div>
@@ -1028,14 +1066,30 @@
       const tbody = document.getElementById('tabela-corpo');
       tbody.innerHTML = '';
 
+      // Calcular maior e menor contribuição para cores
+      const contribuicoes = Object.values(indicadores).map(ind => ind.contribuicao || (ind.nota * ind.peso));
+      const maxContrib = Math.max(...contribuicoes);
+      const minContrib = Math.min(...contribuicoes);
+      const midContrib = (maxContrib + minContrib) / 2;
+
       for (const [key, ind] of Object.entries(indicadores)) {
         const nota = ind.nota;
         const peso = (ind.peso * 100).toFixed(0);
         const contribuicao = ind.contribuicao || (nota * ind.peso);
         const nome = NOMES_INDICADORES[key] || key;
 
+        // Classe de cor baseada na contribuição relativa
+        let contribClass = '';
+        if (contribuicao >= midContrib) {
+          contribClass = 'contrib-alta';
+        } else if (contribuicao >= minContrib) {
+          contribClass = 'contrib-media';
+        } else {
+          contribClass = 'contrib-baixa';
+        }
+
         tbody.innerHTML += `
-          <tr>
+          <tr class="${contribClass}">
             <td>${key} — ${nome}</td>
             <td>${peso}%</td>
             <td>${nota.toFixed(1).replace('.', ',')}</td>
