@@ -36,6 +36,20 @@
       --ressalva: #CA8A04;
       --critico: #DC2626;
 
+      /* Chips — Confirmada/Não localizada */
+      --chip-confirmada-bg: #F0FDF4;
+      --chip-confirmada-border: #BBF7D0;
+      --chip-confirmada-text: #15803D;
+      --chip-nao-localizada-bg: #FFFBEB;
+      --chip-nao-localizada-border: #FDE68A;
+      --chip-nao-localizada-text: #CA8A04;
+      --chip-ressalva-bg: #FFFBEB;
+      --chip-ressalva-border: #FDE68A;
+      --chip-ressalva-text: #CA8A04;
+      --chip-critico-bg: #FEF2F2;
+      --chip-critico-border: #FECACA;
+      --chip-critico-text: #DC2626;
+
       /* Tipografia */
       --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       --font-corpo: 'Literata', Georgia, serif;
@@ -210,12 +224,11 @@
        3. VEREDITO (SÓBRIO)
        ============================================================================= */
     .veredito-section {
-      margin-bottom: 40px;
+      margin-bottom: 56px;
     }
 
     .veredito-card {
       background: var(--paper);
-      border: 1px solid var(--line);
       border-left: 3px solid var(--aprovar);
       border-radius: var(--radius);
       padding: 20px 24px;
@@ -264,7 +277,7 @@
        4. GAUGE RADIAL (SVG PURO)
        ============================================================================= */
     .indice-section {
-      margin-bottom: 48px;
+      margin-bottom: 56px;
       text-align: center;
     }
 
@@ -285,7 +298,7 @@
 
     .gauge-value {
       position: absolute;
-      bottom: 8px;
+      bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
       font-family: var(--font-ui);
@@ -308,7 +321,7 @@
        5. INDICADORES B1–B5 (BARRAS FINAS)
        ============================================================================= */
     .indicadores-section {
-      margin-bottom: 48px;
+      margin-bottom: 56px;
     }
 
     .indicadores-section h2 {
@@ -322,8 +335,8 @@
     }
 
     .indicador-item {
-      padding-bottom: 20px;
-      margin-bottom: 20px;
+      padding-bottom: 24px;
+      margin-bottom: 24px;
       border-bottom: 1px solid var(--line);
     }
 
@@ -354,8 +367,8 @@
     }
 
     .indicador-barra-bg {
-      height: 6px;
-      background: var(--line);
+      height: 10px;
+      background: #E5E2DC;
       border-radius: var(--radius);
       overflow: hidden;
       margin-bottom: 10px;
@@ -382,13 +395,14 @@
       font-size: 13.5px;
       line-height: 1.55;
       color: var(--ink);
+      opacity: 0.75;
     }
 
     /* =============================================================================
        6. VERIFICAÇÃO DE FUNDAMENTOS
        ============================================================================= */
     .fundamentos-section {
-      margin-bottom: 48px;
+      margin-bottom: 56px;
     }
 
     .fundamentos-section h2 {
@@ -402,8 +416,8 @@
     }
 
     .fundamento-item {
-      padding-bottom: 20px;
-      margin-bottom: 20px;
+      padding-bottom: 24px;
+      margin-bottom: 24px;
       border-bottom: 1px solid var(--line);
     }
 
@@ -417,7 +431,7 @@
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
     }
 
     .fundamento-nome {
@@ -427,31 +441,34 @@
       color: var(--ink-strong);
     }
 
-    .severidade-badge {
+    /* Chip de severidade (mesmo estilo do chip de fontes) */
+    .severidade-chip {
       font-family: var(--font-ui);
-      font-size: 9px;
+      font-size: 11px;
       font-weight: 600;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.3px;
       text-transform: uppercase;
-      padding: 3px 8px;
-      border: 1px solid currentColor;
-      border-radius: var(--radius);
-      background: transparent;
+      padding: 2px 8px;
+      border-radius: 4px;
+      border: 1px solid;
     }
 
-    .severidade-badge.sem-ressalva {
-      color: var(--sem-ressalva);
-      border-color: var(--sem-ressalva);
+    .severidade-chip.sem-ressalva {
+      background: var(--chip-confirmada-bg);
+      border-color: var(--chip-confirmada-border);
+      color: var(--chip-confirmada-text);
     }
 
-    .severidade-badge.ressalva {
-      color: var(--ressalva);
-      border-color: var(--ressalva);
+    .severidade-chip.ressalva {
+      background: var(--chip-ressalva-bg);
+      border-color: var(--chip-ressalva-border);
+      color: var(--chip-ressalva-text);
     }
 
-    .severidade-badge.critico {
-      color: var(--critico);
-      border-color: var(--critico);
+    .severidade-chip.critico {
+      background: var(--chip-critico-bg);
+      border-color: var(--chip-critico-border);
+      color: var(--chip-critico-text);
     }
 
     .fundamento-justificativa {
@@ -467,32 +484,45 @@
     }
 
     .fontes-lista li {
-      padding: 10px 0;
+      padding: 16px 0;
       border-bottom: 1px solid var(--line);
       font-family: var(--font-ui);
-      font-size: 12px;
+      font-size: 15px;
+    }
+
+    .fontes-lista li:first-child {
+      padding-top: 0;
     }
 
     .fontes-lista li:last-child {
       border-bottom: none;
+      padding-bottom: 0;
     }
 
-    .fonte-status {
+    /* Chip de status da fonte */
+    .fonte-chip {
       font-family: var(--font-ui);
-      font-size: 10px;
-      font-weight: 500;
-      letter-spacing: 0.5px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
       text-transform: uppercase;
-      margin-top: 4px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      border: 1px solid;
       display: inline-block;
+      margin-top: 6px;
     }
 
-    .fonte-status.confirmada {
-      color: var(--sem-ressalva);
+    .fonte-chip.confirmada {
+      background: var(--chip-confirmada-bg);
+      border-color: var(--chip-confirmada-border);
+      color: var(--chip-confirmada-text);
     }
 
-    .fonte-status.nao-localizada {
-      color: var(--ressalva);
+    .fonte-chip.nao-localizada {
+      background: var(--chip-nao-localizada-bg);
+      border-color: var(--chip-nao-localizada-border);
+      color: var(--chip-nao-localizada-text);
     }
 
     /* Bloco CRÍTICO */
@@ -537,7 +567,7 @@
        7. TABELA AUDITÁVEL
        ============================================================================= */
     .tabela-section {
-      margin-bottom: 48px;
+      margin-bottom: 56px;
     }
 
     .tabela-section h2 {
@@ -727,7 +757,7 @@
         <div class="fundamento-item">
           <div class="fundamento-header">
             <span class="fundamento-nome">A1 — Precisão Conceitual e Científica</span>
-            <span id="a1-badge" class="severidade-badge sem-ressalva">SEM RESSALVA</span>
+            <span id="a1-badge" class="severidade-chip sem-ressalva">SEM RESSALVA</span>
           </div>
           <p id="a1-justificativa" class="fundamento-justificativa">—</p>
         </div>
@@ -736,7 +766,7 @@
         <div class="fundamento-item">
           <div class="fundamento-header">
             <span class="fundamento-nome">A2 — Validade Bibliográfica e Fontes</span>
-            <span id="a2-badge" class="severidade-badge sem-ressalva">SEM RESSALVA</span>
+            <span id="a2-badge" class="severidade-chip sem-ressalva">SEM RESSALVA</span>
           </div>
           <p id="a2-justificativa" class="fundamento-justificativa">—</p>
           <ul id="a2-fontes" class="fontes-lista">
@@ -956,14 +986,14 @@
       // A1
       const a1 = fundamentos.A1;
       const a1Sev = SEVERIDADES[a1.severidade] || SEVERIDADES.SEM_RESSALVA;
-      document.getElementById('a1-badge').className = 'severidade-badge ' + a1Sev.classe;
+      document.getElementById('a1-badge').className = 'severidade-chip ' + a1Sev.classe;
       document.getElementById('a1-badge').textContent = a1Sev.rotulo;
       document.getElementById('a1-justificativa').textContent = a1.justificativa || '—';
 
       // A2
       const a2 = fundamentos.A2;
       const a2Sev = SEVERIDADES[a2.severidade] || SEVERIDADES.SEM_RESSALVA;
-      document.getElementById('a2-badge').className = 'severidade-badge ' + a2Sev.classe;
+      document.getElementById('a2-badge').className = 'severidade-chip ' + a2Sev.classe;
       document.getElementById('a2-badge').textContent = a2Sev.rotulo;
       document.getElementById('a2-justificativa').textContent = a2.justificativa || '—';
 
@@ -977,7 +1007,7 @@
           fontesContainer.innerHTML += `
             <li>
               <strong>${fonte.autor}</strong> (${fonte.ano}) — ${fonte.obra}<br>
-              <span class="fonte-status ${statusClass}">${statusIcon} ${fonte.status === 'confirmada' ? 'Confirmada' : 'Não localizada'}</span>
+              <span class="fonte-chip ${statusClass}">${statusIcon} ${fonte.status === 'confirmada' ? 'Confirmada' : 'Não localizada'}</span>
             </li>
           `;
         }
