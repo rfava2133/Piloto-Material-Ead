@@ -16,7 +16,7 @@ interativo + micro-roteiros de vídeo, com avaliação automática de qualidade.
 | Módulo | Agente | Modelo | Status |
 |--------|--------|--------|--------|
 | **M01 — Extrator** | — | determinístico | ✅ Implementado |
-| **M02 — Analista de Conteúdo** | Agente E | claude-opus-4-7 | 🔜 Em construção |
+| **M02 — Analista de Conteúdo** | Agente E | claude-opus-4-7 | ✅ Implementado |
 | **M03 — Texto Display (Agente A)** | Agente A | claude-opus-4-7 | 📋 Pendente |
 | **M04 — PDF Full** | Puppeteer | determinístico | 📋 Pendente |
 | **M05 — Micro-roteiros (Agente B)** | Agente B | claude-sonnet-4-6 | 📋 Pendente |
@@ -140,11 +140,34 @@ coordenador:
 
 ---
 
-# MÓDULO 02 — ANALISTA DE CONTEÚDO 🔜
+# MÓDULO 02 — ANALISTA DE CONTEÚDO ✅
 
 Avalia a substância do material antes de qualquer reformulação.
 **Princípio:** a diagramação corrige a forma; o analista julga a substância.
 **Decisão humana:** o módulo recomenda; o coordenador decide. Nunca recriar automático.
+
+## Componentes
+
+| Arquivo | Função |
+|---------|--------|
+| `modulo02/calculo.py` | Aritmética pura: índice + veredito (sem IA) |
+| `modulo02/test_calculo.py` | Valida os 4 cenários do PPT (5,70 · 7,15 · 4,00 · 8,45) |
+| `modulo02/laudo.html` | Tela visual do laudo para o coordenador |
+| `.claude/agents/analista-conteudo.md` | Prompt do Agente E (Opus 4.7) |
+
+## Como Abrir o Laudo
+
+1. Após o Agente E gerar `score_v01.json` em `03_avaliacao/`
+2. Abra `modulo02/laudo.html` no navegador
+3. Carregue o arquivo `score_v01.json` ou use "Dados de Teste"
+
+## Outputs por Aula
+
+```
+03_avaliacao/
+├── avaliacao_v01.md     # Laudo completo (markdown)
+└── score_v01.json       # Dados estruturados (JSON)
+```
 
 ## Dois mecanismos independentes
 
@@ -224,10 +247,38 @@ Isso responde: "a máquina só acha?" — não, o cálculo é auditável.
 
 ---
 
-> ⚠️ **Após implementar o Módulo 02:** substituir este README pelo gerado
-> automaticamente pelo Claude Code no Passo Final do Prompt 3, que reflete
-> os paths e nomes de arquivo reais confirmados pela implementação.
+---
+
+## Estrutura de Arquivos do Projeto
+
+```
+piloto-extrator/
+├── .claude/
+│   └── agents/
+│       └── analista-conteudo.md    # M02: Prompt do Agente E
+├── modulo02/
+│   ├── calculo.py                  # M02: Aritmética pura (índice + veredito)
+│   ├── test_calculo.py             # M02: Validação dos 4 cenários
+│   ├── laudo.html                  # M02: Tela visual para coordenador
+│   └── test-cenarios.html          # M02: Guia de teste dos cenários
+├── scripts/
+│   └── 01-processar-entrada.py     # M01: Extrator (Pandoc + PyMuPDF)
+├── cursos/
+│   └── {curso}/disciplinas/{CODIGO}-{slug}/aula-{NN}/
+│       ├── 01_source/              # Material bruto (não editar)
+│       ├── 02_markdown/            # Texto extraído
+│       ├── 03_avaliacao/           # M02: avaliacao_v01.md + score_v01.json
+│       ├── 04_reformulado/         # M03+M05+M08
+│       ├── 05_imagens/
+│       ├── 06_output/              # M07: HTML + PDF finais
+│       ├── 07_revisao/             # Coordenador
+│       └── _incubadora/            # Criado se veredito = RECRIAR
+├── CLAUDE.md                       # Instruções do projeto
+├── README.md                       # Este arquivo
+├── servidor.py                     # Interface web (Flask)
+└── etapa01-unigran.zip             # Material bruto de referência
+```
 
 ---
 
-*Atualizado em 2026-06-09 — M01 implementado · M02 em construção*
+*Atualizado em 2026-06-09 — M01 implementado ✅ · M02 implementado ✅*

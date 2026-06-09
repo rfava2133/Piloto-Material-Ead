@@ -1,0 +1,25 @@
+{
+  "aula_id": "cenario-2",
+  "indice": 7.15,
+  "veredito": "APROVAR_COM_RESSALVA",
+  "emoji": "🟡",
+  "acao": "Libera com relatório de ajustes",
+  "fundamentos": {
+    "A1": {
+      "severidade": "SEM_RESSALVA",
+      "justificativa": "Conceitos e definições corretos."
+    },
+    "A2": {
+      "severidade": "SEM_RESSALVA",
+      "justificativa": "Fontes localizadas.",
+      "fontes_verificadas": []
+    }
+  },
+  "indicadores": {
+    "B1": {"nota": 7.0, "peso": 0.2, "contribuicao": 1.40, "justificativa": "Alguma interpelação ao aluno, mas inconsistente."},
+    "B2": {"nota": 7.0, "peso": 0.15, "contribuicao": 1.05, "justificativa": "Ritmo bom, poucos trechos densos."},
+    "B3": {"nota": 8.0, "peso": 0.3, "contribuicao": 2.40, "justificativa": "Objetivos claros, progressão lógica, fechamento presente."},
+    "B4": {"nota": 7.0, "peso": 0.15, "contribuicao": 1.05, "justificativa": "Alguns exemplos práticos, mas poderia melhorar."},
+    "B5": {"nota": 7.5, "peso": 0.2, "contribuicao": 1.50, "justificativa": "Hierarquia clara, parágrafos bem dimensionados."}
+  }
+}

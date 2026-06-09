@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Laudo — Módulo 02 | UNIGRAN EAD</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Literata:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    /* =============================================================================
+       IDENTIDADE VISUAL — ALINHADA AO TEMPLATE DA AULA
+       ============================================================================= */
+    :root {
+      /* Tokens do template */
+      --ink: #1A1A1A;
+      --ink-strong: #0D1117;
+      --ink-muted: #6B7280;
+      --ink-faint: #9CA3AF;
+      --paper: #FFFFFF;
+      --paper-warm: #FBFAF7;
+      --line: #E5E2DC;
+
+      /* Marca */
+      --unigran-blue: #0046A8;
+      --unigran-yellow: #FFC629;
+
+      /* Cores de veredito (semáforo real) */
+      --aprovar: #15803D;
+      --aprovar-ressalva: #CA8A04;
+      --intervencao: #EA580C;
+      --recriar: #DC2626;
+
+      /* Cores de severidade */
+      --sem-ressalva: #15803D;
+      --ressalva: #CA8A04;
+      --critico: #DC2626;
+
+      /* Tipografia */
+      --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-corpo: 'Literata', Georgia, serif;
+      --font-mono: 'JetBrains Mono', monospace;
+
+      /* Dimensões */
+      --topbar-h: 52px;
+      --radius: 2px;
+    }
+
+    /* =============================================================================
+       RESET E BASE
+       ============================================================================= */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      background: var(--paper-warm);
+      color: var(--ink);
+      font-family: var(--font-corpo);
+      line-height: 1.62;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* =============================================================================
+       1. TOPBAR FINA (igual ao template da aula)
+       ============================================================================= */
+    .topbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: var(--topbar-h);
+      background: var(--paper-warm);
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      gap: 24px;
+      z-index: 100;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-ui);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--unigran-blue);
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+
+    .brand-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--unigran-yellow);
+      display: inline-block;
+    }
+
+    .topbar-crumb {
+      font-family: var(--font-ui);
+      font-size: 12px;
+      color: var(--ink-muted);
+      flex: 1;
+    }
+
+    .topbar-crumb strong {
+      color: var(--ink-strong);
+      font-weight: 600;
+    }
+
+    .topbar-controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .topbar-controls button {
+      font-family: var(--font-ui);
+      font-size: 11px;
+      font-weight: 500;
+      padding: 6px 12px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      color: var(--ink-muted);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .topbar-controls button:hover {
+      background: var(--line);
+      color: var(--ink-strong);
+    }
+
+    .topbar-controls input[type="file"] {
+      font-family: var(--font-ui);
+      font-size: 11px;
+      color: var(--ink-muted);
+    }
+
+    /* =============================================================================
+       CONTAINER PRINCIPAL
+       ============================================================================= */
+    .main-container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: calc(var(--topbar-h) + 48px) 24px 80px;
+    }
+
+    @media (max-width: 640px) {
+      .topbar { padding: 0 16px; }
+      .main-container { padding: calc(var(--topbar-h) + 32px) 16px 48px; }
+    }
+
+    /* =============================================================================
+       2. CABEÇALHO DO LAUDO
+       ============================================================================= */
+    .laudo-header {
+      margin-bottom: 40px;
+      padding-bottom: 24px;
+      border-bottom: 1.5px solid var(--ink-strong);
+    }
+
+    .eyebrow {
+      font-family: var(--font-ui);
+      font-size: 9px;
+      font-weight: 500;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--unigran-blue);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 16px;
+      height: 1.5px;
+      background: var(--unigran-blue);
+    }
+
+    .laudo-title {
+      font-family: var(--font-ui);
+      font-size: clamp(20px, 4vw, 28px);
+      font-weight: 700;
+      letter-spacing: -0.4px;
+      line-height: 1.15;
+      color: var(--ink-strong);
+      margin-bottom: 16px;
+    }
+
+    .laudo-meta {
+      font-family: var(--font-ui);
+      font-size: 12px;
+      color: var(--ink-muted);
+    }
+
+    .laudo-meta span {
+      margin-right: 12px;
+    }
+
+    .laudo-meta strong {
+      color: var(--ink-strong);
+      font-weight: 600;
+    }
+
+    /* =============================================================================
+       3. VEREDITO (SÓBRIO)
+       ============================================================================= */
+    .veredito-section {
+      margin-bottom: 40px;
+    }
+
+    .veredito-card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-left: 3px solid var(--aprovar);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+    }
+
+    .veredito-card.aprovar { border-left-color: var(--aprovar); }
+    .veredito-card.aprovar-ressalva { border-left-color: var(--aprovar-ressalva); }
+    .veredito-card.intervencao { border-left-color: var(--intervencao); }
+    .veredito-card.recriar { border-left-color: var(--recriar); }
+
+    .veredito-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .veredito-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .veredito-dot.aprovar { background: var(--aprovar); }
+    .veredito-dot.aprovar-ressalva { background: var(--aprovar-ressalva); }
+    .veredito-dot.intervencao { background: var(--intervencao); }
+    .veredito-dot.recriar { background: var(--recriar); }
+
+    .veredito-label {
+      font-family: var(--font-ui);
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: -0.2px;
+      color: var(--ink-strong);
+    }
+
+    .veredito-acao {
+      font-family: var(--font-ui);
+      font-size: 13px;
+      color: var(--ink-muted);
+      line-height: 1.5;
+    }
+
+    /* =============================================================================
+       4. GAUGE RADIAL (SVG PURO)
+       ============================================================================= */
+    .indice-section {
+      margin-bottom: 48px;
+      text-align: center;
+    }
+
+    .indice-section h2 {
+      font-family: var(--font-ui);
+      font-size: 9px;
+      font-weight: 500;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+      margin-bottom: 20px;
+    }
+
+    .gauge-wrapper {
+      display: inline-block;
+      position: relative;
+    }
+
+    .gauge-value {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: var(--font-ui);
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .gauge-markers {
+      display: flex;
+      justify-content: space-between;
+      max-width: 200px;
+      margin: 12px auto 0;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--ink-faint);
+    }
+
+    /* =============================================================================
+       5. INDICADORES B1–B5 (BARRAS FINAS)
+       ============================================================================= */
+    .indicadores-section {
+      margin-bottom: 48px;
+    }
+
+    .indicadores-section h2 {
+      font-family: var(--font-ui);
+      font-size: 9px;
+      font-weight: 500;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+      margin-bottom: 24px;
+    }
+
+    .indicador-item {
+      padding-bottom: 20px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .indicador-item:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+      margin-bottom: 0;
+    }
+
+    .indicador-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 8px;
+    }
+
+    .indicador-nome {
+      font-family: var(--font-ui);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--ink-strong);
+    }
+
+    .indicador-calculo {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--ink-muted);
+    }
+
+    .indicador-barra-bg {
+      height: 6px;
+      background: var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+
+    .indicador-barra-fill {
+      height: 100%;
+      border-radius: var(--radius);
+      transition: width 0.5s ease;
+    }
+
+    .indicador-tag {
+      font-family: var(--font-ui);
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--ink-faint);
+      margin-left: 8px;
+    }
+
+    .indicador-justificativa {
+      font-family: var(--font-corpo);
+      font-size: 13.5px;
+      line-height: 1.55;
+      color: var(--ink);
+    }
+
+    /* =============================================================================
+       6. VERIFICAÇÃO DE FUNDAMENTOS
+       ============================================================================= */
+    .fundamentos-section {
+      margin-bottom: 48px;
+    }
+
+    .fundamentos-section h2 {
+      font-family: var(--font-ui);
+      font-size: 9px;
+      font-weight: 500;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+      margin-bottom: 24px;
+    }
+
+    .fundamento-item {
+      padding-bottom: 20px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .fundamento-item:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+      margin-bottom: 0;
+    }
+
+    .fundamento-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 10px;
+    }
+
+    .fundamento-nome {
+      font-family: var(--font-ui);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--ink-strong);
+    }
+
+    .severidade-badge {
+      font-family: var(--font-ui);
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border: 1px solid currentColor;
+      border-radius: var(--radius);
+      background: transparent;
+    }
+
+    .severidade-badge.sem-ressalva {
+      color: var(--sem-ressalva);
+      border-color: var(--sem-ressalva);
+    }
+
+    .severidade-badge.ressalva {
+      color: var(--ressalva);
+      border-color: var(--ressalva);
+    }
+
+    .severidade-badge.critico {
+      color: var(--critico);
+      border-color: var(--critico);
+    }
+
+    .fundamento-justificativa {
+      font-family: var(--font-corpo);
+      font-size: 13.5px;
+      line-height: 1.55;
+      color: var(--ink);
+      margin-bottom: 12px;
+    }
+
+    .fontes-lista {
+      list-style: none;
+    }
+
+    .fontes-lista li {
+      padding: 10px 0;
+      border-bottom: 1px solid var(--line);
+      font-family: var(--font-ui);
+      font-size: 12px;
+    }
+
+    .fontes-lista li:last-child {
+      border-bottom: none;
+    }
+
+    .fonte-status {
+      font-family: var(--font-ui);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-top: 4px;
+      display: inline-block;
+    }
+
+    .fonte-status.confirmada {
+      color: var(--sem-ressalva);
+    }
+
+    .fonte-status.nao-localizada {
+      color: var(--ressalva);
+    }
+
+    /* Bloco CRÍTICO */
+    .bloco-critico {
+      background: #FEF2F2;
+      border-left: 3px solid var(--critico);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin-top: 24px;
+    }
+
+    .bloco-critico h3 {
+      font-family: var(--font-ui);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--critico);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .bloco-critico p {
+      font-family: var(--font-corpo);
+      font-size: 13px;
+      line-height: 1.55;
+      color: #7F1D1D;
+      margin-bottom: 12px;
+    }
+
+    .bloco-critico-aviso {
+      font-family: var(--font-ui);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      color: #991B1B;
+      padding-top: 12px;
+      border-top: 1px solid #FECACA;
+    }
+
+    /* =============================================================================
+       7. TABELA AUDITÁVEL
+       ============================================================================= */
+    .tabela-section {
+      margin-bottom: 48px;
+    }
+
+    .tabela-section h2 {
+      font-family: var(--font-ui);
+      font-size: 9px;
+      font-weight: 500;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+      margin-bottom: 16px;
+    }
+
+    .tabela-auditavel {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-ui);
+      font-size: 12px;
+    }
+
+    .tabela-auditavel thead th {
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 1.5px solid var(--ink-strong);
+      font-weight: 600;
+      color: var(--ink-strong);
+    }
+
+    .tabela-auditavel tbody td {
+      padding: 12px;
+      border-bottom: 1px solid var(--line);
+      color: var(--ink);
+    }
+
+    .tabela-auditavel tbody td:last-child {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .tabela-auditavel tfoot td {
+      padding: 12px;
+      font-weight: 700;
+      color: var(--ink-strong);
+      border-top: 1.5px solid var(--ink-strong);
+    }
+
+    .tabela-auditavel tfoot td:last-child {
+      font-family: var(--font-mono);
+      font-size: 12px;
+    }
+
+    /* =============================================================================
+       8. RODAPÉ
+       ============================================================================= */
+    .rodape {
+      padding-top: 24px;
+      border-top: 1px solid var(--line);
+      text-align: center;
+      font-family: var(--font-corpo);
+      font-size: 12px;
+      font-style: italic;
+      color: var(--ink-muted);
+    }
+
+    /* =============================================================================
+       ESTADO VAZIO (antes de carregar JSON)
+       ============================================================================= */
+    .estado-vazio {
+      text-align: center;
+      padding: 60px 24px;
+      color: var(--ink-muted);
+    }
+
+    .estado-vazio p {
+      margin-bottom: 8px;
+    }
+
+    .estado-vazio code {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      background: var(--line);
+      padding: 2px 6px;
+      border-radius: var(--radius);
+    }
+
+    /* Utilitários de cor para barras */
+    .bg-aprovar { background: var(--aprovar); }
+    .bg-aprovar-ressalva { background: var(--aprovar-ressalva); }
+    .bg-intervencao { background: var(--intervencao); }
+    .bg-recriar { background: var(--recriar); }
+  </style>
+</head>
+<body>
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <a href="#" class="brand">
+      <span class="brand-dot"></span>
+      UNIGRAN EAD
+    </a>
+    <div class="topbar-crumb">
+      Módulo 02 · Analista de Conteúdo · <strong id="topbar-aula">—</strong>
+    </div>
+    <div class="topbar-controls">
+      <input type="file" id="input-json" accept=".json" style="display:none;">
+      <button onclick="document.getElementById('input-json').click()">📄 Carregar JSON</button>
+      <button onclick="carregarDadosTeste()">Usar Dados de Teste</button>
+    </div>
+  </header>
+
+  <!-- CONTAINER PRINCIPAL -->
+  <main class="main-container">
+
+    <!-- ESTADO VAZIO -->
+    <div id="estado-vazio" class="estado-vazio">
+      <p><strong>Laudo de Avaliação — Módulo 02</strong></p>
+      <p>Carregue um arquivo <code>score_v01.json</code> ou use os dados de teste.</p>
+    </div>
+
+    <!-- LAUDO (oculto até carregar) -->
+    <div id="laudo-content" style="display: none;">
+
+      <!-- 1. CABEÇALHO -->
+      <header class="laudo-header">
+        <div class="eyebrow">Laudo de Avaliação</div>
+        <h1 class="laudo-title">Módulo 02 — Analista de Conteúdo</h1>
+        <div class="laudo-meta">
+          <span>Aula: <strong id="meta-aula">—</strong></span>
+          <span>Data: <strong id="meta-data">—</strong></span>
+        </div>
+      </header>
+
+      <!-- 2. VEREDITO -->
+      <section class="veredito-section">
+        <div id="veredito-card" class="veredito-card aprovar">
+          <div class="veredito-header">
+            <span id="veredito-dot" class="veredito-dot aprovar"></span>
+            <span id="veredito-label" class="veredito-label">APROVAR</span>
+          </div>
+          <p id="veredito-acao" class="veredito-acao">Ação: Libera para diagramação</p>
+        </div>
+      </section>
+
+      <!-- 3. GAUGE RADIAL -->
+      <section class="indice-section">
+        <h2>Índice de Qualidade Didática</h2>
+        <div class="gauge-wrapper">
+          <svg id="gauge-svg" width="200" height="110" viewBox="0 0 200 110">
+            <!-- Arco de fundo -->
+            <path d="M 10 100 A 90 90 0 0 1 190 100"
+                  fill="none"
+                  stroke="#E5E2DC"
+                  stroke-width="8"
+                  stroke-linecap="round"/>
+            <!-- Arco preenchido (dinâmico) -->
+            <path id="gauge-arco"
+                  d="M 10 100 A 90 90 0 0 1 190 100"
+                  fill="none"
+                  stroke="#CA8A04"
+                  stroke-width="8"
+                  stroke-linecap="round"
+                  stroke-dasharray="283"
+                  stroke-dashoffset="141"/>
+          </svg>
+          <div id="gauge-valor" class="gauge-value">6,30</div>
+          <div class="gauge-markers">
+            <span>0</span>
+            <span>5</span>
+            <span>10</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. INDICADORES B1–B5 -->
+      <section class="indicadores-section">
+        <h2>Indicadores de Qualidade Didática</h2>
+        <div id="indicadores-container">
+          <!-- Preenchido via JS -->
+        </div>
+      </section>
+
+      <!-- 5. FUNDAÇÕES -->
+      <section class="fundamentos-section">
+        <h2>Verificação de Fundamentos</h2>
+
+        <!-- A1 -->
+        <div class="fundamento-item">
+          <div class="fundamento-header">
+            <span class="fundamento-nome">A1 — Precisão Conceitual e Científica</span>
+            <span id="a1-badge" class="severidade-badge sem-ressalva">SEM RESSALVA</span>
+          </div>
+          <p id="a1-justificativa" class="fundamento-justificativa">—</p>
+        </div>
+
+        <!-- A2 -->
+        <div class="fundamento-item">
+          <div class="fundamento-header">
+            <span class="fundamento-nome">A2 — Validade Bibliográfica e Fontes</span>
+            <span id="a2-badge" class="severidade-badge sem-ressalva">SEM RESSALVA</span>
+          </div>
+          <p id="a2-justificativa" class="fundamento-justificativa">—</p>
+          <ul id="a2-fontes" class="fontes-lista">
+            <!-- Preenchido via JS -->
+          </ul>
+        </div>
+
+        <!-- Bloco CRÍTICO -->
+        <div id="bloco-critico" class="bloco-critico" style="display: none;">
+          <h3>⚠️ Verificação de Fundamentos ≠ Índice de Qualidade</h3>
+          <p id="critico-descricao">—</p>
+          <div class="bloco-critico-aviso">
+            Um erro de substância não se compensa com qualidade de forma.
+          </div>
+        </div>
+      </section>
+
+      <!-- 6. TABELA AUDITÁVEL -->
+      <section class="tabela-section">
+        <h2>Tabela Auditável</h2>
+        <table class="tabela-auditavel">
+          <thead>
+            <tr>
+              <th>Indicador</th>
+              <th>Peso</th>
+              <th>Nota</th>
+              <th>Contribuição</th>
+            </tr>
+          </thead>
+          <tbody id="tabela-corpo">
+            <!-- Preenchido via JS -->
+          </tbody>
+          <tfoot>
+            <tr>
+              <td>TOTAL</td>
+              <td>100%</td>
+              <td>—</td>
+              <td id="tabela-total">6,30</td>
+            </tr>
+          </tfoot>
+        </table>
+      </section>
+
+      <!-- 7. RODAPÉ -->
+      <footer class="rodape">
+        "O módulo recomenda. O coordenador decide."
+      </footer>
+
+    </div>
+  </main>
+
+  <!-- DADOS DE TESTE -->
+  <script>
+    const DADOS_TESTE = {
+      "aula_id": "TEST-fundtest-01",
+      "indice": 6.3,
+      "veredito": "INTERVENCAO_EDITORIAL",
+      "emoji": "🟠",
+      "acao": "Decide: edita ou devolve ao autor",
+      "fundamentos": {
+        "A1": {
+          "severidade": "SEM_RESSALVA",
+          "justificativa": "Conceitos, definições e autorias corretos; dados atualizados. As escolas da administração estão descritas com precisão conceitual."
+        },
+        "A2": {
+          "severidade": "SEM_RESSALVA",
+          "justificativa": "Todas as referências citadas foram localizadas em fontes confiáveis. Autores clássicos e consolidados na área de Administração.",
+          "fontes_verificadas": [
+            {"obra": "Drucker — processo multifuncional", "autor": "Peter F. Drucker", "ano": "2006", "status": "confirmada"},
+            {"obra": "Introdução à TGA", "autor": "Idalberto Chiavenato", "ano": "2016", "status": "confirmada"},
+            {"obra": "Introdução à Administração", "autor": "Antonio C.A. Maximiano", "ano": "2011", "status": "confirmada"},
+            {"obra": "Motivation and Personality", "autor": "Abraham H. Maslow", "ano": "1954", "status": "confirmada"},
+            {"obra": "Administrative Behavior", "autor": "Herbert A. Simon", "ano": "1947", "status": "confirmada"},
+            {"obra": "The Human Side of Enterprise", "autor": "Douglas McGregor", "ano": "1960", "status": "confirmada"},
+            {"obra": "The Motivation to Work", "autor": "Frederick Herzberg", "ano": "1959", "status": "confirmada"},
+            {"obra": "Experimentos Hawthorne", "autor": "George Elton Mayo", "ano": "1927-1932", "status": "confirmada"},
+            {"obra": "Economia e Sociedade", "autor": "Max Weber", "ano": "(obra póstuma)", "status": "confirmada"}
+          ]
+        }
+      },
+      "indicadores": {
+        "B1": {"nota": 5.0, "peso": 0.2, "contribuicao": 1.0, "justificativa": "Tom predominantemente expositivo, 3ª pessoa. Algumas interpolações genéricas ao aluno, mas sem perguntas retóricas ou conexão profunda."},
+        "B2": {"nota": 6.0, "peso": 0.15, "contribuicao": 0.9, "justificativa": "Ritmo aceitável de introdução de conceitos, mas alguns parágrafos empilham múltiplos conceitos sem exemplos intercalados."},
+        "B3": {"nota": 7.0, "peso": 0.3, "contribuicao": 2.1, "justificativa": "Objetivos explícitos no início, progressão lógica clara, fechamento com resumo. Objetivos poderiam usar verbos mais mensuráveis."},
+        "B4": {"nota": 6.0, "peso": 0.15, "contribuicao": 0.9, "justificativa": "Exemplos históricos presentes, mas genéricos e distantes da realidade contemporânea do aluno."},
+        "B5": {"nota": 7.0, "peso": 0.2, "contribuicao": 1.4, "justificativa": "Hierarquia clara de títulos, parágrafos de tamanho razoável, figuras com legendas."}
+      }
+    };
+
+    // Mapeamento de vereditos
+    const VEREDITOS = {
+      "APROVAR": { classe: "aprovar", cor: "#15803D" },
+      "APROVAR_COM_RESSALVA": { classe: "aprovar-ressalva", cor: "#CA8A04" },
+      "INTERVENCAO_EDITORIAL": { classe: "intervencao", cor: "#EA580C" },
+      "RECRIAR": { classe: "recriar", cor: "#DC2626" }
+    };
+
+    // Mapeamento de severidades
+    const SEVERIDADES = {
+      "SEM_RESSALVA": { classe: "sem-ressalva", rotulo: "SEM RESSALVA" },
+      "RESSALVA": { classe: "ressalva", rotulo: "RESSALVA" },
+      "CRITICO": { classe: "critico", rotulo: "CRÍTICO" }
+    };
+
+    // Nomes dos indicadores
+    const NOMES_INDICADORES = {
+      "B1": "Dialogicidade / Tom EAD",
+      "B2": "Densidade Conceitual",
+      "B3": "Estrutura Pedagógica",
+      "B4": "Engajamento",
+      "B5": "Legibilidade Autoral"
+    };
+
+    // Input file listener
+    document.getElementById('input-json').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(ev) {
+        try {
+          const dados = JSON.parse(ev.target.result);
+          renderizarLaudo(dados);
+        } catch (err) {
+          alert('Erro ao ler JSON: ' + err.message);
+        }
+      };
+      reader.readAsText(file);
+    });
+
+    function carregarDadosTeste() {
+      renderizarLaudo(DADOS_TESTE);
+    }
+
+    function renderizarLaudo(dados) {
+      // Mostrar laudo, esconder estado vazio
+      document.getElementById('estado-vazio').style.display = 'none';
+      document.getElementById('laudo-content').style.display = 'block';
+
+      // Topbar
+      document.getElementById('topbar-aula').textContent = dados.aula_id;
+
+      // Meta
+      document.getElementById('meta-aula').textContent = dados.aula_id;
+      document.getElementById('meta-data').textContent = new Date().toLocaleDateString('pt-BR');
+
+      // Veredito
+      const v = VEREDITOS[dados.veredito] || VEREDITOS.INTERVENCAO_EDITORIAL;
+      const card = document.getElementById('veredito-card');
+      card.className = 'veredito-card ' + v.classe;
+      document.getElementById('veredito-dot').className = 'veredito-dot ' + v.classe;
+      document.getElementById('veredito-label').textContent = dados.veredito.replace(/_/g, ' ');
+      document.getElementById('veredito-acao').textContent = 'Ação: ' + (dados.acao || '—');
+
+      // Gauge
+      document.getElementById('gauge-valor').textContent = dados.indice.toFixed(2).replace('.', ',');
+      document.getElementById('gauge-arco').setAttribute('stroke', v.cor);
+      // Calcular dashoffset: 283 = circunferência total (180°)
+      // 0% = 283, 100% = 0
+      const pct = Math.min(1, dados.indice / 10);
+      const offset = 283 * (1 - pct);
+      document.getElementById('gauge-arco').setAttribute('stroke-dashoffset', offset.toFixed(1));
+
+      // Indicadores
+      renderizarIndicadores(dados.indicadores);
+
+      // Fundamentos
+      renderizarFundamentos(dados.fundamentos);
+
+      // Tabela
+      renderizarTabela(dados.indicadores, dados.indice);
+    }
+
+    function renderizarIndicadores(indicadores) {
+      const container = document.getElementById('indicadores-container');
+      container.innerHTML = '';
+
+      // Encontrar maior e menor contribuição
+      let maior = { key: null, valor: -Infinity };
+      let menor = { key: null, valor: Infinity };
+
+      for (const [key, ind] of Object.entries(indicadores)) {
+        const c = ind.contribuicao || (ind.nota * ind.peso);
+        if (c > maior.valor) maior = { key, valor: c };
+        if (c < menor.valor) menor = { key, valor: c };
+      }
+
+      // Obter cor do veredito atual para as barras
+      const dados = DADOS_TESTE; // usa cor do veredito dos dados de teste
+      const v = VEREDITOS[dados.veredito] || VEREDITOS.INTERVENCAO_EDITORIAL;
+
+      for (const [key, ind] of Object.entries(indicadores)) {
+        const nota = ind.nota;
+        const peso = ind.peso;
+        const contribuicao = ind.contribuicao || (nota * peso);
+        const pct = (nota / 10) * 100;
+        const nome = NOMES_INDICADORES[key] || key;
+
+        const tagMaior = key === maior.key ? '<span class="indicador-tag">Maior</span>' : '';
+        const tagMenor = key === menor.key ? '<span class="indicador-tag">Menor</span>' : '';
+
+        container.innerHTML += `
+          <div class="indicador-item">
+            <div class="indicador-header">
+              <span class="indicador-nome">${key} — ${nome} ${tagMaior}${tagMenor}</span>
+              <span class="indicador-calculo">${nota.toFixed(1).replace('.', ',')} × ${(peso * 100).toFixed(0)}% = ${contribuicao.toFixed(2).replace('.', ',')}</span>
+            </div>
+            <div class="indicador-barra-bg">
+              <div class="indicador-barra-fill" style="width: ${pct}%; background: ${v.cor}"></div>
+            </div>
+            <p class="indicador-justificativa">${ind.justificativa || '—'}</p>
+          </div>
+        `;
+      }
+    }
+
+    function renderizarFundamentos(fundamentos) {
+      // A1
+      const a1 = fundamentos.A1;
+      const a1Sev = SEVERIDADES[a1.severidade] || SEVERIDADES.SEM_RESSALVA;
+      document.getElementById('a1-badge').className = 'severidade-badge ' + a1Sev.classe;
+      document.getElementById('a1-badge').textContent = a1Sev.rotulo;
+      document.getElementById('a1-justificativa').textContent = a1.justificativa || '—';
+
+      // A2
+      const a2 = fundamentos.A2;
+      const a2Sev = SEVERIDADES[a2.severidade] || SEVERIDADES.SEM_RESSALVA;
+      document.getElementById('a2-badge').className = 'severidade-badge ' + a2Sev.classe;
+      document.getElementById('a2-badge').textContent = a2Sev.rotulo;
+      document.getElementById('a2-justificativa').textContent = a2.justificativa || '—';
+
+      // Fontes
+      const fontesContainer = document.getElementById('a2-fontes');
+      fontesContainer.innerHTML = '';
+      if (a2.fontes_verificadas && a2.fontes_verificadas.length > 0) {
+        for (const fonte of a2.fontes_verificadas) {
+          const statusClass = fonte.status === 'confirmada' ? 'confirmada' : 'nao-localizada';
+          const statusIcon = fonte.status === 'confirmada' ? '✓' : '⚠';
+          fontesContainer.innerHTML += `
+            <li>
+              <strong>${fonte.autor}</strong> (${fonte.ano}) — ${fonte.obra}<br>
+              <span class="fonte-status ${statusClass}">${statusIcon} ${fonte.status === 'confirmada' ? 'Confirmada' : 'Não localizada'}</span>
+            </li>
+          `;
+        }
+      }
+
+      // Bloco CRÍTICO
+      const bloco = document.getElementById('bloco-critico');
+      if (a1.severidade === 'CRITICO' || a2.severidade === 'CRITICO') {
+        bloco.style.display = 'block';
+        const desc = a1.severidade === 'CRITICO' ? a1.justificativa : a2.justificativa;
+        document.getElementById('critico-descricao').textContent = desc || '—';
+      } else {
+        bloco.style.display = 'none';
+      }
+    }
+
+    function renderizarTabela(indicadores, indiceTotal) {
+      const tbody = document.getElementById('tabela-corpo');
+      tbody.innerHTML = '';
+
+      for (const [key, ind] of Object.entries(indicadores)) {
+        const nota = ind.nota;
+        const peso = (ind.peso * 100).toFixed(0);
+        const contribuicao = ind.contribuicao || (nota * ind.peso);
+        const nome = NOMES_INDICADORES[key] || key;
+
+        tbody.innerHTML += `
+          <tr>
+            <td>${key} — ${nome}</td>
+            <td>${peso}%</td>
+            <td>${nota.toFixed(1).replace('.', ',')}</td>
+            <td>${contribuicao.toFixed(2).replace('.', ',')}</td>
+          </tr>
+        `;
+      }
+
+      document.getElementById('tabela-total').textContent = indiceTotal.toFixed(2).replace('.', ',');
+    }
+  </script>
+</body>
+</html>

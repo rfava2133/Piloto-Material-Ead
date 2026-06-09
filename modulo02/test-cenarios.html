@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Teste — 4 Cenários do PPT</title>
+  <style>
+    body { font-family: system-ui, sans-serif; padding: 2rem; background: #F3F4F6; }
+    .cenario { background: white; padding: 1.5rem; margin-bottom: 1rem; border-radius: 8px; }
+    .cenario h3 { margin-bottom: 0.5rem; }
+    .cenario pre { background: #F9FAFB; padding: 1rem; border-radius: 4px; font-size: 0.85rem; overflow-x: auto; }
+    .btn { display: inline-block; padding: 0.5rem 1rem; background: #0046A8; color: white; text-decoration: none; border-radius: 4px; margin-top: 0.5rem; }
+    .btn:hover { opacity: 0.9; }
+  </style>
+</head>
+<body>
+  <h1>🧪 Validação — 4 Cenários do PPT</h1>
+  <p>Abra cada link para visualizar o laudo renderizado com os dados do cenário.</p>
+
+  <!-- Cenário 1 -->
+  <div class="cenario">
+    <h3>Cenário 1 — Índice 5,70 🟠 INTERVENÇÃO EDITORIAL</h3>
+    <p><strong>Notas:</strong> B1=6,0 B2=6,0 B3=5,0 B4=6,0 B5=6,0 | A1=SEM_RESSALVA A2=SEM_RESSALVA</p>
+    <pre>{
+  "aula_id": "cenario-1",
+  "indice": 5.70,
+  "veredito": "INTERVENCAO_EDITORIAL",
+  "emoji": "🟠",
+  "acao": "Decide: edita ou devolve ao autor",
+  "fundamentos": {
+    "A1": {"severidade": "SEM_RESSALVA", "justificativa": "Conceitos e definições corretos."},
+    "A2": {"severidade": "SEM_RESSALVA", "justificativa": "Fontes localizadas.", "fontes_verificadas": []}
+  },
+  "indicadores": {
+    "B1": {"nota": 6.0, "peso": 0.2, "contribuicao": 1.20, "justificativa": "Conexão inconsistente, voz docente intermitente."},
+    "B2": {"nota": 6.0, "peso": 0.15, "contribuicao": 0.90, "justificativa": "Ritmo aceitável, alguns trechos densos."},
+    "B3": {"nota": 5.0, "peso": 0.3, "contribuicao": 1.50, "justificativa": "Objetivos vagos, progressão aceitável."},
+    "B4": {"nota": 6.0, "peso": 0.15, "contribuicao": 0.90, "justificativa": "Exemplos genéricos ou escassos."},
+    "B5": {"nota": 6.0, "peso": 0.2, "contribuicao": 1.20, "justificativa": "Hierarquia inconsistente."}
+  }
+}</pre>
+    <a href="laudo.html" class="btn" onclick="return false;" title="Copie o JSON e cole no laudo.html">🔗 Abrir no laudo.html</a>
+  </div>
+
+  <!-- Cenário 2 -->
+  <div class="cenario">
+    <h3>Cenário 2 — Índice 7,15 🟡 APROVAR COM RESSALVA</h3>
+    <p><strong>Notas:</strong> B1=7,0 B2=7,0 B3=8,0 B4=7,0 B5=7,5 | A1=SEM_RESSALVA A2=SEM_RESSALVA</p>
+    <pre>{
+  "aula_id": "cenario-2",
+  "indice": 7.15,
+  "veredito": "APROVAR_COM_RESSALVA",
+  "emoji": "🟡",
+  "acao": "Libera com relatório de ajustes",
+  "fundamentos": {
+    "A1": {"severidade": "SEM_RESSALVA", "justificativa": "Conceitos e definições corretos."},
+    "A2": {"severidade": "SEM_RESSALVA", "justificativa": "Fontes localizadas.", "fontes_verificadas": []}
+  },
+  "indicadores": {
+    "B1": {"nota": 7.0, "peso": 0.2, "contribuicao": 1.40, "justificativa": "Alguma interpelação ao aluno, mas inconsistente."},
+    "B2": {"nota": 7.0, "peso": 0.15, "contribuicao": 1.05, "justificativa": "Ritmo bom, poucos trechos densos."},
+    "B3": {"nota": 8.0, "peso": 0.3, "contribuicao": 2.40, "justificativa": "Objetivos claros, progressão lógica, fechamento presente."},
+    "B4": {"nota": 7.0, "peso": 0.15, "contribuicao": 1.05, "justificativa": "Alguns exemplos práticos, mas poderia melhorar."},
+    "B5": {"nota": 7.5, "peso": 0.2, "contribuicao": 1.50, "justificativa": "Hierarquia clara, parágrafos bem dimensionados."}
+  }
+}</pre>
+    <a href="laudo.html" class="btn" onclick="return false;" title="Copie o JSON e cole no laudo.html">🔗 Abrir no laudo.html</a>
+  </div>
+
+  <!-- Cenário 3 -->
+  <div class="cenario">
+    <h3>Cenário 3 — Índice 4,00 🔴 RECRIAR (por índice)</h3>
+    <p><strong>Notas:</strong> B1=4,0 B2=5,0 B3=3,0 B4=5,0 B5=4,0 | A1=SEM_RESSALVA A2=SEM_RESSALVA</p>
+    <pre>{
+  "aula_id": "cenario-3",
+  "indice": 4.00,
+  "veredito": "RECRIAR",
+  "emoji": "🔴",
+  "acao": "Retorna ao autor com parecer",
+  "fundamentos": {
+    "A1": {"severidade": "SEM_RESSALVA", "justificativa": "Conceitos corretos, mas material incompleto."},
+    "A2": {"severidade": "SEM_RESSALVA", "justificativa": "Fontes localizadas.", "fontes_verificadas": []}
+  },
+  "indicadores": {
+    "B1": {"nota": 4.0, "peso": 0.2, "contribuicao": 0.80, "justificativa": "Expositivo, 3ª pessoa, despeja conteúdo."},
+    "B2": {"nota": 5.0, "peso": 0.15, "contribuicao": 0.75, "justificativa": "Conceitos empilhados, sobrecarga cognitiva."},
+    "B3": {"nota": 3.0, "peso": 0.3, "contribuicao": 0.90, "justificativa": "Sem objetivos nem fechamento, material truncado."},
+    "B4": {"nota": 5.0, "peso": 0.15, "contribuicao": 0.75, "justificativa": "Abstrato, sem exemplo prático."},
+    "B5": {"nota": 4.0, "peso": 0.2, "contribuicao": 0.80, "justificativa": "Blocos longos, sem hierarquia clara."}
+  }
+}</pre>
+    <a href="laudo.html" class="btn" onclick="return false;" title="Copie o JSON e cole no laudo.html">🔗 Abrir no laudo.html</a>
+  </div>
+
+  <!-- Cenário 4 -->
+  <div class="cenario">
+    <h3>Cenário 4 — Índice 8,45 🔴 RECRIAR (A2 CRÍTICO — override)</h3>
+    <p><strong>Notas:</strong> B1=9,0 B2=8,0 B3=8,0 B4=9,0 B5=8,5 | A1=SEM_RESSALVA <strong>A2=CRITICO</strong></p>
+    <pre>{
+  "aula_id": "cenario-4",
+  "indice": 8.45,
+  "veredito": "RECRIAR",
+  "emoji": "🔴",
+  "acao": "Retorna ao autor com parecer",
+  "fundamentos": {
+    "A1": {"severidade": "SEM_RESSALVA", "justificativa": "Conceitos e definições corretos."},
+    "A2": {"severidade": "CRITICO", "justificativa": "Referência inexistente / fonte não localizada: 'Silva (2020) — Teoria Inexistente'.", "fontes_verificadas": [
+      {"obra": "Obra Real", "autor": "Autor Conhecido", "ano": "2018", "status": "confirmada"},
+      {"obra": "Teoria Inexistente", "autor": "Silva", "ano": "2020", "status": "nao_localizada"}
+    ]}
+  },
+  "indicadores": {
+    "B1": {"nota": 9.0, "peso": 0.2, "contribuicao": 1.80, "justificativa": "Interpela o aluno, perguntas retóricas, conecta ao cotidiano."},
+    "B2": {"nota": 8.0, "peso": 0.15, "contribuicao": 1.20, "justificativa": "Um conceito por vez, exemplos intercalados."},
+    "B3": {"nota": 8.0, "peso": 0.3, "contribuicao": 2.40, "justificativa": "Objetivos claros, progressão lógica, fechamento consolida."},
+    "B4": {"nota": 9.0, "peso": 0.15, "contribuicao": 1.35, "justificativa": "Casos, analogias, conexão com a prática profissional."},
+    "B5": {"nota": 8.5, "peso": 0.2, "contribuicao": 1.70, "justificativa": "Títulos hierárquicos, parágrafos curtos, figuras descritas."}
+  }
+}</pre>
+    <a href="laudo.html" class="btn" onclick="return false;" title="Copie o JSON e cole no laudo.html">🔗 Abrir no laudo.html</a>
+    <p style="margin-top: 0.5rem; color: #C53030;"><strong>⚠️ Este cenário valida o bloco CRÍTICO dominante.</strong></p>
+  </div>
+
+  <hr style="margin: 2rem 0;">
+  <h2>📋 Instruções de Teste</h2>
+  <ol>
+    <li>Abra <code>laudo.html</code> no navegador</li>
+    <li>Clique em "Usar Dados de Teste" para ver o laudo padrão (6,30 🟠)</li>
+    <li>Para testar os 4 cenários:
+      <ul>
+        <li>Copie o JSON de cada cenário</li>
+        <li>Salve como arquivo <code>.json</code> (ex: <code>cenario-1.json</code>)</li>
+        <li>No laudo.html, clique em "Carregar score_v01.json" e selecione o arquivo</li>
+      </ul>
+    </li>
+    <li>Valide:
+      <ul>
+        <li>Cenário 1: 5,70 🟠 (barra laranja)</li>
+        <li>Cenário 2: 7,15 🟡 (barra gold)</li>
+        <li>Cenário 3: 4,00 🔴 (barra vermelha, sem bloco crítico)</li>
+        <li>Cenário 4: 8,45 🔴 (barra vermelha, <strong>com bloco crítico dominante</strong>)</li>
+      </ul>
+    </li>
+  </ol>
+</body>
+</html>

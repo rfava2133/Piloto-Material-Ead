@@ -1,0 +1,28 @@
+{
+  "aula_id": "cenario-4",
+  "indice": 8.45,
+  "veredito": "RECRIAR",
+  "emoji": "🔴",
+  "acao": "Retorna ao autor com parecer",
+  "fundamentos": {
+    "A1": {
+      "severidade": "SEM_RESSALVA",
+      "justificativa": "Conceitos e definições corretos."
+    },
+    "A2": {
+      "severidade": "CRITICO",
+      "justificativa": "Referência inexistente / fonte não localizada: 'Silva (2020) — Teoria Inexistente'.",
+      "fontes_verificadas": [
+        {"obra": "Obra Real", "autor": "Autor Conhecido", "ano": "2018", "status": "confirmada"},
+        {"obra": "Teoria Inexistente", "autor": "Silva", "ano": "2020", "status": "nao_localizada"}
+      ]
+    }
+  },
+  "indicadores": {
+    "B1": {"nota": 9.0, "peso": 0.2, "contribuicao": 1.80, "justificativa": "Interpela o aluno, perguntas retóricas, conecta ao cotidiano."},
+    "B2": {"nota": 8.0, "peso": 0.15, "contribuicao": 1.20, "justificativa": "Um conceito por vez, exemplos intercalados."},
+    "B3": {"nota": 8.0, "peso": 0.3, "contribuicao": 2.40, "justificativa": "Objetivos claros, progressão lógica, fechamento consolida."},
+    "B4": {"nota": 9.0, "peso": 0.15, "contribuicao": 1.35, "justificativa": "Casos, analogias, conexão com a prática profissional."},
+    "B5": {"nota": 8.5, "peso": 0.2, "contribuicao": 1.70, "justificativa": "Títulos hierárquicos, parágrafos curtos, figuras descritas."}
+  }
+}

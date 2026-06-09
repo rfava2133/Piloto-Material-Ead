@@ -1,0 +1,25 @@
+{
+  "aula_id": "cenario-1",
+  "indice": 5.70,
+  "veredito": "INTERVENCAO_EDITORIAL",
+  "emoji": "🟠",
+  "acao": "Decide: edita ou devolve ao autor",
+  "fundamentos": {
+    "A1": {
+      "severidade": "SEM_RESSALVA",
+      "justificativa": "Conceitos e definições corretos."
+    },
+    "A2": {
+      "severidade": "SEM_RESSALVA",
+      "justificativa": "Fontes localizadas.",
+      "fontes_verificadas": []
+    }
+  },
+  "indicadores": {
+    "B1": {"nota": 6.0, "peso": 0.2, "contribuicao": 1.20, "justificativa": "Conexão inconsistente, voz docente intermitente."},
+    "B2": {"nota": 6.0, "peso": 0.15, "contribuicao": 0.90, "justificativa": "Ritmo aceitável, alguns trechos densos."},
+    "B3": {"nota": 5.0, "peso": 0.3, "contribuicao": 1.50, "justificativa": "Objetivos vagos, progressão aceitável."},
+    "B4": {"nota": 6.0, "peso": 0.15, "contribuicao": 0.90, "justificativa": "Exemplos genéricos ou escassos."},
+    "B5": {"nota": 6.0, "peso": 0.2, "contribuicao": 1.20, "justificativa": "Hierarquia inconsistente."}
+  }
+}

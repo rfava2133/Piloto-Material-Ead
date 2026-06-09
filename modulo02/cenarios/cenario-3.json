@@ -1,0 +1,25 @@
+{
+  "aula_id": "cenario-3",
+  "indice": 4.00,
+  "veredito": "RECRIAR",
+  "emoji": "🔴",
+  "acao": "Retorna ao autor com parecer",
+  "fundamentos": {
+    "A1": {
+      "severidade": "SEM_RESSALVA",
+      "justificativa": "Conceitos corretos, mas material incompleto."
+    },
+    "A2": {
+      "severidade": "SEM_RESSALVA",
+      "justificativa": "Fontes localizadas.",
+      "fontes_verificadas": []
+    }
+  },
+  "indicadores": {
+    "B1": {"nota": 4.0, "peso": 0.2, "contribuicao": 0.80, "justificativa": "Expositivo, 3ª pessoa, despeja conteúdo."},
+    "B2": {"nota": 5.0, "peso": 0.15, "contribuicao": 0.75, "justificativa": "Conceitos empilhados, sobrecarga cognitiva."},
+    "B3": {"nota": 3.0, "peso": 0.3, "contribuicao": 0.90, "justificativa": "Sem objetivos nem fechamento, material truncado."},
+    "B4": {"nota": 5.0, "peso": 0.15, "contribuicao": 0.75, "justificativa": "Abstrato, sem exemplo prático."},
+    "B5": {"nota": 4.0, "peso": 0.2, "contribuicao": 0.80, "justificativa": "Blocos longos, sem hierarquia clara."}
+  }
+}
