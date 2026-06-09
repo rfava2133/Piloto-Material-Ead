@@ -29,5 +29,22 @@ cursos/
 *.docx
 *.pdf
 
+# Material bruto das aulas (inputs)
+disciplinas/*/aula-*/01_source/
+cursos/*/disciplinas/*/aula-*/01_source/
+
+# Imagens extraídas (não versionar)
+disciplinas/*/aula-*/04_imagens/antigas/*.png
+disciplinas/*/aula-*/04_imagens/antigas/*.jpg
+cursos/*/disciplinas/*/aula-*/05_imagens/antigas/*.png
+cursos/*/disciplinas/*/aula-*/05_imagens/antigas/*.jpg
+
+# Credenciais e tokens
+scripts/gmail/credentials.json
+scripts/gmail/token.json
+**/credentials.json
+**/token.json
+*.env.local
+
 # Configurações locais
 scripts/config.local.yml

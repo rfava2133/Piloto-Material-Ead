@@ -38,9 +38,9 @@ aulas digitais completas para o LMS EAD.
 - Nunca promessa de emprego/salário · nunca culpabilizar aluno
 - Nunca exemplo político partidário ou religioso específico
 
-## PIPELINE — 5 MACRO-ETAPAS
+## PIPELINE — 5 MACRO-MÓDULOS
 
-1. **Material Bruto › Extração** — Pandoc + PyMuPDF → MD limpo + imagens em pastas (sem IA)
+**MÓDULO 01 — EXTRATOR** — Pandoc + PyMuPDF → MD limpo + imagens em pastas (sem IA)
 2. **Análise + Geração de Texto** — Agente E avalia (score 0-100) → Agente A texto display → PDF Full → Fila HTML
 3. **Mini-roteiros de vídeo** — Agente B (3-6 vídeos de 60-120s)
 4. **Processamento de imagens** — Agente D classifica em 3 trilhas (Vetor/Chart/Foto)

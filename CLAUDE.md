@@ -3,6 +3,7 @@
 > Este arquivo é lido automaticamente pelo Claude Code ao abrir o projeto.
 > É a instrução-mãe. Tudo aqui prevalece, exceto `/docs/voz-unigran.md` em
 > questões de tom e voz editorial.
+Leia também o `README.md` para o status atual de implementação de cada módulo.
 
 ## O QUE É ESTE PROJETO
 
@@ -40,9 +41,9 @@ Escala alvo: ~1.200 disciplinas. Piloto: começar pelo material disponível.
 - Nunca culpabilizar o aluno
 - Nunca exemplos políticos partidários ou religiosos específicos
 
-## PIPELINE — 5 MACRO-ETAPAS
+## PIPELINE — 5 MACRO-MÓDULOS
 
-1. MATERIAL BRUTO › EXTRAÇÃO
+**MÓDULO 01 — EXTRATOR**
    - Pandoc: Word → Markdown limpo (+ extrai imagens do Word)
    - PyMuPDF: extrai imagens do PDF
    - Cria estrutura de pastas da aula
@@ -76,7 +77,7 @@ Escala alvo: ~1.200 disciplinas. Piloto: começar pelo material disponível.
 | C | claude-sonnet-4-6 | Quiz HTML interativo |
 | D | claude-haiku-4-5 | Classificação de imagens |
 
-Extração (Etapa 1), PDF Full e montagem HTML: scripts determinísticos, sem IA.
+Módulo 01 (Extrator), PDF Full e montagem HTML: scripts determinísticos, sem IA.
 
 ## ESTRUTURA DE PASTAS POR AULA
 

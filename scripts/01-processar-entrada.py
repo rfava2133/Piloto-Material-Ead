@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-01-processar-entrada.py — Orquestrador da Etapa 1 da esteira UNIGRAN EAD.
+01-processar-entrada.py — Orquestrador do MÓDULO 01 — EXTRATOR da esteira UNIGRAN EAD.
 
 Faz:
   1. Cria estrutura de pastas da aula
@@ -99,7 +99,7 @@ def processar(codigo, disciplina, numero_aula, word_path=None, pdf_path=None,
 
 
 def main():
-    p = argparse.ArgumentParser(description="Etapa 1 — Extração de material")
+    p = argparse.ArgumentParser(description="MÓDULO 01 — EXTRATOR de material")
     p.add_argument("--codigo", required=True, help="Código da disciplina (ex: ADM)")
     p.add_argument("--disciplina", required=True, help="Nome completo da disciplina")
     p.add_argument("--aula", type=int, required=True, help="Número da aula")

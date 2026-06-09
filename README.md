@@ -1,107 +1,233 @@
-# Etapa 1 — Extração de Material · UNIGRAN EAD
+# UNIGRAN EAD — Esteira de Produção
 
-Piloto funcional da primeira etapa da esteira: recebe Word/PDF, extrai texto
-(Markdown) e imagens, cria a estrutura de pastas.
+## Visão Geral
 
-## Instalação (uma vez)
+Esteira de produção automatizada de material EAD UNIGRAN. Transforma material bruto
+(Word ou PDF do professor) em aula digital completa: HTML responsivo + PDF + quiz
+interativo + micro-roteiros de vídeo, com avaliação automática de qualidade.
+
+**Escala alvo:** ~1.200 disciplinas (dados virão de planilha de cursos/professores)
+**Piloto atual:** entrada manual pela interface
+
+---
+
+## Pipeline — Módulos
+
+| Módulo | Agente | Modelo | Status |
+|--------|--------|--------|--------|
+| **M01 — Extrator** | — | determinístico | ✅ Implementado |
+| **M02 — Analista de Conteúdo** | Agente E | claude-opus-4-7 | 🔜 Em construção |
+| **M03 — Texto Display (Agente A)** | Agente A | claude-opus-4-7 | 📋 Pendente |
+| **M04 — PDF Full** | Puppeteer | determinístico | 📋 Pendente |
+| **M05 — Micro-roteiros (Agente B)** | Agente B | claude-sonnet-4-6 | 📋 Pendente |
+| **M06 — Imagens (Agente D)** | Agente D | claude-haiku-4-5 | 📋 Pendente |
+| **M07 — Montagem HTML (Agente C)** | Agente C | claude-sonnet-4-6 | 📋 Pendente |
+| **M08 — Quiz (Agente C)** | Agente C | claude-sonnet-4-6 | 📋 Pendente |
+
+---
+
+# MÓDULO 01 — EXTRATOR ✅
+
+Recebe Word ou PDF, extrai texto (Markdown) e imagens, cria estrutura de pastas.
+100% determinístico, sem IA.
+
+## Instalação
 
 ```bash
-# Dependências do sistema
 brew install pandoc python
-
-# Bibliotecas Python
-pip install flask pyyaml pymupdf --break-system-packages
+pip install flask pyyaml pymupdf pymupdf4llm --break-system-packages
 ```
 
-## Configuração
+## Configuração — `scripts/config.yml`
 
-Edite `scripts/config.yml`:
-- `raiz`: caminho da pasta do projeto no Google Drive
-- `sheets.sheet_id`: deixe vazio por enquanto (modo piloto)
+```yaml
+raiz: "/Users/rfava/PROJETOS IA/piloto-extrator"
 
-## Como usar — Interface visual (recomendado)
+subpastas:
+  - "01_source"
+  - "02_markdown"
+  - "03_avaliacao"
+  - "04_reformulado"
+  - "05_imagens/antigas"
+  - "05_imagens/prontas"
+  - "06_output"
+  - "07_revisao"
+  # _incubadora/ criada dinamicamente pelo M02 quando veredito = RECRIAR
+
+extracao:
+  pandoc_extract_media: true
+  pymupdf_min_largura: 100
+  pymupdf_min_altura: 100
+  formatos_imagem: ["png", "jpg", "jpeg"]
+
+servidor:
+  host: "127.0.0.1"
+  porta: 5000
+```
+
+## Como Usar — Interface Visual
 
 ```bash
-cd unigran-ead-esteira
 python3 servidor.py
+# abre http://127.0.0.1:5000
 ```
 
-Abra http://127.0.0.1:5000 no navegador.
+1. Preencha: Curso, Código, Nome da disciplina, Número da aula
+2. Arraste o Word **ou** o PDF (uma aula vem em um único formato)
+3. Clique **"Processar material"**
 
-1. Preencha código (ex: ADM), nome da disciplina e número da aula
-2. Arraste o Word e/ou PDF
-3. Clique "Processar material"
-4. Veja o resultado: Markdown gerado, imagens extraídas, pasta criada
-
-## Como usar — Linha de comando (alternativa)
+## Como Usar — Linha de Comando
 
 ```bash
 python3 scripts/01-processar-entrada.py \
+    --curso "administracao" \
     --codigo ADM \
     --disciplina "Fundamentos de Administração" \
     --aula 1 \
-    --word /caminho/aula.docx \
-    --pdf /caminho/aula.pdf
+    --word /caminho/aula.docx   # ou --pdf /caminho/aula.pdf
 ```
 
-## O que acontece
+## Estrutura de Pastas Gerada
 
 ```
-Material (Word + PDF)
-      ↓
-Cria estrutura de pastas da aula (7 subpastas)
-      ↓
-Copia originais para 01_source/
-      ↓
-Pandoc: Word → 02_markdown/{ID}.md + imagens do Word → 04_imagens/antigas/
-      ↓
-PyMuPDF: imagens do PDF → 04_imagens/antigas/
-      ↓
-Registra _log.json
+cursos/
+└── {curso}/
+    └── disciplinas/
+        └── {CODIGO}-{slug}/
+            ├── _disciplina.yml
+            └── aula-{NN}/
+                ├── 01_source/        M01: originais
+                ├── 02_markdown/      M01: texto extraído
+                ├── 03_avaliacao/     M02: laudo + score
+                ├── 04_reformulado/   M03+M05+M08
+                ├── 05_imagens/
+                │   ├── antigas/      M01: extraídas
+                │   └── prontas/      M06: redesenhadas
+                ├── 06_output/        M07: HTML + PDF finais
+                ├── 07_revisao/       Coordenador
+                ├── _incubadora/      condicional (veredito RECRIAR)
+                │   ├── material_atualizado/
+                │   └── historico/
+                └── _log.json
 ```
 
-## Estrutura gerada
+## Roteamento por Formato
 
 ```
-disciplinas/ADM-fundamentos-de-administracao/aula-01/
-├── 01_source/          ADM-01.docx · ADM-01-original.pdf
-├── 02_markdown/        ADM-01.md
-├── 03_reformulado/     (vazio — próximas etapas)
-├── 04_imagens/
-│   ├── antigas/        word-*.png · pdf-*.png (extraídas)
-│   └── prontas/        (vazio — etapa 4)
-├── 05_output/          (vazio — etapa 5)
-├── 06_revisao/         (vazio)
-├── 07_incubadora/      (vazio)
-└── _log.json           registro do processamento
+Veio Word (.docx)
+  → Pandoc → 02_markdown/{ID}.md + imagens → 05_imagens/antigas/
+
+Veio PDF
+  → pymupdf4llm → 02_markdown/{ID}.md
+  → PyMuPDF → 05_imagens/antigas/
 ```
 
-## Arquivos do projeto
+## `_disciplina.yml`
 
-```
-unigran-ead-esteira/
-├── CLAUDE.md                      Instrução-mãe (Claude Code lê)
-├── servidor.py                    Servidor local da interface
-├── interface/
-│   └── index.html                 Interface drag & drop
-├── scripts/
-│   ├── config.yml                 Configuração
-│   ├── 01-processar-entrada.py    Orquestrador
-│   └── lib/
-│       ├── pastas.py              Criação de pastas + nomenclatura
-│       ├── extrair_word.py        Pandoc wrapper
-│       ├── extrair_pdf.py         PyMuPDF
-│       └── logger.py              Log por aula
-└── docs/
-    ├── PROMPT_MESTRE.md           Contexto portátil para chats filhos
-    └── INSTRUCOES_CHAT.md         Como organizar os chats
+```yaml
+codigo: "ADM"
+nome: "Fundamentos de Administração"
+slug: "ADM-fundamentos-administracao"
+curso: "administracao"
+aulas_total: 0
+professor:
+  nome: ""
+  email: ""
+coordenador:
+  nome: ""
+  email: ""    # M02 usa para disparar reports (quando planilha chegar)
 ```
 
-## Notas
+---
 
-- **Slug com "de":** a pasta fica `ADM-fundamentos-de-administracao`. Mantém
-  literal e previsível. Se preferir sem stopwords, ajuste `lib/pastas.py`.
-- **Filtro de imagens pequenas:** ícones < 100px são descartados (configurável
-  em `config.yml`).
-- **Versão final:** quando a planilha de cursos chegar, os campos viram combo
-  com filtro. A lógica de pastas e extração não muda.
+# MÓDULO 02 — ANALISTA DE CONTEÚDO 🔜
+
+Avalia a substância do material antes de qualquer reformulação.
+**Princípio:** a diagramação corrige a forma; o analista julga a substância.
+**Decisão humana:** o módulo recomenda; o coordenador decide. Nunca recriar automático.
+
+## Dois mecanismos independentes
+
+### Verificação de Fundamentos (A1 e A2)
+Condição de integridade — não gera índice, gera severidade.
+
+| Fundamento | O que verifica | Severidades |
+|---|---|---|
+| **A1 — Precisão Conceitual** | Conceitos, definições, autorias, atualidade | SEM_RESSALVA · RESSALVA · CRITICO |
+| **A2 — Validade Bibliográfica** | Referências reais, localizáveis, consistentes | SEM_RESSALVA · RESSALVA · CRITICO |
+
+Guardrail A2: se não localiza a fonte → "não localizado para análise humana".
+Nunca conclui sozinho que a fonte é falsa.
+
+### Índice de Qualidade Didática (0–10)
+`Índice = B1×0,20 + B2×0,15 + B3×0,30 + B4×0,15 + B5×0,20`
+
+| Indicador | Peso | Base teórica |
+|---|---|---|
+| B1 — Dialogicidade / Tom EAD | 20% | Moore (1993) · Freire (1968/1970) |
+| B2 — Densidade Conceitual | 15% | Sweller (1988) |
+| B3 — Estrutura Pedagógica | 30% | Gagné (1965) · Biggs (1996) · Anderson & Krathwohl (2001) |
+| B4 — Engajamento | 15% | Knowles · Lave & Wenger (1991) |
+| B5 — Legibilidade Autoral | 20% | Mayer (2001/2014) |
+
+Os pesos são decisão institucional deliberada da UNIGRAN EAD — não empíricos.
+B3 tem maior peso porque o alinhamento entre objetivos, conteúdo e avaliação é o
+fator que mais impacta a aprendizagem real (Biggs, 1996).
+
+## Regra de veredito (4 faixas)
+
+| Faixa | Condição | Ação do coordenador |
+|---|---|---|
+| 🟢 APROVAR | Índice ≥ 8,0 e sem CRÍTICO | Libera para diagramação |
+| 🟡 APROVAR COM RESSALVA | 6,5–7,9 e sem CRÍTICO | Segue com relatório de ajustes |
+| 🟠 INTERVENÇÃO EDITORIAL | 5,0–6,4 e sem CRÍTICO | Decide: edita ou devolve ao autor |
+| 🔴 RECRIAR | Índice < 5,0 OU qualquer CRÍTICO | Retorna ao autor |
+
+**Cenário 4 do PPT:** índice 8,45 (ótimo) + A2 CRÍTICO → veredito RECRIAR.
+Verificação de Fundamentos ≠ Índice de Qualidade. São independentes.
+
+## Outputs por aula
+
+```
+03_avaliacao/
+├── avaliacao_v01.md     laudo completo (humano lê)
+└── score_v01.json       machine-readable (pipeline consome)
+
+_incubadora/             criada apenas se veredito = RECRIAR
+```
+
+## Componentes técnicos
+
+| Arquivo | Função |
+|---|---|
+| `modulo02/calculo.py` | Aritmética pura: índice + veredito (sem IA) |
+| `modulo02/test_calculo.py` | Valida os 4 cenários do PPT (7,15·5,70·4,00·8,45) |
+| `.claude/agents/analista-conteudo.md` | Prompt do Agente E (Opus 4.7) |
+| `modulo02/laudo.html` | Tela visual do laudo para o coordenador |
+
+## Aritmética é código, não IA
+
+A IA (Agente E) atribui notas 0–10 por indicador.
+O `calculo.py` faz a conta — o coordenador vê a conta exata.
+Isso responde: "a máquina só acha?" — não, o cálculo é auditável.
+
+---
+
+## Notas gerais
+
+- Slug: `slugify()` remove acentos e gera kebab-case
+- Filtro de imagens: ícones < 100px descartados (configurável)
+- Reprocessamento: requer "reprocessar" na interface ou `--forcar`
+- Log acumulativo: cada execução adiciona entrada ao `_log.json`
+- Planilha de cursos: quando chegar, alimenta combo da interface e gera
+  `_disciplina.yml` automaticamente com nomes e emails
+
+---
+
+> ⚠️ **Após implementar o Módulo 02:** substituir este README pelo gerado
+> automaticamente pelo Claude Code no Passo Final do Prompt 3, que reflete
+> os paths e nomes de arquivo reais confirmados pela implementação.
+
+---
+
+*Atualizado em 2026-06-09 — M01 implementado · M02 em construção*

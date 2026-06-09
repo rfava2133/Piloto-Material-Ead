@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-servidor.py — Servidor local que conecta a interface HTML aos scripts da Etapa 1.
+servidor.py — Servidor local que conecta a interface HTML aos scripts do MÓDULO 01 — EXTRATOR.
 
 Roda em http://127.0.0.1:5000
 Instalar: pip install flask pyyaml
@@ -41,7 +41,7 @@ def index():
 
 @app.route("/api/processar", methods=["POST"])
 def api_processar():
-    """Recebe arquivos + metadados, roda a Etapa 1, devolve resultado JSON."""
+    """Recebe arquivos + metadados, roda o MÓDULO 01 — EXTRATOR, devolve resultado JSON."""
     curso = request.form.get("curso", "EAD").strip()
     codigo = request.form.get("codigo", "").strip()
     disciplina = request.form.get("disciplina", "").strip()

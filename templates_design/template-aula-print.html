@@ -1,0 +1,1528 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>UNIGRAN EAD · Fundamentos da Administração · Aula 01</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,500;1,7..72,400&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#1A1A1A;
+  --ink-strong:#0D1117;
+  --ink-muted:#6B7280;
+  --ink-faint:#9CA3AF;
+  --paper:#FFFFFF;
+  --paper-warm:#FBFAF7;
+  --line:#E5E2DC;
+  --unigran-blue:#0046A8;
+  --unigran-blue-bright:#1E70D6;
+  --unigran-yellow:#FFC629;
+  --accent-link:#0066CC;
+  --accent-warning:#C9A84C;
+  --accent-success:#1A472A;
+  --accent-info:#3D8B5E;
+  --accent-purple:#6B46C1;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased;}
+
+html,body{
+  background:#E8E5DF;
+  font-family:'Literata',serif;
+  font-optical-sizing:auto;
+  color:var(--ink);
+}
+
+/* ────── A4 page wrapper ────── */
+/* A4 portrait at 96dpi ≈ 794×1123px. We use 210mm wide × 297mm tall. */
+@page{ size:A4; margin:0; }
+.page{
+  width:210mm;
+  min-height:297mm;
+  background:var(--paper-warm);
+  margin:18mm auto;
+  padding:18mm 14mm 16mm;
+  position:relative;
+  box-shadow:0 6px 24px -6px rgba(15,20,30,.18),0 2px 4px rgba(15,20,30,.05);
+  display:flex;
+  flex-direction:column;
+}
+.page + .page{ margin-top:0; }
+
+/* Print: one page per .page, no shadow, no outer margin */
+@media print{
+  html,body{ background:#fff; }
+  .page{
+    margin:0;
+    box-shadow:none;
+    page-break-after:always;
+    width:210mm;
+    height:297mm;
+    padding:18mm 14mm 16mm;
+  }
+  .page:last-child{ page-break-after:auto; }
+}
+
+/* ────── Running header ────── */
+.runner{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding-bottom:6mm;
+  margin-bottom:8mm;
+  border-bottom:1px solid var(--line);
+  font-family:'Inter',sans-serif;
+  font-size:8pt;
+  color:var(--ink-muted);
+  letter-spacing:.3px;
+}
+.runner .brand{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-weight:600;
+  color:var(--unigran-blue);
+  text-transform:uppercase;
+  letter-spacing:1.4px;
+  font-size:8pt;
+}
+.runner .brand::before{
+  content:"";
+  width:6px;height:6px;
+  background:var(--unigran-yellow);
+  display:inline-block;
+}
+.runner .crumb{
+  font-weight:400;
+  color:var(--ink-muted);
+}
+.runner .crumb strong{
+  color:var(--ink-strong);
+  font-weight:600;
+}
+.runner .pg{
+  font-family:'JetBrains Mono',monospace;
+  font-size:8pt;
+  font-feature-settings:"tnum";
+}
+
+/* ────── Footer ────── */
+.foot{
+  margin-top:auto;
+  padding-top:6mm;
+  border-top:1px solid var(--line);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-family:'Inter',sans-serif;
+  font-size:8pt;
+  color:var(--ink-faint);
+  letter-spacing:.3px;
+}
+.foot .l{ display:flex; gap:8px; align-items:center; }
+.foot .num{ font-family:'JetBrains Mono',monospace; color:var(--ink-muted); }
+
+/* ────── Cover ────── */
+.cover-body{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  padding:20mm 0;
+}
+.cover-eyebrow{
+  font-family:'Inter',sans-serif;
+  font-size:10pt;
+  font-weight:500;
+  letter-spacing:2.5px;
+  text-transform:uppercase;
+  color:var(--unigran-blue);
+  margin-bottom:14mm;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.cover-eyebrow::before{
+  content:"";
+  width:30px;height:1.5px;
+  background:var(--unigran-blue);
+}
+.cover-aula{
+  font-family:'Inter',sans-serif;
+  font-size:11pt;
+  font-weight:500;
+  color:var(--ink-muted);
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  margin-bottom:8mm;
+}
+.cover-aula .num{
+  font-family:'JetBrains Mono',monospace;
+  color:var(--unigran-blue);
+  font-weight:500;
+}
+.cover-title{
+  font-family:'Inter',sans-serif;
+  font-size:46pt;
+  font-weight:700;
+  letter-spacing:-1.4px;
+  line-height:1.02;
+  color:var(--ink-strong);
+  margin-bottom:14mm;
+}
+.cover-title em{
+  font-style:normal;
+  color:var(--unigran-blue);
+}
+.cover-intro{
+  font-family:'Literata',serif;
+  font-size:13pt;
+  line-height:1.55;
+  color:var(--ink);
+  max-width:130mm;
+  margin-bottom:12mm;
+}
+.cover-signoff{
+  font-family:'Literata',serif;
+  font-style:italic;
+  font-size:11pt;
+  color:var(--unigran-blue);
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.cover-signoff::before{
+  content:"";
+  width:16px; height:1.5px;
+  background:var(--unigran-blue);
+}
+
+/* objectives block */
+.objectives{
+  margin-top:12mm;
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-left:3px solid var(--unigran-blue);
+  padding:8mm 10mm 9mm;
+  border-radius:2px;
+}
+.objectives .o-label{
+  font-family:'Inter',sans-serif;
+  font-size:9pt;
+  font-weight:600;
+  letter-spacing:1.8px;
+  text-transform:uppercase;
+  color:var(--unigran-blue);
+  margin-bottom:5mm;
+}
+.objectives ul{
+  list-style:none;
+  display:grid;
+  gap:3mm;
+}
+.objectives li{
+  font-family:'Literata',serif;
+  font-size:11pt;
+  line-height:1.5;
+  color:var(--ink);
+  padding-left:6mm;
+  position:relative;
+}
+.objectives li::before{
+  content:"";
+  position:absolute;
+  left:0; top:.6em;
+  width:8px; height:1.5px;
+  background:var(--unigran-yellow);
+}
+
+/* ────── Body typography ────── */
+.body{
+  flex:1;
+}
+.eyebrow{
+  font-family:'Inter',sans-serif;
+  font-size:9pt;
+  font-weight:500;
+  letter-spacing:1.8px;
+  text-transform:uppercase;
+  color:var(--unigran-blue);
+  margin-bottom:5mm;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.eyebrow::before{
+  content:"";
+  width:18px; height:1.5px;
+  background:var(--unigran-blue);
+}
+
+h1.aula-title{
+  font-family:'Inter',sans-serif;
+  font-size:22pt;
+  font-weight:700;
+  letter-spacing:-.6px;
+  line-height:1.12;
+  color:var(--ink-strong);
+  margin-bottom:8mm;
+}
+
+h2.section{
+  font-family:'Inter',sans-serif;
+  font-size:17pt;
+  font-weight:600;
+  letter-spacing:-.3px;
+  line-height:1.2;
+  color:var(--ink-strong);
+  margin:10mm 0 5mm;
+  padding-top:4mm;
+  border-top:1.5px solid var(--ink-strong);
+  display:grid;
+  grid-template-columns:auto 1fr;
+  gap:8px;
+  align-items:baseline;
+}
+h2.section .s-num{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10pt;
+  font-weight:500;
+  color:var(--unigran-blue);
+  letter-spacing:0;
+}
+
+h3.subsection{
+  font-family:'Inter',sans-serif;
+  font-size:13pt;
+  font-weight:600;
+  letter-spacing:-.1px;
+  line-height:1.3;
+  color:var(--ink-strong);
+  margin:6mm 0 3mm;
+}
+
+p{
+  font-family:'Literata',serif;
+  font-size:11pt;
+  line-height:1.62;
+  color:var(--ink);
+  margin-bottom:3.5mm;
+  text-align:left;
+  hyphens:none;
+}
+
+/* dropcap on opening paragraph of section */
+.lead{
+  font-size:11.5pt;
+}
+
+blockquote{
+  margin:4mm 0 4mm 6mm;
+  padding:2mm 0 2mm 5mm;
+  border-left:2px solid var(--unigran-yellow);
+  font-family:'Literata',serif;
+  font-style:italic;
+  font-size:10.5pt;
+  line-height:1.55;
+  color:var(--ink);
+}
+
+ol.proc{
+  margin:3mm 0 5mm 0;
+  list-style:none;
+  counter-reset:proc;
+  display:grid;
+  gap:3mm;
+}
+ol.proc > li{
+  counter-increment:proc;
+  font-family:'Literata',serif;
+  font-size:11pt;
+  line-height:1.55;
+  color:var(--ink);
+  padding-left:11mm;
+  position:relative;
+}
+ol.proc > li::before{
+  content:counter(proc);
+  position:absolute;
+  left:0; top:0;
+  font-family:'JetBrains Mono',monospace;
+  font-size:9pt;
+  font-weight:500;
+  color:var(--unigran-blue);
+  background:var(--paper);
+  border:1px solid var(--unigran-blue);
+  width:7mm; height:7mm;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+}
+
+ol.weber-list{
+  margin:3mm 0 5mm 0;
+  list-style:none;
+  counter-reset:weber;
+  display:grid;
+  gap:3mm;
+}
+ol.weber-list > li{
+  counter-increment:weber;
+  font-family:'Literata',serif;
+  font-size:11pt;
+  line-height:1.55;
+  padding-left:13mm;
+  position:relative;
+}
+ol.weber-list > li::before{
+  content:counter(weber);
+  position:absolute;
+  left:0; top:0;
+  font-family:'JetBrains Mono',monospace;
+  font-size:9pt;
+  font-weight:500;
+  color:var(--unigran-blue);
+  background:var(--paper);
+  border:1px solid var(--unigran-blue);
+  width:7mm; height:7mm;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+}
+ol.weber-list > li b{ font-weight:600; color:var(--ink-strong); }
+
+/* ────── Figures ────── */
+figure{
+  margin:6mm 0 5mm;
+  padding:6mm;
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-radius:2px;
+}
+figure .fig-label{
+  font-family:'Inter',sans-serif;
+  font-size:8pt;
+  font-weight:600;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  color:var(--unigran-blue);
+  margin-bottom:3mm;
+}
+figure .fig-title{
+  font-family:'Inter',sans-serif;
+  font-size:10pt;
+  font-weight:600;
+  color:var(--ink-strong);
+  margin-bottom:5mm;
+  letter-spacing:-.1px;
+}
+figure .fig-canvas{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:4mm 0;
+}
+figure .fig-source{
+  margin-top:4mm;
+  padding-top:3mm;
+  border-top:1px dashed var(--line);
+  font-family:'Inter',sans-serif;
+  font-style:italic;
+  font-size:8pt;
+  color:var(--ink-muted);
+  text-align:center;
+}
+
+/* Placeholder figures */
+.fig-placeholder{
+  background:repeating-linear-gradient(45deg,#F2EFE8,#F2EFE8 6px,#EAE5DA 6px,#EAE5DA 12px);
+  border:1.5px dashed var(--ink-faint);
+  padding:14mm 6mm;
+  text-align:center;
+  border-radius:2px;
+}
+.fig-placeholder .ph-icon{
+  font-family:'JetBrains Mono',monospace;
+  font-size:9pt;
+  font-weight:500;
+  color:var(--unigran-blue);
+  letter-spacing:1.5px;
+  margin-bottom:3mm;
+  text-transform:uppercase;
+}
+.fig-placeholder .ph-title{
+  font-family:'Inter',sans-serif;
+  font-size:11pt;
+  font-weight:600;
+  color:var(--ink-strong);
+  margin-bottom:2mm;
+}
+.fig-placeholder .ph-note{
+  font-family:'Literata',serif;
+  font-style:italic;
+  font-size:9pt;
+  color:var(--ink-muted);
+}
+
+/* ────── Callouts ────── */
+.callout{
+  margin:5mm 0;
+  padding:5mm 6mm;
+  background:#F0F7FF;
+  border-left:3px solid var(--accent-link);
+  border-radius:2px;
+  page-break-inside:avoid;
+}
+.callout .c-label{
+  font-family:'Inter',sans-serif;
+  font-size:8.5pt;
+  font-weight:600;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  color:var(--accent-link);
+  margin-bottom:3mm;
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.callout p{
+  font-family:'Literata',serif;
+  font-size:10.5pt;
+  line-height:1.55;
+  color:var(--ink-strong);
+  margin:0;
+}
+.callout p + p{ margin-top:2mm; }
+
+.callout.summary{ background:#F0F5F2; border-color:var(--accent-success); }
+.callout.summary .c-label{ color:var(--accent-success); }
+
+.callout.media{ background:#F7F7F7; border-color:var(--ink-muted); }
+.callout.media .c-label{ color:var(--ink-muted); }
+.callout.media ul{
+  list-style:none;
+  display:grid;
+  gap:2.5mm;
+  margin-top:1mm;
+}
+.callout.media li{
+  font-family:'Literata',serif;
+  font-size:10.5pt;
+  line-height:1.5;
+  color:var(--ink-strong);
+  padding-left:6mm;
+  position:relative;
+  word-break:break-word;
+}
+.callout.media li::before{
+  content:"▶";
+  position:absolute;
+  left:0; top:0;
+  color:var(--unigran-blue);
+  font-size:8pt;
+}
+.callout.media a{
+  font-family:'JetBrains Mono',monospace;
+  font-size:8.5pt;
+  color:var(--accent-link);
+  word-break:break-all;
+}
+
+/* Conversa inicial block (for the disciplina intro) */
+.conversa-card{
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-left:3px solid var(--unigran-yellow);
+  padding:8mm 9mm;
+  margin-bottom:8mm;
+  border-radius:2px;
+}
+.conversa-card .ci-label{
+  font-family:'Inter',sans-serif;
+  font-size:9pt;
+  font-weight:600;
+  letter-spacing:1.8px;
+  text-transform:uppercase;
+  color:#8a6f1a;
+  margin-bottom:4mm;
+}
+.conversa-card p{
+  font-size:11pt;
+}
+.conversa-card ul{
+  list-style:none;
+  display:grid;
+  gap:3mm;
+  margin:3mm 0;
+}
+.conversa-card ul > li{
+  font-family:'Literata',serif;
+  font-size:10.5pt;
+  line-height:1.55;
+  color:var(--ink);
+  padding-left:6mm;
+  position:relative;
+}
+.conversa-card ul > li::before{
+  content:"";
+  position:absolute;
+  left:0; top:.65em;
+  width:8px; height:1.5px;
+  background:var(--unigran-yellow);
+}
+.conversa-card ul > li b{ font-weight:600; color:var(--ink-strong); }
+
+/* Sumário */
+.sumario{
+  list-style:none;
+  display:grid;
+  gap:4mm;
+  margin-top:6mm;
+}
+.sumario li{
+  display:grid;
+  grid-template-columns:14mm 1fr;
+  gap:6mm;
+  align-items:baseline;
+  padding-bottom:3mm;
+  border-bottom:1px dashed var(--line);
+}
+.sumario li .s-no{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10pt;
+  font-weight:500;
+  color:var(--unigran-blue);
+}
+.sumario li .s-title{
+  font-family:'Inter',sans-serif;
+  font-size:12pt;
+  font-weight:500;
+  color:var(--ink-strong);
+  letter-spacing:-.1px;
+}
+.sumario li .s-title small{
+  display:block;
+  font-family:'Literata',serif;
+  font-style:italic;
+  font-size:9.5pt;
+  font-weight:400;
+  color:var(--ink-muted);
+  margin-top:1mm;
+  letter-spacing:0;
+}
+
+/* Seções de estudo (list inside aula 1 cover) */
+.sec-list{
+  list-style:none;
+  display:grid;
+  gap:3mm;
+  margin:4mm 0 0;
+  padding:5mm 6mm;
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-radius:2px;
+}
+.sec-list li{
+  font-family:'Literata',serif;
+  font-size:11pt;
+  line-height:1.5;
+  color:var(--ink);
+  padding-left:8mm;
+  position:relative;
+}
+.sec-list li .n{
+  position:absolute;
+  left:0; top:0;
+  font-family:'JetBrains Mono',monospace;
+  font-size:9pt;
+  font-weight:500;
+  color:var(--unigran-blue);
+}
+
+/* Bios block */
+.bio-grid{
+  display:grid;
+  gap:8mm;
+}
+.bio{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:4mm;
+  padding-bottom:6mm;
+  border-bottom:1px solid var(--line);
+}
+.bio:last-child{ border-bottom:none; padding-bottom:0; }
+.bio .b-name{
+  font-family:'Inter',sans-serif;
+  font-size:13pt;
+  font-weight:600;
+  color:var(--unigran-blue);
+  letter-spacing:-.2px;
+}
+.bio .b-role{
+  font-family:'Inter',sans-serif;
+  font-size:9pt;
+  font-weight:500;
+  text-transform:uppercase;
+  letter-spacing:1.5px;
+  color:var(--ink-muted);
+  margin-top:1mm;
+  margin-bottom:3mm;
+}
+.bio p{
+  font-size:10.5pt;
+  line-height:1.6;
+}
+
+/* Retomando */
+.retomando{
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-top:3px solid var(--unigran-blue);
+  padding:8mm 9mm;
+  margin:8mm 0;
+  border-radius:2px;
+}
+.retomando .r-label{
+  font-family:'Inter',sans-serif;
+  font-size:9pt;
+  font-weight:600;
+  letter-spacing:1.8px;
+  text-transform:uppercase;
+  color:var(--unigran-blue);
+  margin-bottom:2mm;
+}
+.retomando .r-title{
+  font-family:'Inter',sans-serif;
+  font-size:18pt;
+  font-weight:700;
+  letter-spacing:-.4px;
+  color:var(--ink-strong);
+  margin-bottom:5mm;
+}
+.retomando .r-intro{
+  font-family:'Literata',serif;
+  font-style:italic;
+  font-size:11pt;
+  line-height:1.55;
+  color:var(--ink);
+  margin-bottom:6mm;
+  padding-bottom:5mm;
+  border-bottom:1px dashed var(--line);
+}
+.retomando h4{
+  font-family:'Inter',sans-serif;
+  font-size:12pt;
+  font-weight:600;
+  color:var(--ink-strong);
+  margin:5mm 0 2mm;
+  letter-spacing:-.1px;
+  display:grid;
+  grid-template-columns:auto 1fr;
+  gap:8px;
+  align-items:baseline;
+}
+.retomando h4 .rn{
+  font-family:'JetBrains Mono',monospace;
+  font-size:9pt;
+  color:var(--unigran-blue);
+  font-weight:500;
+}
+.retomando p{
+  font-size:10.5pt;
+  line-height:1.6;
+}
+
+/* page divider */
+.divider{
+  display:flex;
+  align-items:center;
+  gap:8mm;
+  margin:6mm 0;
+  color:var(--ink-faint);
+  font-family:'Inter',sans-serif;
+  font-size:8pt;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+}
+.divider::before,
+.divider::after{
+  content:"";
+  flex:1;
+  height:1px;
+  background:var(--line);
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ PAGE 1 — COVER ═══════════════ -->
+<section class="page">
+  <header class="runner">
+    <div class="brand">UNIGRAN EAD</div>
+    <div class="crumb">Graduação a Distância · <strong>Administração</strong></div>
+    <div class="pg">i / xxiv</div>
+  </header>
+
+  <div class="cover-body">
+    <div class="cover-eyebrow">Graduação a Distância · Administração</div>
+    <h1 class="cover-title">Fundamentos<br>da Administração<em>.</em></h1>
+    <p class="cover-intro">Disciplina ministrada pelos professores Rafael de Arruda e Valdir da Costa Pereira.</p>
+    <div class="cover-signoff">Bons estudos</div>
+  </div>
+
+  <footer class="foot">
+    <div class="l"><span>Capa</span></div>
+    <div class="num">001</div>
+  </footer>
+</section>
+
+<!-- ═══════════════ PAGE 2 — DOCENTES ═══════════════ -->
+<section class="page">
+  <header class="runner">
+    <div class="brand">UNIGRAN EAD</div>
+    <div class="crumb">Fundamentos da Administração · <strong>Docentes</strong></div>
+    <div class="pg">ii / xxiv</div>
+  </header>
+
+  <div class="body">
+    <div class="eyebrow">Equipe docente</div>
+    <h1 class="aula-title">Professores da disciplina</h1>
+
+    <div class="bio-grid">
+      <div class="bio">
+        <div>
+          <div class="b-name">Professor Rafael Arruda</div>
+          <div class="b-role">Administração · Empreendedorismo · Marketing</div>
+        </div>
+        <p>Professor Rafael De Arruda, graduado em Administração Pelo centro Universitário da Grande Dourados-UNIGRAN, especialização - MBA com Ênfase em Gestão de Pessoas. Docente na UNIGRAN, nos cursos de Administração, Ciências Contábeis, Educação Física e Estética, nas disciplinas de Empreendedorismo, Administração da Qualidade e Produtividade, Gestão e Marketing. Na modalidade EAD, docente nos cursos de Administração e Economia. Tem experiência na área de Administração, Finanças, Logística, Rh e Marketing. Iniciou suas funções laborais na multinacional francesa do segmento de atacado e varejo conhecido como Carrefour S.A, executando funções administrativas, financeiras, orçamentárias, alcançando através da meritocracia cargos de Liderança, recebendo medalha e certificação escrita por realização de "Trabalho com excelência" e "Gestor Nota 10", atuando no segmento de Atacado na maior rede atacadista e distribuidora da América Latina conhecida como Martins Atacadista onde executou a função inicial de Supervisor de Trade Marketing, promovido ao cargo de Diretor de Operações da pertencente ao grupo Martins cujo nome é SMART Supermercados onde passou durante três anos. Idealizador e fundador da IMPROVE Consultoria em Gestão e treinamentos, ocupando hoje a cadeira de Gerente Geral da maior rede de ensino de Inglês profissionalizante da América Latina, uma franquia com mais de 200 unidades pelo país cujo nome é Enjoy Inglês Profissionalizante.</p>
+      </div>
+
+      <div class="bio">
+        <div>
+          <div class="b-name">Professor Valdir da Costa Pereira</div>
+          <div class="b-role">Coordenador · MBA RH · CRA-MS</div>
+        </div>
+        <p>Professor Valdir da Costa Pereira, Administrador, pelo Centro Universitário da Grande Dourados – UNIGRAN, Mestre em Produção Gestão Agroindustrial – Especialista em Gestão Empreendedora de Negócios. Coordenador do Curso de Administração nas modalidades presencial, EAD e Semipresencial. Docente no curso de Administração, Ciências Contábeis, Economia, Serviço Social e Tecnologias de Gestão. Na pós-graduação professor no MBA em Recursos Humanos. Avaliador no Sistema Nacional de Avaliação da Educação Superior do Ministério da Educação INEP/MEC. Palestrante na área de Formação Pessoal e Motivacional. Conselheiro Regional Efetivo do CRA-MS – Conselho Regional de Administração de Mato Grosso do Sul (2019-2022).</p>
+      </div>
+    </div>
+  </div>
+
+  <footer class="foot">
+    <div class="l"><span>Docentes</span></div>
+    <div class="num">002</div>
+  </footer>
+</section>
+
+<!-- ═══════════════ PAGE 3 — SUMÁRIO ═══════════════ -->
+<section class="page">
+  <header class="runner">
+    <div class="brand">UNIGRAN EAD</div>
+    <div class="crumb">Fundamentos da Administração · <strong>Sumário</strong></div>
+    <div class="pg">iii / xxiv</div>
+  </header>
+
+  <div class="body">
+    <div class="eyebrow">Conteúdo da disciplina</div>
+    <h1 class="aula-title">Sumário</h1>
+
+    <ol class="sumario">
+      <li><span class="s-no">—</span><span class="s-title">Conversa inicial<small>Apresentação da disciplina</small></span></li>
+      <li><span class="s-no">01</span><span class="s-title">Administração<small>Conceitos, escolas e funções administrativas</small></span></li>
+      <li><span class="s-no">02</span><span class="s-title">O Gestor e Seu Ambiente</span></li>
+      <li><span class="s-no">03</span><span class="s-title">As Organizações</span></li>
+      <li><span class="s-no">04</span><span class="s-title">Tipos de Estruturas Organizacionais</span></li>
+      <li><span class="s-no">05</span><span class="s-title">Gestão e Processo de Tomadas de decisão</span></li>
+      <li><span class="s-no">06</span><span class="s-title">Desenvolvimento Gerencial</span></li>
+      <li><span class="s-no">07</span><span class="s-title">Processo de Comunicação nas Organizações</span></li>
+      <li><span class="s-no">08</span><span class="s-title">A Vida e os Conceitos de Peter Drucker</span></li>
+      <li><span class="s-no">—</span><span class="s-title">Referências Bibliográficas</span></li>
+    </ol>
+  </div>
+
+  <footer class="foot">
+    <div class="l"><span>Sumário</span></div>
+    <div class="num">003</div>
+  </footer>
+</section>
+
+<!-- ═══════════════ PAGE 4 — CONVERSA INICIAL (1/2) ═══════════════ -->
+<section class="page">
+  <header class="runner">
+    <div class="brand">UNIGRAN EAD</div>
+    <div class="crumb">Fundamentos da Administração · <strong>Conversa inicial</strong></div>
+    <div class="pg">iv / xxiv</div>
+  </header>
+
+  <div class="body">
+    <div class="eyebrow">Apresentação</div>
+    <h1 class="aula-title">Conversa Inicial</h1>
+
+    <p>Prezados(as) alunos (as):</p>
+    <p>Sejam bem-vindos à disciplina Fundamentos da Administração!</p>
+    <p>O objetivo desta disciplina é promover o conhecimento sobre os fundamentos da administração, trazendo em cada aula conceitos, definições e sugestões de vídeos explicativos que contribuem para o entendimento da aula. Esta disciplina é de fundamental importância na formação profissional e pessoal, pois são conhecimentos básicos da administração;</p>
+
+    <p>Os temas tratados nesta disciplina são os seguintes:</p>
+
+    <div class="conversa-card">
+      <div class="ci-label">Temas da disciplina</div>
+      <ul>
+        <li><b>Administração</b>, nesta aula a proposta de estudo é entender a administração enquanto ciência, conhecendo os conceitos básicos das várias escolas da administração e as funções administrativas: planejamento, organização, direção e controle.</li>
+        <li><b>Gestor e seu ambiente:</b> nesta aula os pontos destacados são conceito e definição de gestor/administrador, assim como os tipos de gestores e administradores, os níveis de habilidades dos gestores e administradores, a posição de líder do gestor e do administrador, a atuação do gestor/administrador como agente de mudança e a dinâmica de mudança, clima e cultura organizacional.</li>
+        <li><b>Organização:</b> nesta aula o foco de estudo é na definição de organização, nas eras organizacionais, nos sistemas e ambientes organizacionais, no papel social e os níveis de administração organizacional, e, nos novos paradigmas da administração.</li>
+        <li><b>Tipos de estrutura organizacional:</b> nesta aula o objeto de estudo é a estrutura organizacional e seus subsistemas: centralizada e descentralizada; por projetos: funcional, matricial e projetizada; linear, funcional e linha-staff.</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer class="foot">
+    <div class="l"><span>Conversa inicial · 1/2</span></div>
+    <div class="num">004</div>
+  </footer>
+</section>
+
+<!-- ═══════════════ PAGE 5 — CONVERSA INICIAL (2/2) ═══════════════ -->
+<section class="page">
+  <header class="runner">
+    <div class="brand">UNIGRAN EAD</div>
+    <div class="crumb">Fundamentos da Administração · <strong>Conversa inicial</strong></div>
+    <div class="pg">v / xxiv</div>
+  </header>
+
+  <div class="body">
+    <div class="conversa-card">
+      <div class="ci-label">Temas da disciplina · continuação</div>
+      <ul>
+        <li><b>Desenvolvimento gerencial:</b> nesta aula a proposta é estudar conceitos e definições de gerência, estilos de gerências e lideranças, gerência e desafios nas organizações modernas, assim como o feedback gerencial.</li>
+        <li><b>Processo de comunicação nas organizações:</b> nesta aula o esquema de estudo compreende conceitos e definições sobre a comunicação organizacional, o fluxo da comunicação organizacional, os tipos de comunicação organizacional e a comunicação organizacional e as redes sociais.</li>
+        <li><b>A vida e os conceitos de Peter Ferdinand Drucker:</b> nesta aula destaca-se a vida de Peter Drucker, as ideias de Drucker e a contribuição para desenvolvimento das organizações.</li>
+      </ul>
+    </div>
+
+    <p>Caro aluno, esta é a proposta de estudo, mas para que você crie seus conhecimento de forma crítica é importante que você reflita sobre os conteúdos estudados, compare com outras referências sobre o tema e faça pesquisas, e, se tiver dúvidas me procure, para que juntos possamos sanar suas dúvidas.</p>
+
+    <p>Estarei sempre pronto, a auxiliá-lo nos estudos.</p>
+
+    <p style="font-family:'Literata',serif;font-style:italic;color:var(--unigran-blue);font-size:11.5pt;margin-top:5mm;">Bons estudos!</p>
+  </div>
+
+  <footer class="foot">
+    <div class="l"><span>Conversa inicial · 2/2</span></div>
+    <div class="num">005</div>
+  </footer>
+</section>
+
+<!-- ═══════════════ PAGE 6 — AULA 01 ABERTURA ═══════════════ -->
+<section class="page">
+  <header class="runner">
+    <div class="brand">UNIGRAN EAD</div>
+    <div class="crumb">Fundamentos da Administração · <strong>Aula 01</strong></div>
+    <div class="pg">01 / xxiv</div>
+  </header>
+
+  <div class="cover-body">
+    <div class="cover-aula">Aula <span class="num">01</span> · de 08</div>
+    <h1 class="cover-title">A Administração<em>.</em></h1>
+    <p class="cover-intro">Prezados(as) alunos(as), nesta primeira aula a proposta de estudo é entender a Administração, a partir dos conceitos estabelecidos, como ciência, tecnologia e arte, compreendendo os conceitos básicos das principais escolas administrativas, assim como as funções da administração.</p>
+
+    <div class="objectives">
+      <div class="o-label">Objetivos de aprendizagem</div>
+      <ul>
+        <li>Conhecer as principais definições e conceitos sobre a Administração;</li>
+        <li>Reconhecer a Administração enquanto ciência;</li>
+        <li>Entender os conceitos básicos das diferentes escolas da Administração:</li>
+        <li>Perceber as funções administrativa.</li>
+      </ul>
+    </div>
+
+    <ol class="sec-list" style="margin-top:6mm;">
+      <li><span class="n">01</span> O que é Administração?</li>
+      <li><span class="n">02</span> Administração enquanto Ciência.</li>
+      <li><span class="n">03</span> Conceitos básicos das várias escolas.</li>
+      <li><span class="n">04</span> Funções da administração: Planejamento, Organização, Direção e Controle.</li>
+    </ol>
+  </div>
+
+  <footer class="foot">
+    <div class="l"><span>Aula 01 · Abertura</span></div>
+    <div class="num">006</div>
+  </footer>
+</section>
+
+<!-- ═══════════════ PAGE 7 — SEÇÃO 1 ═══════════════ -->
+<section class="page">
+  <header class="runner">
+    <div class="brand">UNIGRAN EAD</div>
+    <div class="crumb">Aula 01 · <strong>Seção 1 — O que é Administração?</strong></div>
+    <div class="pg">02 / xxiv</div>
+  </header>
+
+  <div class="body">
+    <h2 class="section"><span class="s-num">SEÇÃO 1</span>O que é Administração?</h2>
+
+    <p class="lead">A administração é o ato de planejar, organizar, dirigir e controlar uma instituição, ou parte dela. Para Drucker (2006, p.65) "a administração é um processo multifuncional que comanda negócios, conduz gerentes, governa trabalhadores e administra trabalho".</p>
+
+    <p>Haimann et al. (1985) conceituou administração como uma determinação global de políticas, estabelecimento de objetivos, identificação de propósitos e estabelecimento de projetos para uma organização. Para ele a Administração é uma gestão de processos, de disciplina e de pessoas. Ou seja, administrar nada mais é que orientar, liderar, controlar esforços dos grupos em direção aos objetivos comuns de uma instituição ou organização.</p>
+
+    <p>Na concepção de Chiavenato (2016) administração é a ferramenta usada pelas organizações para orientar e atingir excelência de ações e operações, no alcance de resultados. Administração tem um significado de processo, que o gestor ao determina-lo, apresenta decisões que ao se tornarem ações promovem melhorias às organizações. Processo administrativo, de acordo com Maximiano (2011) nada mais é que as funções administrativas de planejar, organizar, liderar, executar e controlar.</p>
+
+    <p>Portanto, Administração é a gestão e organização de empresas de forma geral. Quando a empresa é do setor privado, o propósito administrativo é promover o lucro e bem-estar social, quando do setor público, a função administrativa é promover excelência de produtos e serviços para atender os usuários. Tanto no setor público como privado a administração tem como objetivo implementar ações de planejamento, organização, coordenação e controle de programas e políticas.</p>
+  </div>
+
+  <footer class="foot">
+    <div class="l"><span>Seção 1 · O que é Administração?</span></div>
+    <div class="num">007</div>
+  </footer>
+</section>
+
+<!-- ═══════════════ PAGE 8 — SEÇÃO 2 (1/2) ═══════════════ -->
+<section class="page">
+  <header class="runner">
+    <div class="brand">UNIGRAN EAD</div>
+    <div class="crumb">Aula 01 · <strong>Seção 2 — Administração enquanto Ciência</strong></div>
+    <div class="pg">03 / xxiv</div>
+  </header>
+
+  <div class="body">
+    <h2 class="section"><span class="s-num">SEÇÃO 2</span>Administração Enquanto Ciência</h2>
+
+    <p class="lead">Quando se fala em Ciência é importante definir a partir da concepção da palavra, que deriva do latim scientia, que quer dizer conhecimento, assim Ciência é descoberta de novos conhecimentos. É um sistema organizado que produz conhecimentos por meio de métodos estabelecidos. Nesse sentido a Ciência Administrativa é o conhecimento voltado para o entendimento das organizações, independentemente de sua propriedade ou área de atuação.</p>
+
+    <p>A administração converge fundamentos de várias ciências, criando ferramentas que subsidiam o bem-estar econômico e social. As organizações usam da Administração para contribuírem com a "geração de fonte de renda para a estabilidade cíclica econômica da sociedade" (FREIRE et al., 2015, p.11)</p>
+
+    <p>A ciência administrativa elabora os conceitos científicos a partir de pesquisas aprofundadas nas organizações, observando de firma direta e prática. Assim, os conceitos administrativos são testados e comprovados na prática, formando assim as teorias. Os estudiosos, como Chiavenato (2007), destacam que a Administração deve ser entendida sob três aspectos, que são: ciência, tecnologia e arte.</p>
+
+    <!-- ═════ FIGURA 1 — REDESENHADA ═════ -->
+    <figure>
+      <div class="fig-label">Figura 1</div>
+      <div class="fig-title">Administração: ciência, tecnologia e arte</div>
+      <div class="fig-canvas">
+        <svg viewBox="0 0 520 240" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:440px;height:auto;font-family:'Inter',sans-serif;">
+          <!-- Connecting lines (drawn first, behind nodes) -->
+          <g stroke="#C9D4E0" stroke-width="1.5" fill="none">
+            <!-- Top node to center -->
+            <path d="M 260 64 L 260 96"/>
+            <!-- Center to bottom-left -->
+            <path d="M 232 144 L 152 184"/>
+            <!-- Center to bottom-right -->
+            <path d="M 288 144 L 368 184"/>
+          </g>
+
+          <!-- Node: CIÊNCIA (top, satellite) -->
+          <g transform="translate(180,16)">
+            <rect width="160" height="48" rx="3" fill="#FFFFFF" stroke="#0046A8" stroke-width="1.5"/>
+            <rect width="160" height="3" fill="#0046A8"/>
+            <text x="80" y="22" text-anchor="middle" font-size="9" font-weight="500" letter-spacing="1.8" fill="#0046A8">ESCOLA</text>
+            <text x="80" y="40" text-anchor="middle" font-size="15" font-weight="600" fill="#0D1117">CIÊNCIA</text>
+          </g>
+
+          <!-- Node: ADMINISTRAÇÃO (center, core) -->
+          <g transform="translate(200,96)">
+            <rect width="120" height="48" rx="3" fill="#0046A8"/>
+            <rect width="120" height="3" fill="#FFC629"/>
+            <text x="60" y="22" text-anchor="middle" font-size="9" font-weight="500" letter-spacing="1.8" fill="#FFC629">NÚCLEO</text>
+            <text x="60" y="40" text-anchor="middle" font-size="14" font-weight="700" fill="#FFFFFF">ADMINISTRAÇÃO</text>
+          </g>
+
+          <!-- Node: TECNOLOGIA (bottom-left, satellite) -->
+          <g transform="translate(72,184)">
+            <rect width="160" height="48" rx="3" fill="#FFFFFF" stroke="#0046A8" stroke-width="1.5"/>
+            <rect width="160" height="3" fill="#0046A8"/>
+            <text x="80" y="22" text-anchor="middle" font-size="9" font-weight="500" letter-spacing="1.8" fill="#0046A8">DIMENSÃO</text>
+            <text x="80" y="40" text-anchor="middle" font-size="15" font-weight="600" fill="#0D1117">TECNOLOGIA</text>
+          </g>
+
+          <!-- Node: ARTE (bottom-right, satellite) -->
+          <g transform="translate(288,184)">
+            <rect width="160" height="48" rx="3" fill="#FFFFFF" stroke="#0046A8" stroke-width="1.5"/>
+            <rect width="160" height="3" fill="#0046A8"/>
+            <text x="80" y="22" text-anchor="middle" font-size="9" font-weight="500" letter-spacing="1.8" fill="#0046A8">DIMENSÃO</text>
+            <text x="80" y="40" text-anchor="middle" font-size="15" font-weight="600" fill="#0D1117">ARTE</text>
+          </g>
+        </svg>
+      </div>
+      <div class="fig-source">Fonte: Pereira (2022)</div>
+    </figure>
+  </div>
+
+  <footer class="foot">
+    <div class="l"><span>Seção 2 · Administração enquanto Ciência · 1/2</span></div>
+    <div class="num">008</div>
+  </footer>
+</section>
+
+<!-- ═══════════════ PAGE 9 — SEÇÃO 2 (2/2) ═══════════════ -->
+<section class="page">
+  <header class="runner">
+    <div class="brand">UNIGRAN EAD</div>
+    <div class="crumb">Aula 01 · <strong>Seção 2 — Administração enquanto Ciência</strong></div>
+    <div class="pg">04 / xxiv</div>
+  </header>
+
+  <div class="body">
+    <p>O entendimento da administração como ciência ou arte se deve ao fato de que as primeiras experiências administrativas mesclavam o uso da intuição, palpites, bom senso para a gestão dos processos e produtividade. Inicialmente, os gestores não tinham altos conhecimentos científicos, nem eram profissionais treinados, mas administravam seus negócios de forma eficiente e obtinham lucros, por isso é caracterizada como arte, e é ciência porque tem princípios universalmente aceitos. Tanto como arte ou ciência requer perfeição por meio da prática, conhecimento científico e prático, criatividade, habilidade, sensibilidade etc. (CHIAVENATO, 2016).</p>
+
+    <p>Quando se fala da Administração como arte, refere-se que o gestor para empreender com excelência necessita do uso de princípios artísticos, resolvendo os problemas de gestão organizacionais à luz da realidade das situações. De Acordo com Chiavenato (2016, p.2) a administração "é arte porque administrar constitui-se em uma expertise que requer elegância, beleza, estilo, competência, intuição e muita sensibilidade".</p>
+
+    <p>A administração como técnica fundamenta-se em metodologias, práticas e conceitos. Assim, Administração é um alinhamento de habilidades, conceitos e técnicas. Um bom gestor é aquele que tem conhecimentos alinhados a sensibilidade para criar, inovar e refletir.</p>
+
+    <p>Frederick Winslow Taylor foi um dos primeiros estudiosos que pensou a administração como ciência. Taylor concentrou seus estudos na produtividade e nos serviços, valorando o empregado a partir da sua produtividade. Ele focou seu estudo no tempo e no movimento, além de outras técnicas para medir o trabalho. Além disso, Taylor, também teve ideias humanistas. Ele percebeu que os interesses dos trabalhadores, gerentes e gestores são sincronizados dentro de fundamentos humanos. Henri Fayol foi um engenheiro e técnico francês que fundamentou a administração moderna. Sua teoria científica da administração foi determinada nas bases da gestão de negócios. Ele criou princípios de gestão, conhecidos como fayolismo (BEZERRA, 2022).</p>
+  </div>
+
+  <footer class="foot">
+    <div class="l"><span>Seção 2 · Administração enquanto Ciência · 2/2</span></div>
+    <div class="num">009</div>
+  </footer>
+</section>
+
+<!-- ═══════════════ PAGE 10 — SEÇÃO 3 / 3.1 ESCOLA CLÁSSICA (1/2) ═══════════════ -->
+<section class="page">
+  <header class="runner">
+    <div class="brand">UNIGRAN EAD</div>
+    <div class="crumb">Aula 01 · <strong>Seção 3 — Escolas da Administração</strong></div>
+    <div class="pg">05 / xxiv</div>
+  </header>
+
+  <div class="body">
+    <h2 class="section"><span class="s-num">SEÇÃO 3</span>Conceitos Básicos das Várias Escolas da Administração</h2>
+
+    <h3 class="subsection">3.1 Escola Clássica</h3>
+
+    <figure>
+      <div class="fig-label">Figura 2</div>
+      <div class="fig-title">Escola Clássica da Administração</div>
+      <div class="fig-placeholder">
+        <div class="ph-icon">[ FIG-02 · PLACEHOLDER ]</div>
+        <div class="ph-title">Diagrama a ser redesenhado</div>
+        <div class="ph-note">Escola Clássica — núcleo + 3 satélites (Taylor/Ford, Weber, Fayol)</div>
+      </div>
+      <div class="fig-source">Fonte: Adaptado de Maximiano (2009)</div>
+    </figure>
+
+    <p>A Administração científica surgiu no final do século XIX, início do século XX, esse tipo de gestão teve como base a eficiência econômica. Foi se configurando como parte da ciência aplicada a produção, com estudos desenvolvidos sobre tempo e movimento, que foi o eco cultural mais amplo do gerenciamento de negócios dentro de conceitos como: fordismo, gerencia de operação, pesquisa operacional, engenharia industrial, ciência de gestão, engenharia de produção, logística, gestão de processos de negócios, reengenharia de processos de negócios, manufatura enxuta e seis sigma (um conjunto de técnicas e ferramentas para melhoria de processos). A administração científica foi a base para as escolas posteriores, assim como para as diferentes abordagens, onde tudo mostra reflexos de compatibilidade científica (HUANG et al., 2013).</p>
+  </div>
+
+  <footer class="foot">
+    <div class="l"><span>Seção 3 · 3.1 Escola Clássica · 1/4</span></div>
+    <div class="num">010</div>
+  </footer>
+</section>
+
+<!-- ═══════════════ PAGE 11 — 3.1 Escola Clássica (2/4) ═══════════════ -->
+<section class="page">
+  <header class="runner">
+    <div class="brand">UNIGRAN EAD</div>
+    <div class="crumb">Aula 01 · <strong>Seção 3 · 3.1 Escola Clássica</strong></div>
+    <div class="pg">06 / xxiv</div>
+  </header>
+
+  <div class="body">
+    <p>Frederick W. Taylor, no curso de seus estudos empíricos, examinou várias modalidades trabalhos e a forma de atuação dos trabalhadores, descobrindo conceitos importantes que não foram aceitos em sua época. Por exemplo, ao observar os trabalhadores, ele percebeu a necessidade do descanso durante o trabalho para que a pessoa tivesse tempo de recuperar da fadiga, seja física (como na escavação ou levantamento) ou mental (como no caso da inspeção). Comprovou que os trabalhadores que descansavam durante o trabalho tinham melhor produtividade. A contribuição de Taylor foi relevante, pois por meio de sua teoria mostrou aos gestores de sua época e posterior, que entender a natureza do trabalho e o ambiente é a melhor forma de gerir as pessoas e garantir a produtividade (DOWDING et al., 2021).</p>
+
+    <p>Taylor enfatiza em sua abordagem científica que existe uma necessidade de fundir a gestão com a ciência, propondo que o gestor de negócios e o engenheiro são pessoas que atuam dentro dos mesmos princípios de produção. O pensamento de Taylor era que a ciência gerencial garantiria a eficiência do trabalho e do trabalhador em diferentes circunstâncias (DOWDING et al., 2021).</p>
+
+    <p>A teoria de Taylor possibilitou a padronização e o aperfeiçoamento do trabalho e de equipamentos, garantindo a uniformidade de bens e serviços produzidos e podendo aumentar a demanda por esses produtos, pois tornam-se mais atraentes para os clientes. Por meio da ciência definiu regras e regulamentos apropriados que deveriam ser adotadas no processo de criação de bens e serviços. Em segundo lugar a ciência pode promover o treinamento aos trabalhadores, com isso facilitando a seleção de pessoas para cada função. Na visão dele o sucesso de qualquer organização dependia da seleção adequada de pessoal para cada função dentro da organização (GIANNANTONIO; HURLEY-HANSON, 2001).</p>
+
+    <p>A proposta científica de Taylor era mostrar que o papel do gestor é orientar, treinar e desenvolver os trabalhadores para desempenharem suas atividades diárias na organização. O terceiro princípio, exigia a formação e desenvolvimento científico do trabalhador, para que a organização tivesse lucratividade. A implicação deste princípio é que a eficiência dos trabalhadores dependia de constantes treinamentos para a execução das tarefas que lhes fossem atribuídas (BLAKE; MOSELEY, 2010).</p>
+  </div>
+
+  <footer class="foot">
+    <div class="l"><span>Seção 3 · 3.1 Escola Clássica · 2/4</span></div>
+    <div class="num">011</div>
+  </footer>
+</section>
+
+<!-- ═══════════════ PAGE 12 — 3.1 Escola Clássica (3/4) ═══════════════ -->
+<section class="page">
+  <header class="runner">
+    <div class="brand">UNIGRAN EAD</div>
+    <div class="crumb">Aula 01 · <strong>Seção 3 · 3.1 Escola Clássica</strong></div>
+    <div class="pg">07 / xxiv</div>
+  </header>
+
+  <div class="body">
+    <p>O quarto princípio da teoria de Taylor postulava a cooperação entre os trabalhadores e gestores, explicando a necessidade de uma clara divisão de trabalho, com gestão específicas para as equipe de trabalho, na visão dele com a divisão de trabalho, os trabalhadores executariam as tarefas com maior eficiência, para que essa divisão seja eficiente era necessário um estudo científico (DOWDING et al., 2021).</p>
+
+    <p>Com esses princípios a teoria científica da administração revolucionou o sistema de gestão em sua época, tanto em nível local como internacional. Embora, muitas inovações científicas tenham surgidos após Taylor, sua contribuição no campo da gestão de negócios e suas várias disciplinas ainda são observadas. Observa-se que as contribuições de Taylor sobreviveram à evolução da gestão que progrediu da era industrial para a era da informação, e agora entra na era virtual, ainda assim muito da teoria de Taylor e seus princípios são postos em prática (MYER JÚNIOR, 2011).</p>
+
+    <p>Henry Fayol foi um dos grandes colaboradores da teoria clássica da administração, fundador da escola normativa e influenciador da administração moderna e do desenvolvimento da prática de gestão industrial ao longo do século XX. Em 1916 publicou o livro "Administration Industrielle et egénérale", no qual defendeu a ideia de que as organizações apresentam apenas seis funções, inovou o conceito de administração, explicitou princípios gerais de administração e influenciou o ensino da Administração Geral (MAXIMIANO, 2009).</p>
+
+    <p>De acordo com a teoria de Henri Fayol as funções administrativas de uma organização são: planejamento, organização, comando, coordenação e controle. A escola normativa de Fayol dava ênfase ao papel da gestão organizacional, associando a abordagem industrial aos negócios, incluindo trabalhadores, que eram substituíveis funcionando tal como uma engrenagem dentro de uma hierarquia rígida com forte comando de alto nível (LEAL, 2007).</p>
+  </div>
+
+  <footer class="foot">
+    <div class="l"><span>Seção 3 · 3.1 Escola Clássica · 3/4</span></div>
+    <div class="num">012</div>
+  </footer>
+</section>
+
+<!-- ═══════════════ PAGE 13 — 3.1 Escola Clássica (4/4) ═══════════════ -->
+<section class="page">
+  <header class="runner">
+    <div class="brand">UNIGRAN EAD</div>
+    <div class="crumb">Aula 01 · <strong>Seção 3 · 3.1 Escola Clássica</strong></div>
+    <div class="pg">08 / xxiv</div>
+  </header>
+
+  <div class="body">
+    <p>A escola normativa de Henri Fayol focava no comando exercido a partir do conhecimento amplo das normas da organização e dos subordinados, motivando a produtividade individual, dialogando constantemente, otimizando o emprego do tempo e do material. O papel da gestão é manter a unidade, buscando o equilíbrio entre custo/benefício, atendendo às previsões das operações, adaptando os meios ao fim pretendido. O controle consistia na análise dos resultados, para verificar se o processo ocorreu conforme o planejado, identificando falhas de operação, com o propósito de evitar a reincidência. Envolvendo nessa análise todas as áreas da organização (ARAÚJO, 2004).</p>
+
+    <h3 class="subsection">3.2 Escola das Relações Humanas</h3>
+
+    <figure>
+      <div class="fig-label">Figura 3</div>
+      <div class="fig-title">Escola das Relações Humanas</div>
+      <div class="fig-placeholder">
+        <div class="ph-icon">[ FIG-03 · PLACEHOLDER ]</div>
+        <div class="ph-title">Diagrama a ser redesenhado</div>
+        <div class="ph-note">Escola das Relações Humanas — ênfase nas pessoas; democratização, socialização; motivação, liderança, redes de comunicação</div>
+      </div>
+      <div class="fig-source">Fonte: Adaptado de Paixão (2017)</div>
+    </figure>
+
+    <p>A teoria da Escola das Relações Humanas foi criada pelo australiano George Elton, por meio de ideias sociológicas da administração, definindo que a ciência administrativa deveria ser considerada ciência aplicada ou ciência social. Assim, enquanto a abordagem clássica buscava aumentar a produção pela racionalização da organização do trabalho, o movimento das relações humanas apresentou a ideia de que a organização do trabalho deveria ser humanizado. A abordagem das relações humanas buscou uma maior compreensão das necessidades psicológicas e sociais das pessoas no trabalho, bem como a melhoria do processo de gestão (CHIAVENATO, 2003).</p>
+  </div>
+
+  <footer class="foot">
+    <div class="l"><span>Seção 3 · 3.2 Relações Humanas · 1/2</span></div>
+    <div class="num">013</div>
+  </footer>
+</section>
+
+<!-- ═══════════════ PAGE 14 — 3.2 Relações Humanas (2/2) ═══════════════ -->
+<section class="page">
+  <header class="runner">
+    <div class="brand">UNIGRAN EAD</div>
+    <div class="crumb">Aula 01 · <strong>Seção 3 · 3.2 Relações Humanas</strong></div>
+    <div class="pg">09 / xxiv</div>
+  </header>
+
+  <div class="body">
+    <p>A escola de relações humanas estuda a importância da satisfação humana para a produtividade. Mostrando que os sentimentos, atitudes e relações interpessoais são fundamentais para o atingimento dos objetivos pretendidos pela organização. O homem passou a ser visto como um ser social, orientado pelas regras e valores do grupo informal. Reconhecendo a importância da organização informal, que estará sempre presente dentro da estrutura formal. Esta organização informal irá influenciar a motivação dos funcionários, que irão ver a organização para a qual trabalham por meio dos valores e atitudes de seus colegas. Sua visão da organização determina sua abordagem ao trabalho e a extensão de sua motivação para trabalhar bem ou não (CHIAVENATO, 2020).</p>
+
+    <p>As pessoas trabalham para satisfazer uma complexidade de necessidades e não simplesmente pela recompensa monetária, daí a importância de enfatizar uma ampla necessidades sociais dos indivíduos, sendo a organização do trabalho uma organização social, que tem como fundamento os valores e normas do grupo, que influenciam no comportamento individual e coletivo no trabalho.</p>
+
+    <h3 class="subsection">3.3 Escola do Comportamento Humano</h3>
+
+    <figure>
+      <div class="fig-label">Figura 4</div>
+      <div class="fig-title">Escola do Comportamento Humano</div>
+      <div class="fig-placeholder">
+        <div class="ph-icon">[ FIG-04 · PLACEHOLDER ]</div>
+        <div class="ph-title">Diagrama a ser redesenhado</div>
+        <div class="ph-note">Escola do Comportamento Humano — ênfase nas pessoas e no ambiente; comportamento organizacional; motivação focada nas necessidades das pessoas</div>
+      </div>
+      <div class="fig-source">Fonte: Pereira (2022)</div>
+    </figure>
+  </div>
+
+  <footer class="foot">
+    <div class="l"><span>Seção 3 · 3.2 Relações Humanas · 2/2</span></div>
+    <div class="num">014</div>
+  </footer>
+</section>
+
+<!-- ═══════════════ PAGE 15 — 3.3 Comportamento Humano (1/2) ═══════════════ -->
+<section class="page">
+  <header class="runner">
+    <div class="brand">UNIGRAN EAD</div>
+    <div class="crumb">Aula 01 · <strong>Seção 3 · 3.3 Comportamento Humano</strong></div>
+    <div class="pg">10 / xxiv</div>
+  </header>
+
+  <div class="body">
+    <p>Herbert Simon ao estudar o comportamento humano compilou ideias que transformou em um livro com o título "Comportamento Administrativo", as ideias transmitidas nesse livros passaram a fazer parte da escola do comportamento humano. No livro ele detalha o comportamento humano dentro das organizações, definindo o ser humano como parte dinâmica do processo organizacional, pensando, agindo e tomando decisões (CHIAVENATO, 2016).</p>
+
+    <p>Em 1954, Maslow publicou o livro com título "Motivação e Personalidade", no qual apresentou sua teoria sobre como as pessoas satisfazem várias necessidades pessoais no contexto do ambiente de trabalho. Ele postulou, com base em suas observações como psicólogo humanista, que existe um padrão geral de reconhecimento e satisfação de necessidades que as pessoas seguem, em geral na mesma sequência. Ele também teorizou que uma pessoa não poderia reconhecer ou buscar a próxima necessidade mais alta na hierarquia, sem que a necessidade atualmente reconhecida fosse substancialmente ou completamente satisfeita (MIRANDA, 2015).</p>
+
+    <p>De acordo com a teoria desenvolvida por Maslow as necessidades humanas obedecem a uma ordem de importância e podem ser dispostas em uma hierarquia em formato de uma pirâmide, sendo que na base estão as necessidades básicas do organismo e no topo, as mais importantes. Assim, o comportamento humano depende da satisfação dessas cinco necessidades que são: fisiológicas, de segurança, sociais, autoestima e de realização (WYSE, 2018).</p>
+
+    <p>Ainda, dentro da escola comportamental, tem-se a contribuição de Herzberg, que construiu um paradigma bidimensional de fatores que afetam as atitudes das pessoas em relação ao trabalho. Ele concluiu que fatores como política da empresa, supervisão, relações interpessoais, condições de trabalho e salário são fatores motivadores ou não. De acordo com a teoria de Herzberg, a ausência de algum desses fatores motivacionais podem gerar insatisfação no trabalho, no entanto, a presença desses fatores não motiva ou cria satisfação. E demonstrou cinco fatores que determinam a satisfação no trabalho que são: realização, reconhecimento, o próprio trabalho, responsabilidade e progresso (CHIAVENATO, 2016).</p>
+  </div>
+
+  <footer class="foot">
+    <div class="l"><span>Seção 3 · 3.3 Comportamento Humano · 1/2</span></div>
+    <div class="num">015</div>
+  </footer>
+</section>
+
+<!-- ═══════════════ PAGE 16 — 3.3 Comportamento Humano (2/2) ═══════════════ -->
+<section class="page">
+  <header class="runner">
+    <div class="brand">UNIGRAN EAD</div>
+    <div class="crumb">Aula 01 · <strong>Seção 3 · 3.3 Comportamento Humano</strong></div>
+    <div class="pg">11 / xxiv</div>
+  </header>
+
+  <div class="body">
+    <p>Herzberg desenvolveu a teoria dos dois fatores que trata da motivação do homem no trabalho, os fatores são externos e internos, os primeiros têm a ver com as condições de trabalho, benefícios, salário, ambiente físico. Já o segundo tem a ver com a responsabilidade, reconhecimento e realização. O autor explica que a satisfação na função que desempenha dentro da empresa depende desses dois fatores conjugados (SILVA, 2021).</p>
+
+    <p>A escola do comportamento humano também foca a teoria X e Y elaborada por McGregor, que mostra que a conduta dos administradores é fortemente influenciada por suas suposições sobre o comportamento humano. A teoria X tem uma visão pessimista da natureza humana, especificando que a pessoa comum não gosta do trabalho, sempre evitará se possível, prefere ser dirigida, evita responsabilidades e quer segurança acima de tudo. Na teoria Y o trabalho é visto como uma coisa natural, tal como o lazer e o descanso, ao contrário da teoria X, considera que o homem não evita o trabalho, que é uma de satisfação, podendo ser fonte de recompensa ou de punição, dependendo da situação (CHIAVENATO, 2003).</p>
+
+    <h3 class="subsection">3.3 Escola Burocrática</h3>
+
+    <figure>
+      <div class="fig-label">Figura 5</div>
+      <div class="fig-title">Escola Burocrática</div>
+      <div class="fig-placeholder">
+        <div class="ph-icon">[ FIG-05 · PLACEHOLDER ]</div>
+        <div class="ph-title">Diagrama a ser redesenhado</div>
+        <div class="ph-note">Escola Burocrática — ênfase na formalidade; profissionalismo; impessoalidade</div>
+      </div>
+      <div class="fig-source">Fonte: Pereira (2022)</div>
+    </figure>
+  </div>
+
+  <footer class="foot">
+    <div class="l"><span>Seção 3 · 3.3 Comportamento Humano · 2/2</span></div>
+    <div class="num">016</div>
+  </footer>
+</section>
+
+<!-- ═══════════════ PAGE 17 — 3.3 Burocrática (1/2) ═══════════════ -->
+<section class="page">
+  <header class="runner">
+    <div class="brand">UNIGRAN EAD</div>
+    <div class="crumb">Aula 01 · <strong>Seção 3 · 3.3 Escola Burocrática</strong></div>
+    <div class="pg">12 / xxiv</div>
+  </header>
+
+  <div class="body">
+    <p>Para Max Weber a burocracia pode ser agrupada em três categorias: "formalidade, impessoalidade, e profissionalismo" (GIRALDI, 2020, p.3). Formalidade é porque a autoridade é definida por lei, que busca sempre a racionalidade de coesão entre meios e fins. Impessoalidade porque a obediência é determinada pelas leis, portanto as normas é que devem ser obedecidas, não as pessoas. Profissionalismo porque o trabalho deve ser executado por funcionários que se caracterizam dentro de uma profissão (GIRALDI, 2020).</p>
+
+    <p>A escola burocrática foi fundamentada pela ideologia do sociólogo alemão Max Weber, que mostrou especial preocupação com o que chamou de estruturas, embora seu trabalho nesta área tenha surgido quase como uma questão paralela ao seu estudo principal sobre poder e autoridade. A origem da escola burocrática se fundamenta essencialmente na tradição das práticas sociais. As características da burocracia da ênfase na forma, especialização da tarefa e competência, regras e normas ,responsabilidades definidas e registro (HILBERT, 1987).</p>
+
+    <p>Os três tipos de sociedade apresentadas por Max Weber são: tradicional, carismática, legal, racional ou burocrática. Tradicional é aquela que respeita os comandos, às orientações que passam de gerações a gerações, crendo nas tradições que existem há muitos anos e na legitimidade dos que herdam ou são indicados a exercer a autoridade. Carismática é aquela que aceita as ordens de um líder como legítimas, porque veem na figura do líder qualidades que lhe dão credibilidade e o fazem ser admirado. Legal, racional ou burocrática, é aquela que obedece e respeita hierarquia e autoridade (WILLIAMS, 2022.</p>
+
+    <p>Para Max Weber a burocracia administrativa segue seis etapas:</p>
+  </div>
+
+  <footer class="foot">
+    <div class="l"><span>Seção 3 · 3.3 Burocrática · 1/2</span></div>
+    <div class="num">017</div>
+  </footer>
+</section>
+
+<!-- ═══════════════ PAGE 18 — 3.3 Burocrática (2/2) ═══════════════ -->
+<section class="page">
+  <header class="runner">
+    <div class="brand">UNIGRAN EAD</div>
+    <div class="crumb">Aula 01 · <strong>Seção 3 · 3.3 Escola Burocrática</strong></div>
+    <div class="pg">13 / xxiv</div>
+  </header>
+
+  <div class="body">
+    <ol class="weber-list">
+      <li><b>divisão de trabalho:</b> as atividades laborais devem ser divididas de forma simplificada, dentro de uma rotina, bem estabelecida (GIRALDI, 2020);</li>
+      <li><b>hierarquia de autoridade:</b> os cargos ou postos devem seguir uma organização hierárquica, sendo que cada um dos postos inferiores é controlado e supervisionado por um posto mais elevado (GIRALDI, 2020);</li>
+      <li><b>seleção formal:</b> os trabalhadores devem ser selecionados a partir da expertise técnica, levando em consideração os treinamentos, os processos educativos e as provas de qualificação GIRALDI, 2020);</li>
+      <li><b>regras e regulamentos formais:</b> a burocracia compreende uniformidade e regulamentação das ações dos funcionários, dessa forma os gerentes podem recorrer as regras organizacionais formais para identificar se os funcionários estão seguindo-as GIRALDI, 2020);</li>
+      <li><b>impessoalidade:</b> o propósito é que todos sigam as regras e controles que são uniformes para todos, não considerando personalidades e preferências pessoais dos funcionários GIRALDI, 2020);</li>
+      <li><b>orientações de carreira:</b> tanto gerentes como funcionários são considerados apenas como trabalhadores da empresa, que recebem um salário para desenvolveram suas atividades, dessa forma seguem uma carreira dentro da organização GIRALDI, 2020).</li>
+    </ol>
+
+    <h3 class="subsection">3.4 Escola Estruturalista</h3>
+
+    <figure>
+      <div class="fig-label">Figura 6</div>
+      <div class="fig-title">Escola Estruturalista</div>
+      <div class="fig-placeholder">
+        <div class="ph-icon">[ FIG-06 · PLACEHOLDER ]</div>
+        <div class="ph-title">Diagrama a ser redesenhado</div>
+        <div class="ph-note">Escola Estruturalista — ênfase na estrutura organizacional, nas pessoas e no ambiente; organização complexa; homem organizacional; organizações formais e informais</div>
+      </div>
+      <div class="fig-source">Fonte: Pereira (2022)</div>
+    </figure>
+  </div>
+
+  <footer class="foot">
+    <div class="l"><span>Seção 3 · 3.3 Burocrática · 2/2</span></div>
+    <div class="num">018</div>
+  </footer>
+</section>
+
+<!-- ═══════════════ PAGE 19 — 3.4 Estruturalista + SEÇÃO 4 abertura ═══════════════ -->
+<section class="page">
+  <header class="runner">
+    <div class="brand">UNIGRAN EAD</div>
+    <div class="crumb">Aula 01 · <strong>Seção 3 · 3.4 Escola Estruturalista</strong></div>
+    <div class="pg">14 / xxiv</div>
+  </header>
+
+  <div class="body">
+    <p>A escola estruturalista promove a imagem do homem organizacional, que deve ter características cooperativistas e coletivistas e estar preparado para as constantes mudanças que ocorrem nas organizações. A ideia básica da escola estruturalista é apresentar a organização como uma unidade social ampla e complexa, que interagem com diferentes grupos sociais. Embora esses grupos compartilhem interesses comuns, também tem interesses incompatíveis. Os diversos grupos poderiam cooperar em certas esferas e competir em outras (MOTTA, 1970).</p>
+
+    <p>Amitai Ezioni foi um dos autores mais destacados da escola estruturalista, na sua visão "organizações são unidades sociais", que ao serem formadas tem como proposta alcançar propósitos próprios, que se caracteriza pelo agrupamento de relações sociais geradas com o intuito de obter cordos regulares entre as pessoas, para atingir os propósitos determinados (MOTTA, 19700.</p>
+
+    <h2 class="section"><span class="s-num">SEÇÃO 4</span>Funções Administrativas: Planejamento, Organização, Direção e Controle</h2>
+
+    <figure>
+      <div class="fig-label">Figura 7</div>
+      <div class="fig-title">Funções Administrativas</div>
+      <div class="fig-placeholder">
+        <div class="ph-icon">[ FIG-07 · PLACEHOLDER ]</div>
+        <div class="ph-title">Diagrama a ser redesenhado</div>
+        <div class="ph-note">Funções Administrativas — núcleo central com 4 satélites: Planejamento, Organização, Direção, Controle</div>
+      </div>
+      <div class="fig-source">Fonte: Pereira (2022)</div>
+    </figure>
+  </div>
+
+  <footer class="foot">
+    <div class="l"><span>Seção 3 · 3.4 Estruturalista · Seção 4 abertura</span></div>
+    <div class="num">019</div>
+  </footer>
+</section>
+
+<!-- ═══════════════ PAGE 20 — SEÇÃO 4 (1/3) ═══════════════ -->
+<section class="page">
+  <header class="runner">
+    <div class="brand">UNIGRAN EAD</div>
+    <div class="crumb">Aula 01 · <strong>Seção 4 — Funções Administrativas</strong></div>
+    <div class="pg">15 / xxiv</div>
+  </header>
+
+  <div class="body">
+    <p>Planejamento é a função básica da administração. Planejar é programar ação futuras e apropriadas para alcançar objetivos pré-determinados, é decidir com antecedência - o que fazer, quando fazer e como fazer, preenchendo a lacuna de onde se está e onde se quer chegar. O planejamento é um exercício de resolução de problemas e tomada de decisão. Assim, o planejamento é um pensamento sistemático sobre formas e meios para a realização pré-determinadas. O planejamento é necessário para garantir a utilização adequada dos recursos humanos e não humanos, é uma atividade intelectual e também prática que ajuda a evitar confusões, incertezas, riscos, desperdícios etc. (ARAUJO, 2004).</p>
+
+    <p>Segundo Drucker (2006, p.78):</p>
+
+    <blockquote>[...] planejamento é o processo contínuo de tomar decisões empresariais presentes de forma sistemática e com o melhor conhecimento possível de seu futuro, organizando sistematicamente os esforços necessários para realizar essas decisões e medindo os resultados dessas decisões em relação às expectativas por meio de feedback organizado e sistemático.</blockquote>
+
+    <p>Um planejamento eficiente identifica as consequências de fatores externos e internos no projeto. Os fatores externos podem ser a escassez de recursos, falta de capital e material, tendência política e econômica em geral, tecnologias e dinâmicas, regulamentações governamentais em relação aos interesses da comunidade, ambientes políticos internacionais instáveis, entre outros.</p>
+
+    <p>Já os fatores internos que podem afetar o planejamento são as limitações de crescimento decorrente um ambiente saturado que não diversifica, força de trabalho que não adere as mudanças estabelecidas pelo planejamento, estruturas organizacionais complexas e descentralizadas etc.</p>
+  </div>
+
+  <footer class="foot">
+    <div class="l"><span>Seção 4 · Funções Administrativas · 1/3</span></div>
+    <div class="num">020</div>
+  </footer>
+</section>
+
+<!-- ═══════════════ PAGE 21 — SEÇÃO 4 (2/3) ═══════════════ -->
+<section class="page">
+  <header class="runner">
+    <div class="brand">UNIGRAN EAD</div>
+    <div class="crumb">Aula 01 · <strong>Seção 4 — Funções Administrativas</strong></div>
+    <div class="pg">16 / xxiv</div>
+  </header>
+
+  <div class="body">
+    <p>Organização é o processo que reúne recursos humanos e financeiros no desenvolvimento de produtividade para alcançar objetivos organizacionais. Na concepção de Fayol (1990, p.38) "organizar uma empresa é dotá-la de tudo o que é útil ou para o seu funcionamento, isto é, matéria-prima, ferramentas, capital e pessoal". Organizar um negócio envolve determinar e fornecer recursos humanos e não humanos para uma estrutura organizacional. A organização como um processo envolve: identificação de atividades, classificação do agrupamento de atividades, atribuição de funções, delegação de autoridade e criação de responsabilidade, coordenação das relações de autoridade e responsabilidade (CHIAVENATO, 2016).</p>
+
+    <p>No que se refere a função administrativa de organizar cinco pontos devem ser levados em consideração:</p>
+
+    <ol class="proc">
+      <li>Identificar as tarefas que devem ser executadas e agrupá-las sempre que necessário.</li>
+      <li>Atribuir essas tarefas ao pessoal, e, ao definir a atribuição promover autoridade e responsabilidade.</li>
+      <li>Delegar autoridade aos funcionários que executam atividades com responsabilidade.</li>
+      <li>Estabelecer sempre uma relação entre autoridade e responsabilidade.</li>
+      <li>Coordenar todas as atividades executas pelos subordinados.</li>
+    </ol>
+
+    <p>Direção é a função gerencial que aciona os métodos organizacionais para trabalhar eficientemente para a realização dos objetivos organizacionais. A gestão direcional de uma organização é que põe em movimento as ações das pessoas para desenvolver o que foi planejado. A direção é responsável, na administração, pelo funcionamento, supervisão e motivação dos subordinados para a consecução dos objetivos.</p>
+
+    <p>Sendo a direção composta por: supervisão, motivação, liderança e comunicação. A supervisão é o ato de observar e dirigir o trabalho e os trabalhadores. Motivação significa inspirar, estimular ou encorajar os subordinados com zelo ao trabalho. A liderança é um processo pelo qual o gerente orienta e influencia o trabalho dos subordinados na direção desejada. Comunicações é o processo de passar informações, experiências, opiniões, entre outras atividades de uma pessoa para outra (SANTOS, 2018).</p>
+  </div>
+
+  <footer class="foot">
+    <div class="l"><span>Seção 4 · Funções Administrativas · 2/3</span></div>
+    <div class="num">021</div>
+  </footer>
+</section>
+
+<!-- ═══════════════ PAGE 22 — SEÇÃO 4 (3/3) ═══════════════ -->
+<section class="page">
+  <header class="runner">
+    <div class="brand">UNIGRAN EAD</div>
+    <div class="crumb">Aula 01 · <strong>Seção 4 — Funções Administrativas</strong></div>
+    <div class="pg">17 / xxiv</div>
+  </header>
+
+  <div class="body">
+    <p>Controle tem como objetivo garantir que tudo está em conformidade com as normas, dentro dos objetivos propostos e do planejamento realizado. Controlar é o processo de verificar se o desenvolvimento das atividades está sendo em direção aos objetivos e metas. E agir, se necessário, para corrigir qualquer desvio. O controle tem as seguintes etapas: estabelecimento de desempenho padrão, medição do desempenho real, comparação do desempenho real com os padrões e descobertas de desvios, se houver, e, ação protetora (CHIAVENATO, 2004).</p>
+
+    <p>A função administrativa de controle envolve aspectos que estão interrelacionadas, que são:</p>
+
+    <ol class="proc">
+      <li>Estabelecimento de desempenho padrão.</li>
+      <li>Medição do desempenho real.</li>
+      <li>A partir da medição do desempenho real de acordo com o padrão pré-determinado, descobrir os desvios.</li>
+      <li>Tomar medidas corretivas.</li>
+    </ol>
+
+    <p>Embora cada um desses aspectos da função administrativa de controle estejam interligadas, são difíceis de serem reconhecidas no ambiente de trabalho. Por isso é necessário analisar cada aspecto da função controle de forma separada, quando se for lidar com elas.</p>
+  </div>
+
+  <footer class="foot">
+    <div class="l"><span>Seção 4 · Funções Administrativas · 3/3</span></div>
+    <div class="num">022</div>
+  </footer>
+</section>
+
+<!-- ═══════════════ PAGE 23 — RETOMANDO (1/2) ═══════════════ -->
+<section class="page">
+  <header class="runner">
+    <div class="brand">UNIGRAN EAD</div>
+    <div class="crumb">Aula 01 · <strong>Retomando a conversa inicial</strong></div>
+    <div class="pg">18 / xxiv</div>
+  </header>
+
+  <div class="body">
+    <div class="retomando">
+      <div class="r-label">Recap da aula</div>
+      <h3 class="r-title">Retomando a conversa inicial</h3>
+      <p class="r-intro">🚀🚀 Chegamos, assim, ao final da primeira aula. Vamos recordar alguns dos pontos principais abordados:</p>
+
+      <h4><span class="rn">SEÇÃO 1</span>O que é Administração?</h4>
+      <p>Vimos nesta seção que administração é o ato de planejar, organizar, dirigir e controlar uma instituição, ou parte dela. Sendo então a gestão e organização de empresas de forma geral.</p>
+
+      <h4><span class="rn">SEÇÃO 2</span>Administração Enquanto Ciência</h4>
+      <p>Constatou-se nesta seção que a Ciência Administrativa é o conhecimento voltado para o entendimento das organizações, independentemente de sua propriedade ou área de atuação. A ciência administrativa elabora os conceitos científicos a partir de pesquisas aprofundadas nas organizações, observando de firma direta e prática. Assim, os conceitos administrativos são testados e comprovados na prática, formando assim as teorias. A Administração deve ser entendida sob três aspectos, que são: ciência, tecnologia e arte. Como arte, refere-se as habilidades artísticas para resolvendo os problemas de gestão organizacionais à luz da realidade das situações. Como técnica fundamenta-se em metodologias, práticas e conceitos. Assim, Administração é um alinhamento de habilidades, conceitos e técnicas. Um bom gestor é aquele que tem conhecimentos alinhados a sensibilidade para criar, inovar e refletir.</p>
+    </div>
+  </div>
+
+  <footer class="foot">
+    <div class="l"><span>Retomando · 1/2</span></div>
+    <div class="num">023</div>
+  </footer>
+</section>
+
+<!-- ═══════════════ PAGE 24 — RETOMANDO (2/2) + VALE A PENA ═══════════════ -->
+<section class="page">
+  <header class="runner">
+    <div class="brand">UNIGRAN EAD</div>
+    <div class="crumb">Aula 01 · <strong>Retomando · Vale a pena</strong></div>
+    <div class="pg">19 / xxiv</div>
+  </header>
+
+  <div class="body">
+    <div class="retomando">
+      <h4><span class="rn">SEÇÃO 3</span>Conceitos Básicos das Várias Escolas da Administração</h4>
+      <p>Observou-se nesta seção que a escola clássica da administração compreende as teoria das organizações, como tipo ideal de burocracia, modelos e imagens das organizações destacados por Max Weber. Processo administrativo, papel dos gestores, grupos de processos gerenciais, mostrados por Henri Fayol. Gestão de eficiência, eliminação de desperdício, estudo do tempo, movimento e processos evidenciados por Taylor e Ford. Na escola das relações humanas verificou-se que a administração deveria ser considerada ciência aplicada a sociedade. Assim, enquanto a abordagem clássica buscava aumentar a produção pela racionalização da organização do trabalho, o movimento das relações humanas apresentou a ideia de que a organização do trabalho deveria ser humanizado. A escola do comportamento humano apresentou ênfase nas pessoas e no ambiente de trabalho, apresentando que a motivação deveria ser focada nas necessidades das pessoas, dentro de um comportamento organizacional. O foco da escola burocrática é a formalidade, dando ênfase a impessoalidade e ao profissionalismo. A escola estruturalista deu ênfase a estrutura organizacional nas pessoas e no ambiente, identificando as organizações como formais e informais, colocando o homem como um ser organizacional.</p>
+
+      <h4><span class="rn">SEÇÃO 4</span>Funções Administrativas: Planejamento, Organização, Direção e Controle</h4>
+      <p>Nesta seção o foco foi nas funções administrativas, as quais são planejamento, organização, direção e controle. Vimos que planejamento é a função básica da administração. É uma atividade intelectual e também prática que ajuda a evitar confusões, incertezas, riscos, desperdícios etc. Organização é o processo que reúne recursos humanos e financeiros no desenvolvimento de produtividade para alcançar objetivos organizacionais. Direção é a função gerencial que aciona os métodos organizacionais para trabalhar eficientemente para a realização dos objetivos organizacionais. E controle tem como objetivo garantir que tudo está em conformidade com as normas, dentro dos objetivos propostos e do planejamento realizado.</p>
+    </div>
+
+    <div class="callout media">
+      <div class="c-label">📚 Vale a pena assistir</div>
+      <p style="font-family:'Literata',serif;font-size:10.5pt;color:var(--ink-strong);margin-bottom:3mm;">Vale a pena assistir aos vídeos do Youtube:</p>
+      <ul>
+        <li>Administração é Arte ou Ciência: <a>https://www.youtube.com/watch?v=9LIRFKj69yc</a></li>
+        <li>Teorias e escolas da administração: <a>https://www.youtube.com/watch?v=4xsxl3B5XT4</a></li>
+        <li>Funções da Administração: <a>https://www.youtube.com/watch?v=un6pQxzpVos</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <footer class="foot">
+    <div class="l"><span>Retomando · 2/2 · Vale a pena</span></div>
+    <div class="num">024</div>
+  </footer>
+</section>
+
+</body>
+</html>
