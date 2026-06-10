@@ -21,8 +21,8 @@ interativo + micro-roteiros de vídeo, com avaliação automática de qualidade.
 | **M04 — PDF Full** | — | Puppeteer | 📋 Pendente | — |
 | **M05 — Micro-roteiros (Agente B)** | Agente B | claude-sonnet-4-6 | 📋 Pendente | — |
 | **M06 — Imagens (Agente D)** | Agente D | claude-haiku-4-5 | 📋 Pendente | — |
-| **M07 — Montagem HTML (Agente C)** | Agente C | claude-sonnet-4-6 | 📋 Pendente | — |
-| **M08 — Quiz (Agente C)** | Agente C | claude-sonnet-4-6 | 📋 Pendente | — |
+| **M07 — Quiz (Agente C)** | Agente C | claude-sonnet-4-6 | 📋 Pendente | — |
+| **M08 — Montagem HTML** | Agente C | claude-sonnet-4-6 | 📋 Pendente | — |
 
 > **Hub:** `python3 servidor.py` → `http://127.0.0.1:5050`
 > **Agente E:** skill `analista-conteudo` (Claude Code) grava `score_v01.json`; o servidor normaliza e recalcula via `calculo.py` antes de exibir o laudo.
