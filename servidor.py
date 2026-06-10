@@ -40,6 +40,7 @@ def _importar_script(nome_modulo: str, arquivo: str):
 
 processar_mod = _importar_script("processar", "01-processar-entrada.py")
 separar_mod = _importar_script("separar_aulas", "02-separar-aulas.py")
+agente_e_mod = _importar_script("agente_e", "03-agente-e.py")
 
 app = Flask(__name__, static_folder="interface")
 
@@ -240,9 +241,7 @@ def api_processar():
         processamento_status = {"ativo": True, "etapa": "iniciando", "mensagem": "Iniciando processamento...", "concluido": False}
 
         if modulo == "analise":
-            # M02 — extrai o material (M01) e abre o laudo da aula.
-            # A avaliação em si é do Agente E; o laudo busca o score
-            # via /api/score e informa se ainda está pendente.
+            # M02 — extrai o material (M01) e roda o Agente E (avaliação)
             processamento_status["etapa"] = "analise"
             processamento_status["mensagem"] = "Extraindo material para análise..."
 
@@ -258,6 +257,17 @@ def api_processar():
                 processamento_status["concluido"] = True
                 return jsonify(r_extracao)
 
+            # Roda Agente E — avaliação de qualidade
+            processamento_status["mensagem"] = "Executando Agente E (avaliação)..."
+
+            r_avaliacao = agente_e_mod.agente_e(
+                codigo, disciplina, aula_num, curso, forcar
+            )
+
+            if not r_avaliacao.get("ok"):
+                processamento_status["concluido"] = True
+                return jsonify(r_avaliacao)
+
             processamento_status["concluido"] = True
             params = urlencode({
                 "curso": curso, "codigo": codigo,
@@ -265,9 +275,10 @@ def api_processar():
             })
             return jsonify({
                 "ok": True,
-                "status": "material_pronto",
+                "status": "avaliacao_concluida",
                 "redirect": f"/modulo02/laudo.html?{params}",
                 "extracao": r_extracao,
+                "avaliacao": r_avaliacao,
             })
 
         # M01 — Extrator (implementado)

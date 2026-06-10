@@ -24,6 +24,9 @@ interativo + micro-roteiros de vídeo, com avaliação automática de qualidade.
 | **M07 — Montagem HTML (Agente C)** | Agente C | claude-sonnet-4-6 | 📋 Pendente |
 | **M08 — Quiz (Agente C)** | Agente C | claude-sonnet-4-6 | 📋 Pendente |
 
+> **Nota:** O M02 está implementado com cálculo determinístico (`modulo02/calculo.py`).
+> A chamada à API do Claude (Agente E) está em desenvolvimento — use `--forcar` para reavaliar.
+
 ---
 
 # MÓDULO 01 — EXTRATOR ✅
@@ -166,12 +169,41 @@ Avalia a substância do material antes de qualquer reformulação.
 | `modulo02/test_calculo.py` | Valida os 4 cenários do PPT (5,70 · 7,15 · 4,00 · 8,45) |
 | `modulo02/laudo.html` | Tela visual do laudo para o coordenador |
 | `.claude/agents/analista-conteudo.md` | Prompt do Agente E (Opus 4.7) |
+| `scripts/03-agente-e.py` | Script de execução do Agente E |
+
+## Como Usar — Interface Visual
+
+1. No hub de entrada (`http://127.0.0.1:5000`):
+   - Selecione Curso, Disciplina e Aula
+   - Arraste o arquivo Word ou PDF
+   - Clique em **"Analisar conteúdo primeiro"**
+
+2. O sistema irá:
+   - Extrair o material (M01)
+   - Executar o Agente E (avaliação)
+   - Redirecionar para `/modulo02/laudo.html?curso=..&aula=N`
+
+3. O laudo carrega automaticamente se o score já existir
+
+## Como Usar — Linha de Comando
+
+```bash
+# Avaliar uma aula específica
+python3 scripts/03-agente-e.py \
+    --codigo ADM \
+    --disciplina "Fundamentos de Administração" \
+    --aula 1 \
+    --curso "administracao"
+
+# Reavaliar (ignora score existente)
+python3 scripts/03-agente-e.py --forcar ...
+```
 
 ## Como Abrir o Laudo
 
-1. Após o Agente E gerar `score_v01.json` em `03_avaliacao/`
-2. Abra `modulo02/laudo.html` no navegador
-3. Carregue o arquivo `score_v01.json` ou use "Dados de Teste"
+1. **Automático:** Após a avaliação, o hub redireciona para `/modulo02/laudo.html?params`
+2. **Manual:** Abra `modulo02/laudo.html` e carregue `03_avaliacao/score_v01.json`
+3. **URL direta:** `http://127.0.0.1:5000/modulo02/laudo.html?curso=adm&codigo=ADM&disciplina=...&aula=1`
 
 ## Outputs por Aula
 
