@@ -631,6 +631,7 @@
           <label for="combo-aula">Aula</label>
           <select id="combo-aula" disabled>
             <option value="">—</option>
+            <option value="todas">Todas (01-08)</option>
             <option value="1">1</option>
             <option value="2">2</option>
             <option value="3">3</option>
@@ -959,9 +960,13 @@
         formData.append('documento', arquivoDocumento);
       }
 
-      spinnerMensagem.textContent = modulo === 'analise'
-        ? 'Enviando para análise de conteúdo...'
-        : 'Extraindo material...';
+      if (comboAula.value === 'todas') {
+        spinnerMensagem.textContent = 'Separando as aulas do arquivo único...';
+      } else {
+        spinnerMensagem.textContent = modulo === 'analise'
+          ? 'Enviando para análise de conteúdo...'
+          : 'Extraindo material...';
+      }
       spinnerOverlay.style.display = 'flex';
 
       try {
@@ -971,14 +976,36 @@
         });
         const resultado = await res.json();
 
-        if (modulo === 'analise' && resultado.redirect) {
+        if (!resultado.ok) {
+          spinnerOverlay.style.display = 'none';
+          alert('⚠ ' + (resultado.erro || resultado.aviso || 'Erro ao processar.'));
+          return;
+        }
+
+        if (resultado.tipo === 'todas_aulas') {
+          spinnerMensagem.textContent = 'Concluído!';
+          setTimeout(() => {
+            spinnerOverlay.style.display = 'none';
+            const linhas = Object.entries(resultado.detalhes || {}).map(
+              ([aid, d]) => '  • ' + aid + ' (p.' + d.paginas + ', ' + d.qtd_imagens + ' imgs)'
+            );
+            let msg = resultado.total_aulas + ' aula(s) detectada(s) e separada(s)!\n\n'
+              + linhas.join('\n')
+              + '\n\nPasta: ' + resultado.pasta_disciplina;
+            if (resultado.aulas_puladas?.length) {
+              msg += '\n\nPuladas (já processadas): ' + resultado.aulas_puladas.join(', ');
+            }
+            alert(msg);
+          }, 1000);
+        } else if (modulo === 'analise' && resultado.redirect) {
           window.location.href = resultado.redirect;
         } else if (modulo === 'extrator') {
           spinnerMensagem.textContent = 'Concluído!';
           setTimeout(() => {
             spinnerOverlay.style.display = 'none';
-            const mdPath = resultado.texto?.path || 'N/A';
-            const imgsCount = resultado.imagens?.length || 0;
+            const mdPath = resultado.texto?.markdown || 'N/A';
+            const imgsCount = resultado.imagens?.qtd_imagens_pdf
+              ?? resultado.texto?.qtd_imagens_word ?? 0;
             alert('Extração concluída!\n\nMarkdown: ' + mdPath + '\nImagens: ' + imgsCount);
           }, 1000);
         }
@@ -988,9 +1015,10 @@
       }
     }
 
-    // Gerar código da disciplina (3 letras maiúsculas)
+    // Gerar código da disciplina (3 letras maiúsculas, sem acentos)
     function gerarCodigo(nome) {
-      return nome.substring(0, 3).toUpperCase().replace(/[^A-Z]/g, '');
+      const semAcento = nome.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      return semAcento.replace(/[^A-Za-z]/g, '').substring(0, 3).toUpperCase();
     }
 
     // Inicializar

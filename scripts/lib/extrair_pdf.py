@@ -12,10 +12,13 @@ except ImportError:
 
 def extrair_imagens_pdf(pdf: Path, pasta_aula: Path,
                         min_largura: int = 100, min_altura: int = 100,
-                        formatos: list = None) -> dict:
+                        formatos: list = None, paginas: list = None) -> dict:
     """
     Extrai imagens de um PDF para 04_imagens/antigas/.
     Filtra imagens muito pequenas (ícones, ruído) por min_largura/min_altura.
+
+    paginas: lista de índices 0-based para restringir a extração
+             (None = todas as páginas).
 
     Retorna dict com resultado.
     """
@@ -38,10 +41,15 @@ def extrair_imagens_pdf(pdf: Path, pasta_aula: Path,
         return {"ok": False, "erro": str(e), "etapa": "abrir_pdf"}
 
     contador = 0
-    for num_pagina in range(len(doc)):
+    xrefs_vistos = set()
+    indices = paginas if paginas is not None else range(len(doc))
+    for num_pagina in indices:
         pagina = doc[num_pagina]
         for img_info in pagina.get_images(full=True):
             xref = img_info[0]
+            if xref in xrefs_vistos:
+                continue  # mesma imagem repetida (ex.: logo de cabeçalho)
+            xrefs_vistos.add(xref)
             base = doc.extract_image(xref)
             ext = base["ext"].lower()
             if ext not in formatos:

@@ -10,23 +10,36 @@ Uso:
   (depois abra http://127.0.0.1:5000 no navegador)
 """
 import sys
+import json
+import shutil
 import tempfile
 import csv
 from pathlib import Path
 from collections import defaultdict
+from urllib.parse import urlencode
 
 from flask import Flask, request, jsonify, send_from_directory
+from werkzeug.utils import secure_filename
 import yaml
 
 sys.path.insert(0, str(Path(__file__).parent / "scripts"))
 import importlib.util
 
-# importa o orquestrador 01-processar-entrada.py (nome com hífen)
-spec = importlib.util.spec_from_file_location(
-    "processar", Path(__file__).parent / "scripts" / "01-processar-entrada.py"
-)
-processar_mod = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(processar_mod)
+from lib import pastas
+
+
+def _importar_script(nome_modulo: str, arquivo: str):
+    """Importa um script de scripts/ cujo nome tem hífen (uma vez, no boot)."""
+    spec = importlib.util.spec_from_file_location(
+        nome_modulo, Path(__file__).parent / "scripts" / arquivo
+    )
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+processar_mod = _importar_script("processar", "01-processar-entrada.py")
+separar_mod = _importar_script("separar_aulas", "02-separar-aulas.py")
 
 app = Flask(__name__, static_folder="interface")
 
@@ -42,6 +55,44 @@ def cfg():
 @app.route("/")
 def index():
     return send_from_directory("interface", "index.html")
+
+
+@app.route("/modulo02/<path:arquivo>")
+def modulo02_estatico(arquivo):
+    """Serve as telas do M02 (ex.: /modulo02/laudo.html)."""
+    return send_from_directory("modulo02", arquivo)
+
+
+def _salvar_uploads(files, tmp: Path):
+    """
+    Salva uploads e retorna (word_path, pdf_path).
+
+    Aceita o campo 'documento' (hub atual, roteia pela extensão) e
+    mantém compatibilidade com os campos 'word' e 'pdf' (CLI/legado).
+    """
+    word_path = pdf_path = None
+
+    doc = files.get("documento")
+    if doc and doc.filename:
+        nome = secure_filename(doc.filename)
+        destino = tmp / nome
+        doc.save(destino)
+        if nome.lower().endswith(".docx"):
+            word_path = destino
+        elif nome.lower().endswith(".pdf"):
+            pdf_path = destino
+
+    for campo, ext in (("word", ".docx"), ("pdf", ".pdf")):
+        f = files.get(campo)
+        if f and f.filename:
+            destino = tmp / secure_filename(f.filename)
+            f.save(destino)
+            if campo == "word":
+                word_path = destino
+            else:
+                pdf_path = destino
+
+    return word_path, pdf_path
 
 
 @app.route("/api/catalogo", methods=["GET"])
@@ -94,13 +145,64 @@ def api_status():
     return jsonify(processamento_status)
 
 
+@app.route("/api/score", methods=["GET"])
+def api_score():
+    """
+    Localiza o score_v*.json gerado pelo Agente E (M02) para uma aula.
+    Usado pelo laudo.html para carregar o laudo automaticamente.
+    """
+    curso = request.args.get("curso", "").strip()
+    codigo = request.args.get("codigo", "").strip()
+    disciplina = request.args.get("disciplina", "").strip()
+    aula = request.args.get("aula", "").strip()
+
+    try:
+        aula_num = int(aula)
+    except ValueError:
+        return jsonify({"erro": "Número da aula inválido."}), 400
+
+    raiz = Path(cfg()["raiz"]).expanduser()
+    pasta_aula = (
+        raiz / "cursos" / pastas.slugify(curso)
+        / pastas.nome_pasta_disciplina(codigo, disciplina)
+        / "aulas" / f"{aula_num:02d}"
+    )
+    aula_id = pastas.id_aula(codigo, aula_num)
+
+    if not pasta_aula.exists():
+        return jsonify({
+            "status": "sem_material",
+            "aula_id": aula_id,
+            "mensagem": "Aula ainda não foi extraída pelo Módulo 01.",
+        }), 404
+
+    # procura score_v*.json em qualquer subpasta (03_avaliacao etc.)
+    scores = sorted(pasta_aula.glob("*/score_v*.json"))
+    if not scores:
+        return jsonify({
+            "status": "aguardando_avaliacao",
+            "aula_id": aula_id,
+            "pasta": str(pasta_aula),
+            "mensagem": "Material extraído. Aguardando avaliação do Agente E.",
+        }), 404
+
+    try:
+        dados = json.loads(scores[-1].read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError) as e:
+        return jsonify({"erro": f"score inválido: {e}"}), 500
+
+    dados.setdefault("aula_id", aula_id)
+    return jsonify({"status": "ok", "score": dados, "arquivo": str(scores[-1])})
+
+
 @app.route("/api/processar", methods=["POST"])
 def api_processar():
     """
     Recebe arquivos + metadados e processa conforme flag 'modulo'.
 
     - modulo=extrator: roda M01 (extrator) — retorna .md + imagens
-    - modulo=analise: roda M02 (analise) — stub por enquanto, retorna em_breve
+    - modulo=analise: roda M02 (analise) — stub por enquanto
+    - aula="todas": separa automaticamente as 8 aulas do arquivo único
     """
     global processamento_status
 
@@ -114,6 +216,10 @@ def api_processar():
     if not (curso and codigo and disciplina and aula):
         return jsonify({"ok": False, "erro": "Preencha curso, código, disciplina e aula."}), 400
 
+    # Verificar se é "todas" as aulas
+    if aula.lower() == "todas":
+        return processar_todas_aulas(curso, codigo, disciplina, request.files, forcar)
+
     try:
         aula_num = int(aula)
     except ValueError:
@@ -121,37 +227,49 @@ def api_processar():
 
     # salva uploads temporariamente
     tmp = Path(tempfile.mkdtemp())
-    word_path = pdf_path = None
+    try:
+        word_path, pdf_path = _salvar_uploads(request.files, tmp)
 
-    if "word" in request.files and request.files["word"].filename:
-        word_path = tmp / request.files["word"].filename
-        request.files["word"].save(word_path)
+        if not (word_path or pdf_path):
+            return jsonify({"ok": False, "erro": "Envie ao menos um arquivo (Word ou PDF)."}), 400
 
-    if "pdf" in request.files and request.files["pdf"].filename:
-        pdf_path = tmp / request.files["pdf"].filename
-        request.files["pdf"].save(pdf_path)
+        print(f"\n[DEBUG] Processando: curso={curso}, codigo={codigo}, disciplina={disciplina}, aula={aula_num}")
+        print(f"[DEBUG] modulo={modulo}, word_path={word_path}, pdf_path={pdf_path}, forcar={forcar}")
 
-    if not (word_path or pdf_path):
-        return jsonify({"ok": False, "erro": "Envie ao menos um arquivo (Word ou PDF)."}), 400
+        # Atualiza status para polling
+        processamento_status = {"ativo": True, "etapa": "iniciando", "mensagem": "Iniciando processamento...", "concluido": False}
 
-    print(f"\n[DEBUG] Processando: curso={curso}, codigo={codigo}, disciplina={disciplina}, aula={aula_num}")
-    print(f"[DEBUG] modulo={modulo}, word_path={word_path}, pdf_path={pdf_path}, forcar={forcar}")
+        if modulo == "analise":
+            # M02 — extrai o material (M01) e abre o laudo da aula.
+            # A avaliação em si é do Agente E; o laudo busca o score
+            # via /api/score e informa se ainda está pendente.
+            processamento_status["etapa"] = "analise"
+            processamento_status["mensagem"] = "Extraindo material para análise..."
 
-    # Atualiza status para polling
-    processamento_status = {"ativo": True, "etapa": "iniciando", "mensagem": "Iniciando processamento...", "concluido": False}
+            r_extracao = processar_mod.processar(
+                codigo, disciplina, aula_num,
+                str(word_path) if word_path else None,
+                str(pdf_path) if pdf_path else None,
+                forcar,
+                curso,
+            )
+            # "aula já processada" não impede a análise — material existe
+            if not r_extracao.get("ok") and not r_extracao.get("aviso"):
+                processamento_status["concluido"] = True
+                return jsonify(r_extracao)
 
-    if modulo == "analise":
-        # M02 — Análise de conteúdo (stub por enquanto)
-        processamento_status["etapa"] = "analise"
-        processamento_status["mensagem"] = "Módulo 02 em desenvolvimento. Use 'extrator' por enquanto."
-        processamento_status["concluido"] = True
-        return jsonify({
-            "ok": True,
-            "status": "em_breve",
-            "mensagem": "Módulo 02 (Análise de Conteúdo) será implementado em breve.",
-            "redirect": "/modulo02/laudo.html"
-        })
-    else:
+            processamento_status["concluido"] = True
+            params = urlencode({
+                "curso": curso, "codigo": codigo,
+                "disciplina": disciplina, "aula": aula_num,
+            })
+            return jsonify({
+                "ok": True,
+                "status": "material_pronto",
+                "redirect": f"/modulo02/laudo.html?{params}",
+                "extracao": r_extracao,
+            })
+
         # M01 — Extrator (implementado)
         processamento_status["etapa"] = "extrator"
         processamento_status["mensagem"] = "Executando Módulo 01 — Extrator..."
@@ -169,6 +287,57 @@ def api_processar():
         processamento_status["concluido"] = True
         processamento_status["resultado"] = resultado
         return jsonify(resultado)
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
+def processar_todas_aulas(curso, codigo, disciplina, files, forcar):
+    """
+    Processa arquivo único contendo todas as aulas da disciplina.
+    Separa automaticamente em pastas individuais (scripts/02-separar-aulas.py).
+    """
+    global processamento_status
+
+    processamento_status = {
+        "ativo": True,
+        "etapa": "separando",
+        "mensagem": "Separando aulas do arquivo único...",
+        "concluido": False
+    }
+
+    tmp = Path(tempfile.mkdtemp())
+    try:
+        _, pdf_path = _salvar_uploads(files, tmp)
+
+        if not pdf_path:
+            return jsonify({"ok": False, "erro": "Envie um arquivo PDF para processar todas as aulas."}), 400
+
+        resultado = separar_mod.separar_aulas(
+            codigo, disciplina, str(pdf_path), curso, forcar
+        )
+
+        if resultado.get("ok"):
+            return jsonify({
+                "ok": True,
+                "tipo": "todas_aulas",
+                "total_aulas": resultado["total_aulas"],
+                "aulas_processadas": resultado["aulas_processadas"],
+                "aulas_puladas": resultado.get("aulas_puladas", []),
+                "pasta_disciplina": resultado["pasta_disciplina"],
+                "detalhes": resultado.get("detalhes", {})
+            })
+        return jsonify({
+            "ok": False,
+            "erro": resultado.get("erro", "Erro ao separar aulas")
+        })
+
+    except Exception as e:
+        print(f"[ERRO] processar_todas_aulas: {e}")
+        return jsonify({"ok": False, "erro": str(e)}), 500
+    finally:
+        processamento_status["ativo"] = False
+        processamento_status["concluido"] = True
+        shutil.rmtree(tmp, ignore_errors=True)
 
 
 if __name__ == "__main__":

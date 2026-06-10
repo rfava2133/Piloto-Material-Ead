@@ -721,8 +721,11 @@
 
     <!-- ESTADO VAZIO -->
     <div id="estado-vazio" class="estado-vazio">
-      <p><strong>Laudo de Avaliação — Módulo 02</strong></p>
-      <p>Carregue um arquivo <code>score_v01.json</code> ou use os dados de teste.</p>
+      <p><strong id="vazio-titulo">Laudo de Avaliação — Módulo 02</strong></p>
+      <p id="vazio-mensagem">Carregue um arquivo <code>score_v01.json</code> ou use os dados de teste.</p>
+      <p id="vazio-acao" style="margin-top:16px; display:none;">
+        <button onclick="carregarDaURL()">🔄 Verificar novamente</button>
+      </p>
     </div>
 
     <!-- LAUDO (oculto até carregar) -->
@@ -937,6 +940,39 @@
     function carregarDadosTeste() {
       renderizarLaudo(DADOS_TESTE);
     }
+
+    // Carregamento automático: /modulo02/laudo.html?curso=..&codigo=..&disciplina=..&aula=N
+    async function carregarDaURL() {
+      const params = new URLSearchParams(location.search);
+      if (!params.get('aula') || !params.get('codigo')) return;
+
+      try {
+        const res = await fetch('/api/score?' + params.toString());
+        const dados = await res.json();
+
+        if (res.ok && dados.status === 'ok') {
+          renderizarLaudo(dados.score);
+          return;
+        }
+
+        // Material existe mas o Agente E ainda não avaliou (ou nem foi extraído)
+        const aulaId = dados.aula_id || '—';
+        document.getElementById('topbar-aula').textContent = aulaId;
+        document.getElementById('vazio-titulo').textContent =
+          'Aula ' + aulaId + ' — avaliação pendente';
+        document.getElementById('vazio-mensagem').innerHTML =
+          dados.status === 'sem_material'
+            ? 'O material desta aula ainda não foi extraído pelo Módulo 01.'
+            : 'Material extraído e na fila de análise.<br>' +
+              'Execute o Agente E (<code>/processar-aula ' + aulaId + '</code>) ' +
+              'e clique em verificar novamente.';
+        document.getElementById('vazio-acao').style.display = 'block';
+      } catch (err) {
+        // aberto via file:// ou servidor fora do ar — mantém estado manual
+      }
+    }
+
+    carregarDaURL();
 
     function renderizarLaudo(dados) {
       // Mostrar laudo, esconder estado vazio
