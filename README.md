@@ -24,8 +24,8 @@ interativo + micro-roteiros de vídeo, com avaliação automática de qualidade.
 | **M07 — Montagem HTML (Agente C)** | Agente C | claude-sonnet-4-6 | 📋 Pendente | — |
 | **M08 — Quiz (Agente C)** | Agente C | claude-sonnet-4-6 | 📋 Pendente | — |
 
-> **Nota:** O M02 está implementado com cálculo determinístico (`modulo02/calculo.py`).
-> A chamada à API do Claude (Agente E) será integrada via Skill `analista-conteudo`.
+> **Hub:** `python3 servidor.py` → `http://127.0.0.1:5050`
+> **Agente E:** skill `analista-conteudo` (Claude Code) grava `score_v01.json`; o servidor normaliza e recalcula via `calculo.py` antes de exibir o laudo.
 
 ---
 
@@ -72,8 +72,10 @@ servidor:
 
 ```bash
 python3 servidor.py
-# abre http://127.0.0.1:5000
+# abre http://127.0.0.1:5050
 ```
+
+> **Nota:** a porta padrão é 5050 — a 5000 é ocupada pelo AirPlay Receiver do macOS.
 
 **Fluxo:**
 1. **Identifique a aula:**
@@ -167,23 +169,26 @@ Avalia a substância do material antes de qualquer reformulação.
 |---------|--------|
 | `modulo02/calculo.py` | Aritmética pura: índice + veredito (sem IA) |
 | `modulo02/test_calculo.py` | Valida os 4 cenários do PPT (5,70 · 7,15 · 4,00 · 8,45) |
-| `modulo02/laudo.html` | Tela visual do laudo para o coordenador |
-| `.claude/agents/analista-conteudo.md` | Prompt do Agente E (Opus 4.7) |
-| `scripts/03-agente-e.py` | Script de execução do Agente E |
+| `modulo02/laudo.html` | Tela visual do laudo (carregamento automático por URL) |
+| `skills/analista-conteudo/SKILL.md` | Skill do Agente E — rubricas + schema obrigatório do score |
+| `servidor.py` `/api/score` | Normaliza qualquer formato de score e recalcula via `calculo.py` |
 
 ## Como Usar — Interface Visual
 
-1. No hub de entrada (`http://127.0.0.1:5000`):
+1. No hub de entrada (`http://127.0.0.1:5050`):
    - Selecione Curso, Disciplina e Aula
    - Arraste o arquivo Word ou PDF
    - Clique em **"Analisar conteúdo primeiro"**
 
-2. O sistema irá:
-   - Extrair o material (M01)
-   - Executar o Agente E (avaliação)
-   - Redirecionar para `/modulo02/laudo.html?curso=..&aula=N`
+2. O servidor extrai o material (M01) e redireciona para o laudo da aula
 
-3. O laudo carrega automaticamente se o score já existir
+3. Execute o Agente E no Claude Code para gerar o `score_v01.json`:
+   - A skill `analista-conteudo` é ativada automaticamente ao pedir "avalia essa aula"
+   - O score é gravado em `03_avaliacao/score_v01.json`
+
+4. No laudo, clique **"Verificar novamente"** — o laudo carrega e exibe o resultado corrigido
+
+> **Garantia:** independente do formato que o Agente E produza, o `/api/score` sempre recalcula índice e veredito via `calculo.py` — o veredito da IA nunca chega à tela diretamente.
 
 ## Como Usar — Linha de Comando
 
@@ -203,7 +208,7 @@ python3 scripts/03-agente-e.py --forcar ...
 
 1. **Automático:** Após a avaliação, o hub redireciona para `/modulo02/laudo.html?params`
 2. **Manual:** Abra `modulo02/laudo.html` e carregue `03_avaliacao/score_v01.json`
-3. **URL direta:** `http://127.0.0.1:5000/modulo02/laudo.html?curso=adm&codigo=ADM&disciplina=...&aula=1`
+3. **URL direta:** `http://127.0.0.1:5050/modulo02/laudo.html?curso=adm&codigo=ADM&disciplina=...&aula=1`
 
 ## Outputs por Aula
 
@@ -327,7 +332,7 @@ piloto-extrator/
 
 ---
 
-*Atualizado em 2026-06-09*
+*Atualizado em 2026-06-10*
 
 ---
 

@@ -36,6 +36,7 @@ extracao:
   formatos_imagem: ["png", "jpg", "jpeg"]
 
 # Servidor da interface (piloto)
+# Porta 5050 — a 5000 é ocupada pelo AirPlay Receiver do macOS (responde 403)
 servidor:
   host: "127.0.0.1"
-  porta: 5000
+  porta: 5050

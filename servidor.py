@@ -23,9 +23,11 @@ from werkzeug.utils import secure_filename
 import yaml
 
 sys.path.insert(0, str(Path(__file__).parent / "scripts"))
+sys.path.insert(0, str(Path(__file__).parent / "modulo02"))
 import importlib.util
 
 from lib import pastas
+import calculo  # modulo02/calculo.py — índice e veredito auditáveis
 
 
 def _importar_script(nome_modulo: str, arquivo: str):
@@ -146,6 +148,82 @@ def api_status():
     return jsonify(processamento_status)
 
 
+def _normalizar_severidade(valor) -> str:
+    """'CRÍTICO' / 'sem ressalva' / ' Ressalva ' → CRITICO / SEM_RESSALVA / RESSALVA."""
+    import unicodedata
+    if isinstance(valor, dict):
+        valor = valor.get("severidade", "")
+    texto = unicodedata.normalize("NFD", str(valor))
+    texto = "".join(c for c in texto if not unicodedata.combining(c))
+    texto = texto.upper().strip().replace(" ", "_").replace("-", "_")
+    return texto if texto in ("SEM_RESSALVA", "RESSALVA", "CRITICO") else "SEM_RESSALVA"
+
+
+def _normalizar_score(dados: dict, aula_id: str) -> dict:
+    """
+    Converte qualquer formato de score já produzido pelas IAs para o
+    contrato que o laudo.html consome — e SEMPRE recalcula índice e
+    veredito via modulo02/calculo.py a partir das notas.
+
+    O veredito escrito pela IA é ignorado: a conta é do código (auditável).
+    """
+    # --- fundamentos: aceita objeto {severidade,...} ou string direta
+    fund_bruto = dados.get("fundamentos", {})
+    fundamentos = {}
+    for chave in ("A1", "A2"):
+        item = fund_bruto.get(chave, {})
+        if not isinstance(item, dict):
+            item = {"severidade": item}
+        item = dict(item)
+        item["severidade"] = _normalizar_severidade(item)
+        fundamentos[chave] = item
+    a1 = fundamentos["A1"]["severidade"]
+    a2 = fundamentos["A2"]["severidade"]
+
+    # --- indicadores: aceita {"B1": {"nota": 7}} ou {"B1": 7}
+    ind_bruto = dados.get("indicadores", {})
+    notas = {}
+    justificativas = {}
+    for chave, item in ind_bruto.items():
+        if isinstance(item, dict):
+            nota = item.get("nota")
+            justificativas[chave] = item.get("justificativa", "")
+        else:
+            nota = item
+        if chave in calculo.PESOS and isinstance(nota, (int, float)):
+            notas[chave] = float(nota)
+
+    # --- índice: recalculado das notas; sem notas, usa o número gravado
+    if notas:
+        indice = calculo.calcular_indice(notas)["indice"]
+    else:
+        bruto = dados.get("indice", 0)
+        indice = float(bruto.get("indice", 0) if isinstance(bruto, dict) else bruto or 0)
+
+    # --- veredito: SEMPRE recalculado (regra das 4 faixas + override CRÍTICO)
+    veredito = calculo.determinar_veredito(indice, a1, a2)
+
+    indicadores = {}
+    for chave, nota in notas.items():
+        peso = calculo.PESOS[chave]
+        indicadores[chave] = {
+            "nota": nota,
+            "peso": peso,
+            "contribuicao": round(nota * peso, 2),
+            "justificativa": justificativas.get(chave, ""),
+        }
+
+    return {
+        "aula_id": dados.get("aula_id", aula_id),
+        "indice": indice,
+        "veredito": veredito["faixa"],
+        "emoji": veredito["emoji"],
+        "acao": veredito["acao_coordenador"],
+        "fundamentos": fundamentos,
+        "indicadores": indicadores,
+    }
+
+
 @app.route("/api/score", methods=["GET"])
 def api_score():
     """
@@ -189,11 +267,11 @@ def api_score():
 
     try:
         dados = json.loads(scores[-1].read_text(encoding="utf-8"))
-    except (json.JSONDecodeError, OSError) as e:
+        score = _normalizar_score(dados, aula_id)
+    except (json.JSONDecodeError, OSError, TypeError, ValueError) as e:
         return jsonify({"erro": f"score inválido: {e}"}), 500
 
-    dados.setdefault("aula_id", aula_id)
-    return jsonify({"status": "ok", "score": dados, "arquivo": str(scores[-1])})
+    return jsonify({"status": "ok", "score": score, "arquivo": str(scores[-1])})
 
 
 @app.route("/api/processar", methods=["POST"])
