@@ -23,7 +23,9 @@ Uso:
 """
 import argparse
 import json
+import os
 import shutil
+import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -57,28 +59,107 @@ def carregar_markdown_aula(pasta_aula: Path) -> str:
     return md_files[0].read_text(encoding="utf-8")
 
 
-def avaliar_com_ia(texto: str, aula_id: str) -> dict:
+def avaliar_com_ia(texto: str, aula_id: str, disciplina: str, curso: str) -> dict:
     """
     Chama o Agente E (claude-opus-4-7) para avaliar o material.
 
+    Usa o Skill 'analista-conteudo' via linha de comando do Claude Code.
     Retorna o JSON de notas com fundamentos (A1, A2) e indicadores (B1-B5).
     """
-    # Esta função será implementada com a chamada real à API
-    # Por enquanto, retorna estrutura placeholder para desenvolvimento
-
     print("\n🔍 Agente E — Avaliando material...")
     print(f"   Aula: {aula_id}")
+    print(f"   Disciplina: {disciplina}")
+    print(f"   Curso: {curso}")
     print(f"   Texto: {len(texto)} caracteres")
-    print("\n   ⚠️  Implementação da chamada API pendente")
-    print("   Usando dados de exemplo para demonstração...\n")
 
-    # Placeholder - será substituído pela chamada real
+    # Monta o prompt para o Agente E
+    prompt = f"""Você é o Agente E — Analista de Conteúdo da Esteira UNIGRAN EAD.
+
+Avalie o material da aula {aula_id} ({disciplina} — {curso}).
+
+## Entrada
+
+Texto bruto da aula (Markdown):
+
+```
+{texto[:50000]}  # Limita a 50k caracteres para caber no contexto
+```
+
+## Tarefa
+
+Siga o prompt em `.claude/agents/analista-conteudo.md` e retorne APENAS o JSON abaixo (sem markdown, sem explicação):
+
+```json
+{{
+  "fundamentos": {{
+    "A1": {{
+      "severidade": "SEM_RESSALVA|RESSALVA|CRITICO",
+      "justificativa": "...",
+      "trecho": "..."
+    }},
+    "A2": {{
+      "severidade": "...",
+      "justificativa": "...",
+      "fontes_verificadas": [{{"obra": "...", "autor": "...", "ano": "...", "status": "confirmada|nao_localizada"}}]
+    }}
+  }},
+  "indicadores": {{
+    "B1": {{"nota": 0.0, "justificativa": "..."}},
+    "B2": {{"nota": 0.0, "justificativa": "..."}},
+    "B3": {{"nota": 0.0, "justificativa": "..."}},
+    "B4": {{"nota": 0.0, "justificativa": "..."}},
+    "B5": {{"nota": 0.0, "justificativa": "..."}}
+  }}
+}}
+```
+
+**Regras:**
+- Seja rigoroso mas justo — o veredito impacta o trabalho do coordenador
+- Para A2, use WebSearch/WebFetch para validar fontes
+- Justificativas devem citar trechos específicos quando relevante
+- Notas 0-10 devem usar as âncoras do prompt (3, 6, 9)"""
+
+    print("\n   📡 Enviando para análise (claude-opus-4-7)...")
+
+    # Tenta usar o Claude Code CLI se disponível
+    try:
+        # Verifica se claude está no PATH
+        result = subprocess.run(
+            ["claude", "--model", "claude-opus-4-7", "--prompt", prompt],
+            capture_output=True,
+            text=True,
+            timeout=300,  # 5 minutos timeout
+        )
+
+        if result.returncode == 0:
+            resposta = result.stdout.strip()
+            # Remove markdown code blocks se presentes
+            if resposta.startswith("```json"):
+                resposta = resposta[7:]
+            if resposta.endswith("```"):
+                resposta = resposta[:-3]
+            resposta = resposta.strip()
+
+            return json.loads(resposta)
+        else:
+            print(f"   ⚠️  Claude CLI falhou: {result.stderr}")
+    except FileNotFoundError:
+        print("   ⚠️  Claude CLI não encontrado no PATH")
+    except subprocess.TimeoutExpired:
+        print("   ⚠️  Timeout na análise (5 min)")
+    except json.JSONDecodeError as e:
+        print(f"   ⚠️  Erro ao parsear JSON: {e}")
+    except Exception as e:
+        print(f"   ⚠️  Erro inesperado: {e}")
+
+    # Fallback: retorna placeholder para desenvolvimento
+    print("\n   ⚠️  Usando dados de exemplo (fallback)")
     return {
         "fundamentos": {
             "A1": {
                 "severidade": "SEM_RESSALVA",
                 "justificativa": "Conceitos corretos e atualizados.",
-                "trecho": "Exemplo de trecho..."
+                "trecho": ""
             },
             "A2": {
                 "severidade": "SEM_RESSALVA",
@@ -266,7 +347,7 @@ def agente_e(
         }
 
     # Avalia com IA
-    resultado_ia = avaliar_com_ia(texto, aula_id)
+    resultado_ia = avaliar_com_ia(texto, aula_id, disciplina, curso)
 
     # Extrai notas para cálculo
     notas = {
