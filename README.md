@@ -170,8 +170,9 @@ Avalia a substância do material antes de qualquer reformulação.
 | `modulo02/calculo.py` | Aritmética pura: índice + veredito (sem IA) |
 | `modulo02/test_calculo.py` | Valida os 4 cenários do PPT (5,70 · 7,15 · 4,00 · 8,45) |
 | `modulo02/laudo.html` | Tela visual do **Relatório** (carregamento automático por URL) |
+| `modulo02/referencias.py` | Extrai referências do markdown quando o Agente E não as grava |
 | `skills/analista-conteudo/SKILL.md` | Skill do Agente E — rubricas + schema obrigatório do score |
-| `servidor.py` `/api/score` | Normaliza qualquer formato de score e recalcula via `calculo.py` |
+| `servidor.py` `/api/score` | Normaliza score, recalcula via `calculo.py` e enriquece A2 com refs |
 
 ## Como Usar — Interface Visual
 
@@ -309,6 +310,7 @@ piloto-extrator/
 │   ├── calculo.py                  # M02: Aritmética pura (índice + veredito)
 │   ├── test_calculo.py             # M02: Validação dos 4 cenários
 │   ├── laudo.html                  # M02: Tela visual para coordenador
+│   ├── referencias.py              # M02: Extrai refs do markdown (fallback A2)
 │   └── test-cenarios.html          # M02: Guia de teste dos cenários
 ├── scripts/
 │   ├── 01-processar-entrada.py     # M01: Extrator (Pandoc + PyMuPDF)
@@ -332,7 +334,7 @@ piloto-extrator/
 
 ---
 
-*Atualizado em 2026-06-10*
+*Atualizado em 2026-06-10 — fix A2: referencias.py preenche fontes_verificadas em produção*
 
 ---
 

@@ -372,7 +372,23 @@ def agente_e(
 
     # Monta score JSON completo (formato compatível com laudo.html)
     indice_valor = score["indice"]["indice"] if isinstance(score["indice"], dict) else score["indice"]
-    contribuicoes = score["indice"]["contribuicoes"] if isinstance(score["indice"], dict) else {k: v["nota"] * {"B1": 0.20, "B2": 0.15, "B3": 0.30, "B4": 0.15, "B5": 0.20}[k] for k, v in resultado_ia["indicadores"].items()}
+
+    # Bibliografia: se a skill não retornou fontes, extrai do markdown da aula
+    a2_block = resultado_ia["fundamentos"]["A2"]
+    if not a2_block.get("fontes_verificadas"):
+        from referencias import extrair_referencias_markdown
+        fontes_md = extrair_referencias_markdown(texto, numero_aula=aula)
+        if fontes_md:
+            a2_block["fontes_verificadas"] = fontes_md
+            if a2_block.get("justificativa") in (
+                "Verificado via skill analista-conteudo.",
+                "Referências localizáveis.",
+                "",
+            ):
+                a2_block["justificativa"] = (
+                    f"{len(fontes_md)} referência(s) citada(s) no material — "
+                    "validação externa pendente (Agente E)."
+                )
 
     # Adiciona peso e contribuicao em cada indicador (esperado pelo laudo.html)
     pesos = {"B1": 0.20, "B2": 0.15, "B3": 0.30, "B4": 0.15, "B5": 0.20}

@@ -539,6 +539,20 @@
       color: var(--chip-nao-localizada-text);
     }
 
+    .fonte-chip.citada {
+      background: #EFF6FF;
+      border-color: #BFDBFE;
+      color: #1D4ED8;
+    }
+
+    .fundamento-aviso {
+      font-family: var(--font-ui);
+      font-size: 13px;
+      color: var(--ink-muted);
+      font-style: italic;
+      margin-top: 8px;
+    }
+
     /* Bloco CRÍTICO */
     .bloco-critico {
       background: #FEF2F2;
@@ -890,6 +904,9 @@
           <ul id="a2-fontes" class="fontes-lista">
             <!-- Preenchido via JS -->
           </ul>
+          <p id="a2-sem-fontes" class="fundamento-aviso" style="display:none;">
+            Nenhuma referência encontrada no material extraído.
+          </p>
         </div>
 
         <!-- Bloco CRÍTICO -->
@@ -1150,18 +1167,29 @@
 
       // Fontes
       const fontesContainer = document.getElementById('a2-fontes');
+      const semFontes = document.getElementById('a2-sem-fontes');
       fontesContainer.innerHTML = '';
+
+      const ROTULO_FONTE = {
+        confirmada: { cls: 'confirmada', icon: '✓', label: 'Confirmada' },
+        nao_localizada: { cls: 'nao-localizada', icon: '⚠', label: 'Não localizada' },
+        citada: { cls: 'citada', icon: '○', label: 'Citada na aula' },
+      };
+
       if (a2.fontes_verificadas && a2.fontes_verificadas.length > 0) {
+        semFontes.style.display = 'none';
         for (const fonte of a2.fontes_verificadas) {
-          const statusClass = fonte.status === 'confirmada' ? 'confirmada' : 'nao-localizada';
-          const statusIcon = fonte.status === 'confirmada' ? '✓' : '⚠';
+          const st = ROTULO_FONTE[fonte.status] || ROTULO_FONTE.citada;
+          const ano = fonte.ano ? ` (${fonte.ano})` : '';
           fontesContainer.innerHTML += `
             <li>
-              <span class="fonte-chip ${statusClass}">${statusIcon} ${fonte.status === 'confirmada' ? 'Confirmada' : 'Não localizada'}</span>
-              <span class="fonte-texto"><strong>${fonte.autor}</strong> (${fonte.ano}) — ${fonte.obra}</span>
+              <span class="fonte-chip ${st.cls}">${st.icon} ${st.label}</span>
+              <span class="fonte-texto"><strong>${fonte.autor}</strong>${ano} — ${fonte.obra}</span>
             </li>
           `;
         }
+      } else {
+        semFontes.style.display = 'block';
       }
 
       // Bloco CRÍTICO

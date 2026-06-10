@@ -28,6 +28,7 @@ import importlib.util
 
 from lib import pastas
 import calculo  # modulo02/calculo.py — índice e veredito auditáveis
+import referencias as ref_mod  # modulo02/referencias.py — fallback bibliográfico
 
 
 def _importar_script(nome_modulo: str, arquivo: str):
@@ -268,6 +269,20 @@ def api_score():
     try:
         dados = json.loads(scores[-1].read_text(encoding="utf-8"))
         score = _normalizar_score(dados, aula_id)
+
+        # Se o Agente E não preencheu bibliografia, extrai do markdown da aula (M01)
+        a2 = score["fundamentos"].get("A2", {})
+        if not a2.get("fontes_verificadas"):
+            fontes_md = ref_mod.extrair_referencias_pasta(pasta_aula, numero_aula=aula_num)
+            if fontes_md:
+                a2["fontes_verificadas"] = fontes_md
+                just = (a2.get("justificativa") or "").strip()
+                if just in ("Referências localizáveis.", "Verificado via skill analista-conteudo.", ""):
+                    a2["justificativa"] = (
+                        f"{len(fontes_md)} referência(s) citada(s) no material — "
+                        "validação externa pendente (Agente E)."
+                    )
+                score["fundamentos"]["A2"] = a2
     except (json.JSONDecodeError, OSError, TypeError, ValueError) as e:
         return jsonify({"erro": f"score inválido: {e}"}), 500
 
