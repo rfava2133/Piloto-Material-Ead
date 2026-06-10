@@ -188,7 +188,7 @@ def avaliar(notas: dict, a1: str, a2: str) -> dict:
     # Monta laudo legível
     laudo = []
     laudo.append("=" * 60)
-    laudo.append("LAUDO DE AVALIAÇÃO — MÓDULO 02 (ANALISTA DE CONTEÚDO)")
+    laudo.append("RELATÓRIO DE AVALIAÇÃO — MÓDULO 02 (ANALISTA DE CONTEÚDO)")
     laudo.append("=" * 60)
     laudo.append("")
     laudo.append("FUNDAMENTOS (verificação de integridade)")

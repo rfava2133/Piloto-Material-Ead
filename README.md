@@ -16,7 +16,7 @@ interativo + micro-roteiros de vídeo, com avaliação automática de qualidade.
 | Módulo | Agente | Modelo | Status | Implementação |
 |--------|--------|--------|--------|---------------|
 | **M01 — Extrator** | — | determinístico | ✅ Implementado | Pandoc + PyMuPDF |
-| **M02 — Analista de Conteúdo** | Agente E | claude-opus-4-7 | ✅ Implementado | Avaliação + Laudo |
+| **M02 — Analista de Conteúdo** | Agente E | claude-opus-4-7 | ✅ Implementado | Avaliação + Relatório |
 | **M03 — Texto Display (Agente A)** | Agente A | claude-opus-4-7 | 📋 Pendente | — |
 | **M04 — PDF Full** | — | Puppeteer | 📋 Pendente | — |
 | **M05 — Micro-roteiros (Agente B)** | Agente B | claude-sonnet-4-6 | 📋 Pendente | — |
@@ -25,7 +25,7 @@ interativo + micro-roteiros de vídeo, com avaliação automática de qualidade.
 | **M08 — Montagem HTML** | Agente C | claude-sonnet-4-6 | 📋 Pendente | — |
 
 > **Hub:** `python3 servidor.py` → `http://127.0.0.1:5050`
-> **Agente E:** skill `analista-conteudo` (Claude Code) grava `score_v01.json`; o servidor normaliza e recalcula via `calculo.py` antes de exibir o laudo.
+> **Agente E:** skill `analista-conteudo` (Claude Code) grava `score_v01.json`; o servidor normaliza e recalcula via `calculo.py` antes de exibir o relatório.
 
 ---
 
@@ -169,7 +169,7 @@ Avalia a substância do material antes de qualquer reformulação.
 |---------|--------|
 | `modulo02/calculo.py` | Aritmética pura: índice + veredito (sem IA) |
 | `modulo02/test_calculo.py` | Valida os 4 cenários do PPT (5,70 · 7,15 · 4,00 · 8,45) |
-| `modulo02/laudo.html` | Tela visual do laudo (carregamento automático por URL) |
+| `modulo02/laudo.html` | Tela visual do **Relatório** (carregamento automático por URL) |
 | `skills/analista-conteudo/SKILL.md` | Skill do Agente E — rubricas + schema obrigatório do score |
 | `servidor.py` `/api/score` | Normaliza qualquer formato de score e recalcula via `calculo.py` |
 
@@ -180,13 +180,13 @@ Avalia a substância do material antes de qualquer reformulação.
    - Arraste o arquivo Word ou PDF
    - Clique em **"Analisar conteúdo primeiro"**
 
-2. O servidor extrai o material (M01) e redireciona para o laudo da aula
+2. O servidor extrai o material (M01) e redireciona para o relatório da aula
 
 3. Execute o Agente E no Claude Code para gerar o `score_v01.json`:
    - A skill `analista-conteudo` é ativada automaticamente ao pedir "avalia essa aula"
    - O score é gravado em `03_avaliacao/score_v01.json`
 
-4. No laudo, clique **"Verificar novamente"** — o laudo carrega e exibe o resultado corrigido
+4. No relatório, clique **"Verificar novamente"** — a tela carrega e exibe o resultado corrigido
 
 > **Garantia:** independente do formato que o Agente E produza, o `/api/score` sempre recalcula índice e veredito via `calculo.py` — o veredito da IA nunca chega à tela diretamente.
 
@@ -204,7 +204,7 @@ python3 scripts/03-agente-e.py \
 python3 scripts/03-agente-e.py --forcar ...
 ```
 
-## Como Abrir o Laudo
+## Como Abrir o Relatório
 
 1. **Automático:** Após a avaliação, o hub redireciona para `/modulo02/laudo.html?params`
 2. **Manual:** Abra `modulo02/laudo.html` e carregue `03_avaliacao/score_v01.json`
@@ -349,7 +349,7 @@ piloto-extrator/
 ### 🔧 Interface
 
 - Hub de entrada com catálogo de disciplinas (`interface/index.html`)
-- Laudo visual com carregamento automático (`modulo02/laudo.html`)
+- Laudo visual com carregamento automático (`modulo02/laudo.html` — tela de **Relatório**)
 - API REST (`servidor.py`): `/api/catalogo`, `/api/processar`, `/api/score`
 
 ### 📊 Métricas do M02

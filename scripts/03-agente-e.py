@@ -187,7 +187,7 @@ def gerar_laudo_markdown(aula_id: str, resultado_ia: dict, score: dict) -> str:
     """Gera o laudo em formato Markdown para leitura humana."""
     linhas = []
 
-    linhas.append("# Laudo de Avaliação — Módulo 02")
+    linhas.append("# Relatório de Avaliação — Módulo 02")
     linhas.append(f"**Aula:** {aula_id}")
     linhas.append(f"**Data:** {datetime.now().strftime('%d/%m/%Y %H:%M')}")
     linhas.append("")

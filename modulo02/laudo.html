@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Laudo — Módulo 02 | UNIGRAN EAD</title>
+  <title>Relatório — Módulo 02 | UNIGRAN EAD</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Literata:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -281,14 +281,28 @@
       text-align: center;
     }
 
-    .indice-section h2 {
+    /* Títulos de seção (índice, indicadores, fundamentos, tabela) */
+    .section-heading {
       font-family: var(--font-ui);
-      font-size: 9px;
-      font-weight: 500;
-      letter-spacing: 2px;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
       text-transform: uppercase;
-      color: var(--ink-muted);
-      margin-bottom: 20px;
+      color: var(--ink-strong);
+      margin-bottom: 24px;
+    }
+
+    .indice-section h2,
+    .indicadores-section h2,
+    .fundamentos-section h2,
+    .tabela-section h2 {
+      font-family: var(--font-ui);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--ink-strong);
+      margin-bottom: 24px;
     }
 
     .gauge-wrapper {
@@ -298,23 +312,25 @@
 
     .gauge-value {
       position: absolute;
-      bottom: 20px;
+      bottom: 28px;
       left: 50%;
       transform: translateX(-50%);
       font-family: var(--font-ui);
-      font-size: 24px;
+      font-size: 44px;
       font-weight: 700;
-      letter-spacing: -0.5px;
+      letter-spacing: -1px;
+      color: var(--ink-strong);
     }
 
     .gauge-markers {
       display: flex;
       justify-content: space-between;
-      max-width: 200px;
-      margin: 12px auto 0;
+      max-width: 280px;
+      margin: 16px auto 0;
       font-family: var(--font-mono);
-      font-size: 10px;
-      color: var(--ink-faint);
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--ink-muted);
     }
 
     /* =============================================================================
@@ -324,15 +340,6 @@
       margin-bottom: 56px;
     }
 
-    .indicadores-section h2 {
-      font-family: var(--font-ui);
-      font-size: 9px;
-      font-weight: 500;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: var(--ink-muted);
-      margin-bottom: 24px;
-    }
 
     .indicador-item {
       padding-bottom: 24px;
@@ -411,15 +418,6 @@
       margin-bottom: 56px;
     }
 
-    .fundamentos-section h2 {
-      font-family: var(--font-ui);
-      font-size: 9px;
-      font-weight: 500;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: var(--ink-muted);
-      margin-bottom: 24px;
-    }
 
     .fundamento-item {
       padding-bottom: 24px;
@@ -490,10 +488,19 @@
     }
 
     .fontes-lista li {
-      padding: 16px 0;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 14px 0;
       border-bottom: 1px solid var(--line);
       font-family: var(--font-ui);
       font-size: 15px;
+      line-height: 1.45;
+    }
+
+    .fonte-texto {
+      flex: 1;
+      min-width: 0;
     }
 
     .fontes-lista li:first-child {
@@ -512,11 +519,12 @@
       font-weight: 600;
       letter-spacing: 0.3px;
       text-transform: uppercase;
-      padding: 2px 8px;
+      padding: 4px 10px;
       border-radius: 4px;
       border: 1px solid;
       display: inline-block;
-      margin-top: 6px;
+      flex-shrink: 0;
+      margin-top: 2px;
     }
 
     .fonte-chip.confirmada {
@@ -576,15 +584,6 @@
       margin-bottom: 56px;
     }
 
-    .tabela-section h2 {
-      font-family: var(--font-ui);
-      font-size: 9px;
-      font-weight: 500;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: var(--ink-muted);
-      margin-bottom: 16px;
-    }
 
     .tabela-auditavel {
       width: 100%;
@@ -593,13 +592,47 @@
       font-size: 14px;
     }
 
+    .tabela-legenda {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 20px;
+      margin-bottom: 16px;
+      padding: 12px 16px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      font-family: var(--font-ui);
+      font-size: 12px;
+      color: var(--ink-muted);
+    }
+
+    .legenda-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 500;
+    }
+
+    .legenda-item::before {
+      content: "";
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    .legenda-item.nota-solido::before { background: var(--aprovar); }
+    .legenda-item.nota-ressalva::before { background: var(--aprovar-ressalva); }
+    .legenda-item.nota-intervencao::before { background: var(--intervencao); }
+    .legenda-item.nota-deficiente::before { background: var(--recriar); }
+
     .tabela-auditavel thead th {
       text-align: left;
       padding: 14px 16px;
       background: #F9FAFB;
       border-bottom: 2px solid var(--ink-strong);
       font-weight: 600;
-      font-size: 12px;
+      font-size: 13px;
       letter-spacing: 0.5px;
       color: var(--ink-strong);
       text-transform: uppercase;
@@ -629,17 +662,61 @@
       color: var(--ink-strong);
     }
 
-    /* Destaque para contribuições (cores de semáforo) */
-    .tabela-auditavel tbody tr.contrib-alta td:last-child {
+    /* Faixas por nota — onde corrigir */
+    .tabela-auditavel tbody tr.nota-solido {
+      background: #F0FDF4;
+    }
+    .tabela-auditavel tbody tr.nota-ressalva {
+      background: #FFFBEB;
+    }
+    .tabela-auditavel tbody tr.nota-intervencao {
+      background: #FFF7ED;
+    }
+    .tabela-auditavel tbody tr.nota-deficiente {
+      background: #FEF2F2;
+    }
+
+    .tabela-auditavel tbody tr.nota-solido td:nth-child(3),
+    .tabela-auditavel tbody tr.nota-solido td:last-child {
       color: var(--aprovar);
     }
-
-    .tabela-auditavel tbody tr.contrib-media td:last-child {
+    .tabela-auditavel tbody tr.nota-ressalva td:nth-child(3),
+    .tabela-auditavel tbody tr.nota-ressalva td:last-child {
       color: var(--aprovar-ressalva);
     }
-
-    .tabela-auditavel tbody tr.contrib-baixa td:last-child {
+    .tabela-auditavel tbody tr.nota-intervencao td:nth-child(3),
+    .tabela-auditavel tbody tr.nota-intervencao td:last-child {
       color: var(--intervencao);
+      font-weight: 600;
+    }
+    .tabela-auditavel tbody tr.nota-deficiente td:nth-child(3),
+    .tabela-auditavel tbody tr.nota-deficiente td:last-child {
+      color: var(--recriar);
+      font-weight: 700;
+    }
+
+    .nota-badge {
+      display: inline-block;
+      font-family: var(--font-ui);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+      padding: 2px 6px;
+      border-radius: 3px;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+
+    .nota-badge.prioridade {
+      background: #FEE2E2;
+      color: #B91C1C;
+    }
+
+    .indicador-tag.prioridade {
+      background: #FEE2E2;
+      color: #B91C1C;
+      border-color: #FECACA;
     }
 
     .tabela-auditavel tfoot td {
@@ -721,7 +798,7 @@
 
     <!-- ESTADO VAZIO -->
     <div id="estado-vazio" class="estado-vazio">
-      <p><strong id="vazio-titulo">Laudo de Avaliação — Módulo 02</strong></p>
+      <p><strong id="vazio-titulo">Relatório de Avaliação — Módulo 02</strong></p>
       <p id="vazio-mensagem">Carregue um arquivo <code>score_v01.json</code> ou use os dados de teste.</p>
       <p id="vazio-acao" style="margin-top:16px; display:none;">
         <button onclick="carregarDaURL()">🔄 Verificar novamente</button>
@@ -733,7 +810,7 @@
 
       <!-- 1. CABEÇALHO -->
       <header class="laudo-header">
-        <div class="eyebrow">Laudo de Avaliação</div>
+        <div class="eyebrow">Relatório de Avaliação</div>
         <h1 class="laudo-title">Módulo 02 — Analista de Conteúdo</h1>
         <div class="laudo-meta">
           <span>Aula: <strong id="meta-aula">—</strong></span>
@@ -756,19 +833,19 @@
       <section class="indice-section">
         <h2>Índice de Qualidade Didática</h2>
         <div class="gauge-wrapper">
-          <svg id="gauge-svg" width="200" height="110" viewBox="0 0 200 110">
+          <svg id="gauge-svg" width="280" height="154" viewBox="0 0 200 110">
             <!-- Arco de fundo -->
             <path d="M 10 100 A 90 90 0 0 1 190 100"
                   fill="none"
                   stroke="#E5E2DC"
-                  stroke-width="8"
+                  stroke-width="10"
                   stroke-linecap="round"/>
             <!-- Arco preenchido (dinâmico) -->
             <path id="gauge-arco"
                   d="M 10 100 A 90 90 0 0 1 190 100"
                   fill="none"
                   stroke="#CA8A04"
-                  stroke-width="8"
+                  stroke-width="10"
                   stroke-linecap="round"
                   stroke-dasharray="283"
                   stroke-dashoffset="141"/>
@@ -828,6 +905,12 @@
       <!-- 6. TABELA AUDITÁVEL -->
       <section class="tabela-section">
         <h2>Tabela Auditável</h2>
+        <div class="tabela-legenda" aria-label="Legenda de faixas por nota">
+          <span class="legenda-item nota-solido">Sólido (≥ 8,0) — aprovar</span>
+          <span class="legenda-item nota-ressalva">Ressalva (6,5–7,9) — ajustes pontuais</span>
+          <span class="legenda-item nota-intervencao">Intervenção (5,0–6,4) — corrigir</span>
+          <span class="legenda-item nota-deficiente">Deficiente (&lt; 5,0) — recriar base</span>
+        </div>
         <table class="tabela-auditavel">
           <thead>
             <tr>
@@ -974,6 +1057,14 @@
 
     carregarDaURL();
 
+    // Faixa de nota — cores alinhadas às 4 faixas do veredito
+    function faixaNota(nota) {
+      if (nota < 5.0) return { classe: 'nota-deficiente', cor: '#DC2626' };
+      if (nota < 6.5) return { classe: 'nota-intervencao', cor: '#EA580C' };
+      if (nota < 8.0) return { classe: 'nota-ressalva', cor: '#CA8A04' };
+      return { classe: 'nota-solido', cor: '#15803D' };
+    }
+
     function renderizarLaudo(dados) {
       // Mostrar laudo, esconder estado vazio
       document.getElementById('estado-vazio').style.display = 'none';
@@ -1017,38 +1108,24 @@
       const container = document.getElementById('indicadores-container');
       container.innerHTML = '';
 
-      // Encontrar maior e menor contribuição
-      let maior = { key: null, valor: -Infinity };
-      let menor = { key: null, valor: Infinity };
-
-      for (const [key, ind] of Object.entries(indicadores)) {
-        const c = ind.contribuicao || (ind.nota * ind.peso);
-        if (c > maior.valor) maior = { key, valor: c };
-        if (c < menor.valor) menor = { key, valor: c };
-      }
-
-      // Obter cor do veredito atual para as barras
-      const dados = DADOS_TESTE; // usa cor do veredito dos dados de teste
-      const v = VEREDITOS[dados.veredito] || VEREDITOS.INTERVENCAO_EDITORIAL;
-
       for (const [key, ind] of Object.entries(indicadores)) {
         const nota = ind.nota;
         const peso = ind.peso;
         const contribuicao = ind.contribuicao || (nota * peso);
         const pct = (nota / 10) * 100;
         const nome = NOMES_INDICADORES[key] || key;
-
-        const tagMaior = key === maior.key ? '<span class="indicador-tag">Maior</span>' : '';
-        const tagMenor = key === menor.key ? '<span class="indicador-tag">Menor</span>' : '';
+        const faixa = faixaNota(nota);
+        const tagPrioridade = nota < 6.5
+          ? '<span class="indicador-tag prioridade">Corrigir</span>' : '';
 
         container.innerHTML += `
           <div class="indicador-item">
             <div class="indicador-header">
-              <span class="indicador-nome">${key} — ${nome} ${tagMaior}${tagMenor}</span>
+              <span class="indicador-nome">${key} — ${nome} ${tagPrioridade}</span>
               <span class="indicador-calculo">${nota.toFixed(1).replace('.', ',')} × ${(peso * 100).toFixed(0)}% = <span class="coeficiente">${contribuicao.toFixed(2).replace('.', ',')}</span></span>
             </div>
             <div class="indicador-barra-bg">
-              <div class="indicador-barra-fill" style="width: ${pct}%; background: ${v.cor}"></div>
+              <div class="indicador-barra-fill" style="width: ${pct}%; background: ${faixa.cor}"></div>
             </div>
             <p class="indicador-justificativa">${ind.justificativa || '—'}</p>
           </div>
@@ -1080,8 +1157,8 @@
           const statusIcon = fonte.status === 'confirmada' ? '✓' : '⚠';
           fontesContainer.innerHTML += `
             <li>
-              <strong>${fonte.autor}</strong> (${fonte.ano}) — ${fonte.obra}<br>
               <span class="fonte-chip ${statusClass}">${statusIcon} ${fonte.status === 'confirmada' ? 'Confirmada' : 'Não localizada'}</span>
+              <span class="fonte-texto"><strong>${fonte.autor}</strong> (${fonte.ano}) — ${fonte.obra}</span>
             </li>
           `;
         }
@@ -1102,33 +1179,20 @@
       const tbody = document.getElementById('tabela-corpo');
       tbody.innerHTML = '';
 
-      // Calcular maior e menor contribuição para cores
-      const contribuicoes = Object.values(indicadores).map(ind => ind.contribuicao || (ind.nota * ind.peso));
-      const maxContrib = Math.max(...contribuicoes);
-      const minContrib = Math.min(...contribuicoes);
-      const midContrib = (maxContrib + minContrib) / 2;
-
       for (const [key, ind] of Object.entries(indicadores)) {
         const nota = ind.nota;
         const peso = (ind.peso * 100).toFixed(0);
         const contribuicao = ind.contribuicao || (nota * ind.peso);
         const nome = NOMES_INDICADORES[key] || key;
-
-        // Classe de cor baseada na contribuição relativa
-        let contribClass = '';
-        if (contribuicao >= midContrib) {
-          contribClass = 'contrib-alta';
-        } else if (contribuicao >= minContrib) {
-          contribClass = 'contrib-media';
-        } else {
-          contribClass = 'contrib-baixa';
-        }
+        const faixa = faixaNota(nota);
+        const badge = nota < 6.5
+          ? '<span class="nota-badge prioridade">corrigir</span>' : '';
 
         tbody.innerHTML += `
-          <tr class="${contribClass}">
+          <tr class="${faixa.classe}">
             <td>${key} — ${nome}</td>
             <td>${peso}%</td>
-            <td>${nota.toFixed(1).replace('.', ',')}</td>
+            <td>${nota.toFixed(1).replace('.', ',')}${badge}</td>
             <td>${contribuicao.toFixed(2).replace('.', ',')}</td>
           </tr>
         `;
