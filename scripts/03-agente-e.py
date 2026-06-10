@@ -195,8 +195,9 @@ def gerar_laudo_markdown(aula_id: str, resultado_ia: dict, score: dict) -> str:
     # Veredito em destaque
     emoji = score["veredito"]["emoji"]
     rotulo = score["veredito"]["rotulo"]
+    indice_valor = score["indice"]["indice"] if isinstance(score["indice"], dict) else score["indice"]
     linhas.append(f"## {emoji} Veredito: {rotulo}")
-    linhas.append(f"**Índice de Qualidade Didática:** {score['indice']:.2f}")
+    linhas.append(f"**Índice de Qualidade Didática:** {indice_valor:.2f}")
     linhas.append("")
     linhas.append(f"**Ação recomendada:** {score['veredito']['acao_coordenador']}")
     linhas.append("")
@@ -236,7 +237,7 @@ def gerar_laudo_markdown(aula_id: str, resultado_ia: dict, score: dict) -> str:
         contribuicao = dados["nota"] * peso
         linhas.append(f"| {ind} | {dados['nota']:.1f} | {peso:.2f} | {contribuicao:.2f} |")
 
-    linhas.append(f"| **TOTAL** | — | **1.00** | **{score['indice']:.2f}** |")
+    linhas.append(f"| **TOTAL** | — | **1.00** | **{indice_valor:.2f}** |")
     linhas.append("")
 
     # Detalhamento por indicador
@@ -397,7 +398,7 @@ def agente_e(
 
     print(f"\n   ✅ Laudo gerado: {pasta_avaliacao / f'avaliacao_{versao}.md'}")
     print(f"   ✅ Score JSON: {pasta_avaliacao / f'score_{versao}.json'}")
-    print(f"\n   📊 Índice: {score['indice']:.2f}")
+    print(f"\n   📊 Índice: {indice_valor:.2f}")
     print(f"   {'='*60}")
     print(f"   {score['veredito']['emoji']} {score['veredito']['rotulo']}")
     print(f"   {score['veredito']['acao_coordenador']}")
@@ -412,7 +413,7 @@ def agente_e(
         "modulo": "M02",
         "agente": "E",
         "modelo": "claude-opus-4-7",
-        "indice": score["indice"],
+        "indice": indice_valor,
         "veredito": score["veredito"]["faixa"],
         "score_path": str(pasta_avaliacao / f"score_{versao}.json"),
         "laudo_path": str(pasta_avaliacao / f"avaliacao_{versao}.md"),
@@ -421,7 +422,7 @@ def agente_e(
     return {
         "ok": True,
         "aula_id": aula_id,
-        "indice": score["indice"],
+        "indice": indice_valor,
         "veredito": score["veredito"]["faixa"],
         "emoji": score["veredito"]["emoji"],
         "score_path": str(pasta_avaliacao / f"score_{versao}.json"),
