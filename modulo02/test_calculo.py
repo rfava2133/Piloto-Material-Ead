@@ -15,7 +15,9 @@ porque A2 é CRÍTICO. Isso demonstra que Fundamentos ≠ Índice.
 """
 
 import sys
-sys.path.insert(0, "/Users/rfava/PROJETOS IA/piloto-extrator/modulo02")
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent))
 
 from calculo import calcular_indice, determinar_veredito, avaliar
 

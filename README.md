@@ -46,7 +46,7 @@ pip install flask pyyaml pymupdf pymupdf4llm --break-system-packages
 ## Configuração — `scripts/config.yml`
 
 ```yaml
-raiz: "/Users/rfava/PROJETOS IA/piloto-extrator"
+raiz: "/Users/rfava/PROJETOS IA/esteira_conteudo"
 
 subpastas:
   - "01_source"
@@ -342,7 +342,7 @@ python3 app.py
 ## Estrutura de Arquivos do Projeto
 
 ```
-piloto-extrator/
+esteira_conteudo/
 ├── .claude/
 │   └── agents/
 │       └── analista-conteudo.md    # M02: Prompt do Agente E

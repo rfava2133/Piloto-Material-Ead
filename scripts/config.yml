@@ -2,7 +2,7 @@
 # Edite os valores conforme seu ambiente.
 
 # Caminho raiz do projeto (pasta sincronizada no Google Drive)
-raiz: "/Users/rfava/PROJETOS IA/piloto-extrator"
+raiz: "/Users/rfava/PROJETOS IA/esteira_conteudo"
 
 # Curso padrão (usado se não especificado)
 curso_padrao: "EAD"

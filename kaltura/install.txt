@@ -16,7 +16,7 @@ MAC
 
 2. Entrar na pasta do projeto:
 
-   cd "/Users/rfava/PROJETOS IA/piloto-extrator"
+   cd "/Users/rfava/PROJETOS IA/esteira_conteudo"
 
 3. Criar ambiente virtual:
 
@@ -52,7 +52,7 @@ WINDOWS
 
 2. Entrar na pasta do projeto, por exemplo:
 
-   cd "C:\caminho\para\piloto-extrator"
+   cd "C:\caminho\para\esteira_conteudo"
 
 3. Criar ambiente virtual:
 
