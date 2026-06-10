@@ -13,19 +13,19 @@ interativo + micro-roteiros de vídeo, com avaliação automática de qualidade.
 
 ## Pipeline — Módulos
 
-| Módulo | Agente | Modelo | Status |
-|--------|--------|--------|--------|
-| **M01 — Extrator** | — | determinístico | ✅ Implementado |
-| **M02 — Analista de Conteúdo** | Agente E | claude-opus-4-7 | ✅ Implementado |
-| **M03 — Texto Display (Agente A)** | Agente A | claude-opus-4-7 | 📋 Pendente |
-| **M04 — PDF Full** | Puppeteer | determinístico | 📋 Pendente |
-| **M05 — Micro-roteiros (Agente B)** | Agente B | claude-sonnet-4-6 | 📋 Pendente |
-| **M06 — Imagens (Agente D)** | Agente D | claude-haiku-4-5 | 📋 Pendente |
-| **M07 — Montagem HTML (Agente C)** | Agente C | claude-sonnet-4-6 | 📋 Pendente |
-| **M08 — Quiz (Agente C)** | Agente C | claude-sonnet-4-6 | 📋 Pendente |
+| Módulo | Agente | Modelo | Status | Implementação |
+|--------|--------|--------|--------|---------------|
+| **M01 — Extrator** | — | determinístico | ✅ Implementado | Pandoc + PyMuPDF |
+| **M02 — Analista de Conteúdo** | Agente E | claude-opus-4-7 | ✅ Implementado | Avaliação + Laudo |
+| **M03 — Texto Display (Agente A)** | Agente A | claude-opus-4-7 | 📋 Pendente | — |
+| **M04 — PDF Full** | — | Puppeteer | 📋 Pendente | — |
+| **M05 — Micro-roteiros (Agente B)** | Agente B | claude-sonnet-4-6 | 📋 Pendente | — |
+| **M06 — Imagens (Agente D)** | Agente D | claude-haiku-4-5 | 📋 Pendente | — |
+| **M07 — Montagem HTML (Agente C)** | Agente C | claude-sonnet-4-6 | 📋 Pendente | — |
+| **M08 — Quiz (Agente C)** | Agente C | claude-sonnet-4-6 | 📋 Pendente | — |
 
 > **Nota:** O M02 está implementado com cálculo determinístico (`modulo02/calculo.py`).
-> A chamada à API do Claude (Agente E) está em desenvolvimento — use `--forcar` para reavaliar.
+> A chamada à API do Claude (Agente E) será integrada via Skill `analista-conteudo`.
 
 ---
 
@@ -306,7 +306,9 @@ piloto-extrator/
 │   ├── laudo.html                  # M02: Tela visual para coordenador
 │   └── test-cenarios.html          # M02: Guia de teste dos cenários
 ├── scripts/
-│   └── 01-processar-entrada.py     # M01: Extrator (Pandoc + PyMuPDF)
+│   ├── 01-processar-entrada.py     # M01: Extrator (Pandoc + PyMuPDF)
+│   ├── 02-separar-aulas.py         # M01b: Separa PDF único em aulas
+│   └── 03-agente-e.py              # M02: Avaliacao de qualidade
 ├── cursos/
 │   └── {curso}/disciplinas/{CODIGO}-{slug}/aula-{NN}/
 │       ├── 01_source/              # Material bruto (não editar)
@@ -325,4 +327,29 @@ piloto-extrator/
 
 ---
 
-*Atualizado em 2026-06-09 — M01 implementado ✅ · M02 implementado ✅*
+*Atualizado em 2026-06-09*
+
+---
+
+## 📋 Resumo do Status
+
+### ✅ Implementado
+
+| Módulo | Funcionalidade | Arquivos |
+|--------|----------------|----------|
+| **M01** | Extração Word/PDF → Markdown + imagens | `01-processar-entrada.py`, `02-separar-aulas.py` |
+| **M01b** | Separação automática de PDF único | `02-separar-aulas.py` |
+| **M02** | Avaliação de qualidade (Agente E) | `03-agente-e.py`, `calculo.py`, `laudo.html` |
+
+### 🔧 Interface
+
+- Hub de entrada com catálogo de disciplinas (`interface/index.html`)
+- Laudo visual com carregamento automático (`modulo02/laudo.html`)
+- API REST (`servidor.py`): `/api/catalogo`, `/api/processar`, `/api/score`
+
+### 📊 Métricas do M02
+
+- **2 Fundamentos** (A1, A2): verificação de integridade
+- **5 Indicadores** (B1–B5): qualidade didática
+- **4 Vereditos**: APROVAR · APROVAR_COM_RESSALVA · INTERVENCAO · RECRIAR
+- **_incubadora/**: criada automaticamente para material RECRIAR
