@@ -61,9 +61,11 @@ def carregar_markdown_aula(pasta_aula: Path) -> str:
 
 def avaliar_com_ia(texto: str, aula_id: str, disciplina: str, curso: str) -> dict:
     """
-    Chama o Agente E (claude-opus-4-7) para avaliar o material.
+    Chama o Agente E via Skill 'analista-conteudo'.
 
-    Usa o Skill 'analista-conteudo' via linha de comando do Claude Code.
+    A skill retorna um laudo estruturado com rodapé machine-readable:
+    VEREDITO=[VERDE|AMARELO|LARANJA|VERMELHO] INDICE=[X.X] A1=[SR|R|C] A2=[SR|R|C]
+
     Retorna o JSON de notas com fundamentos (A1, A2) e indicadores (B1-B5).
     """
     print("\n🔍 Agente E — Avaliando material...")
@@ -72,83 +74,87 @@ def avaliar_com_ia(texto: str, aula_id: str, disciplina: str, curso: str) -> dic
     print(f"   Curso: {curso}")
     print(f"   Texto: {len(texto)} caracteres")
 
-    # Monta o prompt para o Agente E
-    prompt = f"""Você é o Agente E — Analista de Conteúdo da Esteira UNIGRAN EAD.
+    # Salva texto em arquivo temporário
+    import tempfile
+    tmp = Path(tempfile.mkdtemp())
+    texto_file = tmp / "aula.md"
+    texto_file.write_text(texto[:50000], encoding="utf-8")  # limita a 50k chars
 
-Avalie o material da aula {aula_id} ({disciplina} — {curso}).
+    print("\n   📡 Chamando skill /analista-conteudo (claude-opus-4-7)...")
 
-## Entrada
-
-Texto bruto da aula (Markdown):
-
-```
-{texto[:50000]}  # Limita a 50k caracteres para caber no contexto
-```
-
-## Tarefa
-
-Siga o prompt em `.claude/agents/analista-conteudo.md` e retorne APENAS o JSON abaixo (sem markdown, sem explicação):
-
-```json
-{{
-  "fundamentos": {{
-    "A1": {{
-      "severidade": "SEM_RESSALVA|RESSALVA|CRITICO",
-      "justificativa": "...",
-      "trecho": "..."
-    }},
-    "A2": {{
-      "severidade": "...",
-      "justificativa": "...",
-      "fontes_verificadas": [{{"obra": "...", "autor": "...", "ano": "...", "status": "confirmada|nao_localizada"}}]
-    }}
-  }},
-  "indicadores": {{
-    "B1": {{"nota": 0.0, "justificativa": "..."}},
-    "B2": {{"nota": 0.0, "justificativa": "..."}},
-    "B3": {{"nota": 0.0, "justificativa": "..."}},
-    "B4": {{"nota": 0.0, "justificativa": "..."}},
-    "B5": {{"nota": 0.0, "justificativa": "..."}}
-  }}
-}}
-```
-
-**Regras:**
-- Seja rigoroso mas justo — o veredito impacta o trabalho do coordenador
-- Para A2, use WebSearch/WebFetch para validar fontes
-- Justificativas devem citar trechos específicos quando relevante
-- Notas 0-10 devem usar as âncoras do prompt (3, 6, 9)"""
-
-    print("\n   📡 Enviando para análise (claude-opus-4-7)...")
-
-    # Tenta usar o Claude Code CLI se disponível
     try:
-        # Verifica se claude está no PATH
+        # Chama a skill analista-conteudo
         result = subprocess.run(
-            ["claude", "--model", "claude-opus-4-7", "--prompt", prompt],
+            ["claude", "/analista-conteudo", str(texto_file)],
             capture_output=True,
             text=True,
             timeout=300,  # 5 minutos timeout
+            cwd=str(Path(__file__).parent.parent),  # roda do root do projeto
         )
 
-        if result.returncode == 0:
-            resposta = result.stdout.strip()
-            # Remove markdown code blocks se presentes
-            if resposta.startswith("```json"):
-                resposta = resposta[7:]
-            if resposta.endswith("```"):
-                resposta = resposta[:-3]
-            resposta = resposta.strip()
+        shutil.rmtree(tmp, ignore_errors=True)
 
-            return json.loads(resposta)
+        if result.returncode == 0:
+            output = result.stdout + result.stderr
+
+            # Extrai o rodapé machine-readable
+            # Formato: VEREDITO=... INDICE=... A1=... A2=...
+            import re
+            match = re.search(r"VEREDITO=(\w+)\s+INDICE=([\d.]+)\s+A1=(\w+)\s+A2=(\w+)", output)
+
+            if match:
+                veredito_str, indice_str, a1_str, a2_str = match.groups()
+
+                # Mapeia para estrutura esperada
+                veredito_map = {
+                    "VERDE": "APROVAR",
+                    "AMARELO": "APROVAR_COM_RESSALVA",
+                    "LARANJA": "INTERVENCAO_EDITORIAL",
+                    "VERMELHO": "RECRIAR",
+                }
+
+                a1_map = {"SR": "SEM_RESSALVA", "R": "RESSALVA", "C": "CRITICO"}
+                a2_map = {"SR": "SEM_RESSALVA", "R": "RESSALVA", "C": "CRITICO"}
+
+                # Extrai notas do laudo (procura padrão "B1 Dialogicidade | X/10 | 20%")
+                notas = {}
+                for ind in ["B1", "B2", "B3", "B4", "B5"]:
+                    match_ind = re.search(rf"{ind}\s+[^\|]+\|\s*(\d+)/10", output)
+                    if match_ind:
+                        notas[ind] = float(match_ind.group(1))
+                    else:
+                        notas[ind] = 5.0  # fallback
+
+                return {
+                    "fundamentos": {
+                        "A1": {
+                            "severidade": a1_map.get(a1_str, "SEM_RESSALVA"),
+                            "justificativa": "Verificado via skill analista-conteudo.",
+                            "trecho": ""
+                        },
+                        "A2": {
+                            "severidade": a2_map.get(a2_str, "SEM_RESSALVA"),
+                            "justificativa": "Verificado via skill analista-conteudo.",
+                            "fontes_verificadas": []
+                        }
+                    },
+                    "indicadores": {
+                        ind: {"nota": nota, "justificativa": "Atribuído pela skill analista-conteudo."}
+                        for ind, nota in notas.items()
+                    },
+                    "_raw_output": output,  # debug
+                    "_veredito_skill": veredito_map.get(veredito_str, "APROVAR"),
+                    "_indice_skill": float(indice_str),
+                }
+            else:
+                print("   ⚠️  Não encontrou rodapé machine-readable no output")
+                print(f"   Output (primeiros 500 chars): {output[:500]}...")
         else:
-            print(f"   ⚠️  Claude CLI falhou: {result.stderr}")
+            print(f"   ⚠️  Skill falhou: {result.stderr}")
     except FileNotFoundError:
         print("   ⚠️  Claude CLI não encontrado no PATH")
     except subprocess.TimeoutExpired:
         print("   ⚠️  Timeout na análise (5 min)")
-    except json.JSONDecodeError as e:
-        print(f"   ⚠️  Erro ao parsear JSON: {e}")
     except Exception as e:
         print(f"   ⚠️  Erro inesperado: {e}")
 
