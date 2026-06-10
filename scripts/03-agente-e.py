@@ -370,22 +370,34 @@ def agente_e(
     # Gera laudo Markdown
     laudo_md = gerar_laudo_markdown(aula_id, resultado_ia, score)
 
-    # Monta score JSON completo
+    # Monta score JSON completo (formato compatível com laudo.html)
+    indice_valor = score["indice"]["indice"] if isinstance(score["indice"], dict) else score["indice"]
+    contribuicoes = score["indice"]["contribuicoes"] if isinstance(score["indice"], dict) else {k: v["nota"] * {"B1": 0.20, "B2": 0.15, "B3": 0.30, "B4": 0.15, "B5": 0.20}[k] for k, v in resultado_ia["indicadores"].items()}
+
+    # Adiciona peso e contribuicao em cada indicador (esperado pelo laudo.html)
+    pesos = {"B1": 0.20, "B2": 0.15, "B3": 0.30, "B4": 0.15, "B5": 0.20}
+    indicadores_formatados = {}
+    for ind, dados in resultado_ia["indicadores"].items():
+        nota = dados["nota"]
+        peso = pesos[ind]
+        indicadores_formatados[ind] = {
+            "nota": nota,
+            "peso": peso,
+            "contribuicao": round(nota * peso, 2),
+            "justificativa": dados["justificativa"],
+        }
+
     score_json = {
         "aula_id": aula_id,
         "disciplina": disciplina,
         "curso": curso,
         "data_avaliacao": datetime.now().isoformat(),
-        "indice": score["indice"],
-        "veredito": {
-            "faixa": score["veredito"]["faixa"],
-            "emoji": score["veredito"]["emoji"],
-            "rotulo": score["veredito"]["rotulo"],
-            "acao_coordenador": score["veredito"]["acao_coordenador"],
-        },
+        "indice": indice_valor,  # valor float direto (esperado pelo laudo.html)
+        "veredito": score["veredito"]["faixa"],  # string direta (esperado pelo laudo.html)
+        "emoji": score["veredito"]["emoji"],
+        "acao": score["veredito"]["acao_coordenador"],
         "fundamentos": resultado_ia["fundamentos"],
-        "indicadores": resultado_ia["indicadores"],
-        "contribuicoes": score["indice"]["contribuicoes"],
+        "indicadores": indicadores_formatados,
     }
 
     # Salva arquivos
