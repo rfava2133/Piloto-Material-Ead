@@ -1,0 +1,110 @@
+INSTALACAO LOCAL - VALIDADOR KALTURA UNIGRAN
+
+ARQUIVOS IMPORTANTES
+
+- README.md: explica o fluxo de uso.
+- requirements.txt: dependencias Python.
+- .env.example: modelo do arquivo de segredo.
+- app.py: servidor local.
+
+NAO ENVIE O .env PARA GITHUB OU TERCEIROS.
+
+
+MAC
+
+1. Abrir o Terminal.
+
+2. Entrar na pasta do projeto:
+
+   cd "/Users/rfava/PROJETOS IA/piloto-extrator"
+
+3. Criar ambiente virtual:
+
+   python3 -m venv .venv-kaltura
+
+4. Ativar ambiente:
+
+   source .venv-kaltura/bin/activate
+
+5. Instalar dependencias:
+
+   python -m pip install --upgrade pip
+   python -m pip install -r kaltura/requirements.txt
+
+6. Criar o arquivo de segredo:
+
+   cp kaltura/.env.example kaltura/.env
+
+7. Abrir kaltura/.env e trocar o texto pelo Administrator Secret real.
+
+8. Rodar o app:
+
+   python kaltura/app.py
+
+9. Abrir no navegador:
+
+   http://127.0.0.1:5070
+
+
+WINDOWS
+
+1. Abrir o PowerShell.
+
+2. Entrar na pasta do projeto, por exemplo:
+
+   cd "C:\caminho\para\piloto-extrator"
+
+3. Criar ambiente virtual:
+
+   py -m venv .venv-kaltura
+
+4. Ativar ambiente:
+
+   .\.venv-kaltura\Scripts\Activate.ps1
+
+   Se o PowerShell bloquear scripts, rode uma vez:
+
+   Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
+
+   Depois ative novamente:
+
+   .\.venv-kaltura\Scripts\Activate.ps1
+
+5. Instalar dependencias:
+
+   python -m pip install --upgrade pip
+   python -m pip install -r kaltura\requirements.txt
+
+6. Criar o arquivo de segredo:
+
+   copy kaltura\.env.example kaltura\.env
+
+7. Abrir kaltura\.env no Bloco de Notas e trocar o texto pelo Administrator Secret real.
+
+8. Rodar o app:
+
+   python kaltura\app.py
+
+9. Abrir no navegador:
+
+   http://127.0.0.1:5070
+
+
+USO RAPIDO
+
+1. Selecione o curso.
+2. Clique em Importar links.
+3. Selecione a disciplina.
+4. Veja o video.
+5. Clique em Vinculo correto ou Vinculo errado.
+6. Consulte o resultado em:
+
+   kaltura/validacoes_links_videos.csv
+
+
+OBSERVACOES
+
+- O botao Importar links consulta a API da Kaltura.
+- Limite 0 importa o curso inteiro.
+- Aulas sem video entram como sem_video automaticamente.
+- A porta usada e 5070. Nao use 5060, pois alguns navegadores bloqueiam essa porta.

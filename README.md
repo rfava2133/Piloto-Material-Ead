@@ -23,8 +23,10 @@ interativo + micro-roteiros de vídeo, com avaliação automática de qualidade.
 | **M06 — Imagens (Agente D)** | Agente D | claude-haiku-4-5 | 📋 Pendente | — |
 | **M07 — Quiz (Agente C)** | Agente C | claude-sonnet-4-6 | 📋 Pendente | — |
 | **M08 — Montagem HTML** | Agente C | claude-sonnet-4-6 | 📋 Pendente | — |
+| **Kaltura — Conferência de links** *(temporário)* | — | determinístico | ✅ Operacional | `kaltura/` · Flask + Supabase |
 
-> **Hub:** `python3 servidor.py` → `http://127.0.0.1:5050`
+> **Hub:** `python3 servidor.py` → `http://127.0.0.1:5050`  
+> **Conferência Kaltura** *(temporário):* `python3 kaltura/app.py` → `http://127.0.0.1:5070`  
 > **Agente E:** skill `analista-conteudo` (Claude Code) grava `score_v01.json`; o servidor normaliza e recalcula via `calculo.py` antes de exibir o relatório.
 
 ---
@@ -286,6 +288,44 @@ Isso responde: "a máquina só acha?" — não, o cálculo é auditável.
 
 ---
 
+# MÓDULO TEMPORÁRIO — CONFERÊNCIA DE LINKS KALTURA ✅
+
+> **Escopo:** módulo auxiliar, **fora da esteira de produção de aulas**.
+> Permite que analistas validem manualmente se cada vídeo da Kaltura está
+> vinculado à aula correta de cada disciplina (~1000+ registros no catálogo).
+> Será descontinuado quando os links estiverem corrigidos e integrados à esteira.
+
+## Como usar
+
+```bash
+cd kaltura
+python3 app.py
+# abre http://127.0.0.1:5070
+```
+
+**Fluxo:**
+1. Login com email/senha (Supabase Auth)
+2. Selecionar curso → disciplina → aula
+3. Assistir o vídeo e marcar **Vínculo correto** ou **Vínculo errado**
+4. Usar **Reverter para análise** se precisar reavaliar uma aula já validada
+
+## O que faz
+
+| Função | Descrição |
+|--------|-----------|
+| Importação | Busca vídeos na API Kaltura por playlist e grava no Supabase |
+| Conferência humana | Analista valida vínculo vídeo ↔ aula |
+| Progresso | Contadores por disciplina (ok / erradas / pendentes) |
+| Auditoria | Todas as ações registradas em `audit_log` |
+
+## Stack e dados
+
+- **Backend:** Flask (`kaltura/app.py`)
+- **Banco:** Supabase — tabelas `disciplinas`, `videos_kaltura`, `validacoes`, `audit_log`
+- **Documentação completa:** [`kaltura/README.md`](kaltura/README.md)
+
+---
+
 ## Notas gerais
 
 - Slug: `slugify()` remove acentos e gera kebab-case
@@ -326,6 +366,11 @@ piloto-extrator/
 │       ├── 06_output/              # M07: HTML + PDF finais
 │       ├── 07_revisao/             # Coordenador
 │       └── _incubadora/            # Criado se veredito = RECRIAR
+├── kaltura/                        # TEMP: conferência de links Kaltura (Flask :5070)
+│   ├── app.py                      # Servidor web
+│   ├── supabase_client.py          # Auth + CRUD Supabase
+│   ├── schema.sql                  # Schema do banco
+│   └── README.md                   # Documentação completa do módulo
 ├── CLAUDE.md                       # Instruções do projeto
 ├── README.md                       # Este arquivo
 ├── servidor.py                     # Interface web (Flask)
@@ -334,7 +379,7 @@ piloto-extrator/
 
 ---
 
-*Atualizado em 2026-06-10 — fix A2: referencias.py preenche fontes_verificadas em produção*
+*Atualizado em 2026-06-10 — módulo temporário Kaltura (conferência de links) operacional*
 
 ---
 
@@ -347,11 +392,13 @@ piloto-extrator/
 | **M01** | Extração Word/PDF → Markdown + imagens | `01-processar-entrada.py`, `02-separar-aulas.py` |
 | **M01b** | Separação automática de PDF único | `02-separar-aulas.py` |
 | **M02** | Avaliação de qualidade (Agente E) | `03-agente-e.py`, `calculo.py`, `laudo.html` |
+| **Kaltura** *(temp.)* | Conferência humana de vínculos vídeo ↔ aula | `kaltura/app.py`, `kaltura/README.md` |
 
 ### 🔧 Interface
 
 - Hub de entrada com catálogo de disciplinas (`interface/index.html`)
 - Laudo visual com carregamento automático (`modulo02/laudo.html` — tela de **Relatório**)
+- **Conferência Kaltura** *(temporário):* `kaltura/static/index.html` — validação de links na `:5070`
 - API REST (`servidor.py`): `/api/catalogo`, `/api/processar`, `/api/score`
 
 ### 📊 Métricas do M02

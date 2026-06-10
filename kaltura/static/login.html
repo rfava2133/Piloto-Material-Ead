@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Login | Validador Kaltura UNIGRAN</title>
+  <style>
+    :root {
+      --blue: #0046A8;
+      --blue-dark: #003580;
+      --ink: #1A1A1A;
+      --title: #0D1117;
+      --paper: #FBFAF7;
+      --line: #D7DDE7;
+      --muted: #657083;
+      --bad: #B42318;
+      --bg: #F4F6FA;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+    }
+
+    .login-box {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 32px;
+      width: 100%;
+      max-width: 380px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    .logo {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .logo h1 {
+      margin: 0;
+      font-size: 20px;
+      color: var(--title);
+      font-weight: 700;
+    }
+
+    .logo p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 16px;
+    }
+
+    label span {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: inherit;
+      transition: border-color 0.15s;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--blue);
+    }
+
+    button {
+      width: 100%;
+      padding: 11px 16px;
+      border: none;
+      border-radius: 6px;
+      background: var(--blue);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    button:hover {
+      background: var(--blue-dark);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .error {
+      background: #FEF2F2;
+      border: 1px solid #FECACA;
+      color: var(--bad);
+      padding: 10px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .error.show {
+      display: block;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .footer a {
+      color: var(--blue);
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-box">
+    <div class="logo">
+      <h1>Validador Kaltura</h1>
+      <p>UNIGRAN EAD</p>
+    </div>
+
+    <div class="error" id="error-msg"></div>
+
+    <form id="login-form">
+      <label>
+        <span>Email</span>
+        <input type="email" id="email" required placeholder="seu.email@unigran.br" autocomplete="email">
+      </label>
+
+      <label>
+        <span>Senha</span>
+        <input type="password" id="senha" required placeholder="••••••••" autocomplete="current-password">
+      </label>
+
+      <button type="submit" id="btn-login">Entrar</button>
+    </form>
+
+    <div class="footer">
+      <p>Acesso restrito a responsáveis pela validação</p>
+    </div>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    function setError(msg) {
+      $("error-msg").textContent = msg || "";
+      $("error-msg").classList.toggle("show", Boolean(msg));
+    }
+
+    async function login(email, senha) {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, senha }),
+        credentials: 'include'  // Inclui cookies para sessão Flask
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || data.ok === false) {
+        throw new Error(data.erro || "Falha ao autenticar");
+      }
+
+      return data;
+    }
+
+    $("login-form").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      setError("");
+
+      const email = $("email").value.trim();
+      const senha = $("senha").value;
+
+      if (!email || !senha) {
+        setError("Preencha email e senha");
+        return;
+      }
+
+      $("btn-login").disabled = true;
+      $("btn-login").textContent = "Entrando...";
+
+      try {
+        await login(email, senha);
+        window.location.href = "/";
+      } catch (err) {
+        setError(err.message);
+        $("btn-login").disabled = false;
+        $("btn-login").textContent = "Entrar";
+      }
+    });
+
+    // Verificar se já está autenticado
+    (async function checkAuth() {
+      try {
+        const res = await fetch("/api/auth/me");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.ok) {
+            window.location.href = "/";
+          }
+        }
+      } catch {
+        // Ignora, mostra login normal
+      }
+    })();
+  </script>
+</body>
+</html>

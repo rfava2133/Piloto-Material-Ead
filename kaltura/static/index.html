@@ -1,0 +1,756 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kaltura | Validacao de aulas</title>
+  <style>
+    :root {
+      --blue: #0046A8;
+      --ink: #1A1A1A;
+      --title: #0D1117;
+      --paper: #FBFAF7;
+      --line: #D7DDE7;
+      --muted: #657083;
+      --ok: #147D4F;
+      --warn: #A86900;
+      --bad: #B42318;
+      --bg: #F4F6FA;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+    }
+
+    header {
+      background: #fff;
+      border-bottom: 1px solid var(--line);
+      padding: 8px 14px;
+      display: flex;
+      gap: 18px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 16px;
+      color: var(--title);
+      letter-spacing: 0;
+    }
+
+    .sub {
+      margin-top: 1px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    button, select, input, textarea {
+      font: inherit;
+      border-radius: 6px;
+      border: 1px solid var(--line);
+    }
+
+    button {
+      border: 0;
+      color: #fff;
+      background: var(--blue);
+      padding: 9px 12px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    button.secondary { background: #38465A; }
+    button.ok { background: var(--ok); }
+    button.warn { background: var(--warn); }
+    button.bad { background: var(--bad); }
+    button:disabled { opacity: .55; cursor: not-allowed; }
+
+    main {
+      padding: 10px 14px 16px;
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      gap: 12px;
+    }
+
+    .toolbar {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(160px, 1fr)) auto;
+      gap: 8px;
+      align-items: end;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 8px 10px;
+    }
+
+    label {
+      display: grid;
+      gap: 3px;
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    select, input, textarea {
+      width: 100%;
+      padding: 7px 9px;
+      background: #fff;
+      color: var(--ink);
+    }
+
+    textarea {
+      min-height: 72px;
+      resize: vertical;
+    }
+
+    .panel {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      min-width: 0;
+    }
+
+    .panel-head {
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .panel-head strong {
+      color: var(--title);
+      font-size: 14px;
+    }
+
+    .tiny {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .aulas {
+      display: grid;
+      gap: 6px;
+      padding: 8px;
+      max-height: calc(100vh - 148px);
+      overflow: auto;
+    }
+
+    .aula-btn {
+      width: 100%;
+      text-align: left;
+      background: #fff;
+      color: var(--ink);
+      border: 1px solid var(--line);
+      display: grid;
+      grid-template-columns: 68px 1fr;
+      gap: 7px;
+      align-items: center;
+      font-weight: 600;
+      padding: 8px 10px;
+    }
+
+    .aula-btn.active {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 2px rgba(0,70,168,.12);
+    }
+
+    .aula-btn.conferida {
+      background: #F1FBF6;
+      border-color: rgba(20,125,79,.28);
+      color: #426151;
+    }
+
+    .aula-btn.conferida.active {
+      box-shadow: 0 0 0 2px rgba(20,125,79,.2);
+    }
+
+    .badge {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 21px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      font-size: 11px;
+      color: #fff;
+      background: #6A7280;
+      white-space: nowrap;
+    }
+
+    .badge.correto, .badge.corrigido { background: var(--ok); }
+    .badge.vinculo_errado { background: var(--bad); }
+    .badge.sem_video { background: var(--warn); }
+    .badge.pendente { background: #6A7280; }
+
+    .content {
+      min-height: calc(100vh - 132px);
+      display: grid;
+      grid-template-rows: auto auto minmax(260px, auto) auto;
+    }
+
+    .video-wrap {
+      padding: 6px 10px 10px;
+    }
+
+    .quick-actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 8px 10px 6px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .quick-actions button {
+      min-width: auto;
+      min-height: 30px;
+      padding: 6px 10px;
+      font-size: 12px;
+      border-radius: 5px;
+    }
+
+    .video-tools {
+      margin-top: 6px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: flex-end;
+      font-size: 12px;
+    }
+
+    .video-tools a {
+      color: var(--blue);
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .video-tools button {
+      padding: 6px 9px;
+      font-size: 12px;
+      background: #38465A;
+    }
+
+    .video-box {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: #0D1117;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+
+    video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      background: #000;
+    }
+
+    .empty-video {
+      height: 100%;
+      color: #fff;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 24px;
+    }
+
+    .form {
+      padding: 8px 10px 10px;
+      border-top: 1px solid var(--line);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .form .full { grid-column: 1 / -1; }
+
+    .actions {
+      grid-column: 1 / -1;
+      display: none;
+    }
+
+    .notice {
+      grid-column: 1 / -1;
+      border-left: 4px solid var(--blue);
+      background: var(--paper);
+      padding: 7px 9px;
+      color: var(--title);
+      font-size: 13px;
+      display: none;
+    }
+
+    .notice.show { display: block; }
+
+    .top-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .top-actions button {
+      padding: 8px 12px;
+    }
+
+    @media (max-width: 900px) {
+      header { align-items: flex-start; flex-direction: column; }
+      main { grid-template-columns: 1fr; }
+      .toolbar { grid-template-columns: 1fr; }
+      .form { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Validacao de vinculos Kaltura</h1>
+      <div class="sub">Curso > disciplina > aula > video > validacao humana</div>
+    </div>
+    <div class="top-actions">
+      <span class="tiny" id="user-info" style="margin-right:12px;color:var(--muted);display:none"></span>
+      <button class="secondary" id="btn-logout" style="margin-right:8px;display:none">Sair</button>
+      <input id="limite-importacao" type="number" min="0" value="0" title="0 importa todo o curso selecionado" style="width:96px">
+      <button id="btn-importar">Importar links</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="toolbar">
+      <label>
+        Curso
+        <select id="curso"></select>
+      </label>
+      <label>
+        Disciplina
+        <select id="disciplina"></select>
+      </label>
+      <label>
+        Responsavel
+        <input id="responsavel" placeholder="Nome de quem valida">
+      </label>
+      <label>
+        Progresso
+        <input id="progresso" readonly>
+      </label>
+      <button class="secondary" id="btn-recarregar">Recarregar</button>
+      <div class="notice" id="aviso"></div>
+    </section>
+
+    <aside class="panel">
+      <div class="panel-head">
+        <strong>Aulas</strong>
+        <span class="tiny" id="total-aulas">0 aulas</span>
+      </div>
+      <div class="aulas" id="lista-aulas"></div>
+    </aside>
+
+    <section class="panel content">
+      <div class="panel-head">
+        <div>
+          <strong id="titulo-aula">Selecione uma aula</strong>
+          <div class="tiny" id="meta-aula">Nenhum video carregado</div>
+        </div>
+        <span class="badge pendente" id="status-aula">pendente</span>
+      </div>
+
+      <div class="quick-actions">
+        <button type="button" class="ok" data-status="correto">Vinculo correto</button>
+        <button type="button" class="bad" data-status="vinculo_errado">Vinculo errado</button>
+        <button type="button" class="warn" data-status="pendente" id="btn-reverter" style="display:none">Reverter para analise</button>
+      </div>
+
+      <div class="video-wrap">
+        <div class="video-box" id="video-box">
+          <div class="empty-video">Selecione curso, disciplina e aula para conferir o video.</div>
+        </div>
+        <div class="video-tools">
+          <button type="button" id="btn-reload-video">Recarregar video</button>
+          <a id="abrir-player" href="#" target="_blank" rel="noopener">Abrir player em nova aba</a>
+        </div>
+      </div>
+
+      <form class="form" id="form-validacao">
+        <label>
+          Playlist ID
+          <input id="playlist-id">
+        </label>
+        <label>
+          Entry ID
+          <input id="entry-id" placeholder="ex: 1_nqqpgfpo">
+        </label>
+        <label class="full">
+          Nome do video
+          <input id="nome-video">
+        </label>
+        <label class="full">
+          Embed URL
+          <input id="embed-url" placeholder="https://cdnapisec.kaltura.com/...">
+        </label>
+        <label class="full">
+          Observacao
+          <textarea id="observacao" placeholder="Use este campo para explicar vinculo errado, ausencia de video ou ajuste feito."></textarea>
+        </label>
+        <div class="actions">
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <script>
+    const state = {
+      catalogo: null,
+      curso: "",
+      discId: "",
+      detalhe: null,
+      aula: null,
+      previewSeq: 0
+    };
+
+    const $ = (id) => document.getElementById(id);
+
+    function badgeClass(status) {
+      return ["correto", "corrigido", "vinculo_errado", "sem_video"].includes(status) ? status : "pendente";
+    }
+
+    function isConferida(status) {
+      return ["correto", "corrigido"].includes(status);
+    }
+
+    function isTravada(status) {
+      return isConferida(status) || status === "sem_video";
+    }
+
+    function statusLabel(status) {
+      if (isConferida(status)) return "conferida";
+      if (status === "sem_video") return "sem video";
+      if (status === "vinculo_errado") return "errada";
+      return "pendente";
+    }
+
+    function setAviso(texto, show = true) {
+      $("aviso").textContent = texto || "";
+      $("aviso").classList.toggle("show", Boolean(show && texto));
+    }
+
+    async function getJson(url, options = {}) {
+      const res = await fetch(url, {
+        ...options,
+        credentials: 'include'
+      });
+      const contentType = res.headers.get("content-type") || "";
+      let data;
+      if (contentType.includes("application/json")) {
+        data = await res.json();
+      } else {
+        const texto = await res.text();
+        if (res.status === 401) {
+          window.location.href = "/login";
+        }
+        throw new Error(
+          res.ok
+            ? "Resposta invalida do servidor"
+            : `Erro ${res.status}: ${texto.replace(/<[^>]+>/g, " ").trim().slice(0, 120)}`
+        );
+      }
+      if (!res.ok || data.ok === false) {
+        if (res.status === 401) {
+          window.location.href = "/login";
+        }
+        throw new Error(data.erro || "Falha na requisicao");
+      }
+      return data;
+    }
+
+    async function checkAuth() {
+      try {
+        const res = await fetch("/api/auth/me");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.ok && data.user) {
+            $("user-info").textContent = data.user.email;
+            $("user-info").style.display = "inline";
+            $("btn-logout").style.display = "inline";
+            return true;
+          }
+        }
+      } catch {
+        // Ignora
+      }
+      window.location.href = "/login";
+      return false;
+    }
+
+    async function logout() {
+      try {
+        await fetch("/api/auth/logout", {
+          method: "POST",
+          credentials: 'include'
+        });
+      } catch {
+        // Ignora
+      }
+      window.location.href = "/login";
+    }
+
+    async function carregarCatalogo() {
+      const cursoAnterior = state.curso;
+      const discAnterior = state.discId;
+      state.catalogo = await getJson("/api/catalogo");
+      await preencherCursos(cursoAnterior, discAnterior);
+      setAviso("");
+    }
+
+    async function preencherCursos(cursoPreferido = "", discPreferida = "") {
+      const cursoSelect = $("curso");
+      cursoSelect.innerHTML = "";
+      for (const curso of state.catalogo.cursos) {
+        cursoSelect.add(new Option(curso, curso));
+      }
+      if (cursoPreferido && state.catalogo.cursos.includes(cursoPreferido)) {
+        cursoSelect.value = cursoPreferido;
+      }
+      state.curso = cursoSelect.value || "";
+      await preencherDisciplinas(discPreferida);
+    }
+
+    async function preencherDisciplinas(discPreferida = "") {
+      const discSelect = $("disciplina");
+      discSelect.innerHTML = "";
+      const disciplinas = state.catalogo.disciplinas[state.curso] || [];
+      for (const disc of disciplinas) {
+        const c = disc.contadores;
+        const label = `${disc.disciplina} (${disc.semestre}) - ok ${c.correto + c.corrigido}/${disc.total_aulas}`;
+        discSelect.add(new Option(label, disc.disc_id));
+      }
+      if (discPreferida && disciplinas.some(d => d.disc_id === discPreferida)) {
+        discSelect.value = discPreferida;
+      }
+      state.discId = discSelect.value || "";
+      if (state.discId) await carregarDisciplina(state.discId);
+    }
+
+    async function carregarDisciplina(discId) {
+      state.detalhe = await getJson(`/api/disciplina/${discId}`);
+      const aulas = state.detalhe.aulas || [];
+      $("total-aulas").textContent = `${aulas.length} aulas`;
+      if (state.detalhe.sem_match && state.detalhe.sem_match.length) {
+        setAviso(`${state.detalhe.sem_match.length} video(s) sem numero de aula. Revise a planilha de importacao.`);
+      } else {
+        setAviso("");
+      }
+      renderAulas();
+      const primeiraPendente = aulas.find(a => !isTravada(a.status_validacao));
+      selecionarAula(primeiraPendente?.aula || aulas[0]?.aula || null);
+      atualizarProgresso();
+    }
+
+    function atualizarProgresso() {
+      const aulas = state.detalhe?.aulas || [];
+      const feitas = aulas.filter(a => ["correto", "corrigido", "sem_video"].includes(a.status_validacao)).length;
+      const erradas = aulas.filter(a => a.status_validacao === "vinculo_errado").length;
+      $("progresso").value = `${feitas}/${aulas.length} validadas | ${erradas} erradas`;
+    }
+
+    function setValidacaoLocal(aulaNumero, validacao) {
+      if (!state.detalhe?.aulas) return;
+      const aula = state.detalhe.aulas.find(item => item.aula === aulaNumero);
+      if (!aula) return;
+      aula.status_validacao = validacao.status_validacao;
+      aula.observacao = validacao.observacao || "";
+      aula.responsavel = validacao.responsavel || "";
+      aula.validado_em = validacao.validado_em || "";
+      aula.playlist_id = validacao.playlist_id || aula.playlist_id;
+      aula.entry_id = validacao.entry_id || aula.entry_id;
+      aula.nome_video = validacao.nome_video || aula.nome_video;
+      aula.embed_url = validacao.embed_url || aula.embed_url;
+    }
+
+    function proximaAulaPendente() {
+      const aulas = state.detalhe?.aulas || [];
+      return aulas.find(aula => !isTravada(aula.status_validacao));
+    }
+
+    function renderAulas() {
+      const lista = $("lista-aulas");
+      lista.innerHTML = "";
+      for (const aula of state.detalhe.aulas) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        const status = aula.status_validacao || "pendente";
+        const conferida = isConferida(status);
+        const travada = isTravada(status);
+        btn.className = `aula-btn ${aula.aula === state.aula ? "active" : ""} ${conferida ? "conferida" : ""}`;
+        btn.title = travada ? "Aula ja tratada (abra para reverter)" : "Abrir aula para conferencia";
+        btn.onclick = () => selecionarAula(aula.aula);
+        btn.innerHTML = `
+          <span class="badge ${badgeClass(status)}">${statusLabel(status)}</span>
+          <span>Aula ${String(aula.aula).padStart(2, "0")}<br><span class="tiny">${aula.entry_id ? aula.entry_id : "sem video importado"}</span></span>
+        `;
+        lista.appendChild(btn);
+      }
+    }
+
+    function selecionarAula(numero) {
+      state.aula = numero;
+      renderAulas();
+      const aula = (state.detalhe?.aulas || []).find(a => a.aula === numero);
+      if (!aula) return;
+
+      $("titulo-aula").textContent = `Aula ${String(aula.aula).padStart(2, "0")}`;
+      $("meta-aula").textContent = aula.nome_video || "Sem video importado para esta aula";
+      $("status-aula").textContent = statusLabel(aula.status_validacao || "pendente");
+      $("status-aula").className = `badge ${badgeClass(aula.status_validacao)}`;
+      const statusAtual = aula.status_validacao || "pendente";
+      $("btn-reverter").style.display = statusAtual === "pendente" ? "none" : "inline-block";
+      $("playlist-id").value = aula.playlist_id || "";
+      $("entry-id").value = aula.entry_id || "";
+      $("nome-video").value = aula.nome_video || "";
+      $("embed-url").value = aula.embed_url || "";
+      $("observacao").value = aula.observacao || "";
+      $("abrir-player").href = aula.embed_url || "#";
+      carregarPreviewAula(aula);
+    }
+
+    async function carregarPreviewAula(aula) {
+      state.previewSeq += 1;
+      const seq = state.previewSeq;
+      if (!aula.entry_id) {
+        renderVideo("");
+        return;
+      }
+      renderVideo("", false, "Carregando video...");
+      try {
+        const data = await getJson(`/api/preview/${encodeURIComponent(aula.entry_id)}`);
+        if (seq !== state.previewSeq) return;
+        aula.preview_video_url = data.preview_video_url || "";
+        aula.preview_embed_url = data.preview_embed_url || "";
+        const abrirUrl = aula.preview_embed_url || aula.embed_url || "#";
+        $("abrir-player").href = abrirUrl;
+        renderVideo(aula.preview_video_url || abrirUrl, Boolean(aula.preview_video_url));
+      } catch (err) {
+        if (seq !== state.previewSeq) return;
+        setAviso(`Erro ao carregar preview: ${err.message}`);
+        renderVideo(aula.embed_url || "");
+      }
+    }
+
+    function renderVideo(videoUrl, usarVideo = false, mensagem = "Esta aula ainda nao tem video vinculado.") {
+      const box = $("video-box");
+      if (!videoUrl) {
+        box.innerHTML = `<div class="empty-video">${mensagem}</div>`;
+        return;
+      }
+      if (usarVideo) {
+        box.innerHTML = `<video src="${videoUrl}" controls playsinline preload="metadata"></video>`;
+        return;
+      }
+      box.innerHTML = `<iframe src="${videoUrl}" allow="autoplay; encrypted-media; fullscreen" allowfullscreen></iframe>`;
+    }
+
+    async function salvar(status) {
+      if (!state.discId || !state.aula) return;
+      setAviso("Salvando validacao...");
+      document.querySelectorAll("[data-status]").forEach(btn => btn.disabled = true);
+      const payload = {
+        disc_id: state.discId,
+        aula: state.aula,
+        playlist_id: $("playlist-id").value,
+        entry_id: $("entry-id").value,
+        nome_video: $("nome-video").value,
+        embed_url: $("embed-url").value,
+        observacao: $("observacao").value,
+        responsavel: $("responsavel").value,
+        status_validacao: status
+      };
+      try {
+        const data = await getJson("/api/validar", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify(payload)
+        });
+        setValidacaoLocal(payload.aula, data.validacao);
+        renderAulas();
+        atualizarProgresso();
+        if (isConferida(status)) {
+          const proxima = proximaAulaPendente();
+          if (proxima) selecionarAula(proxima.aula);
+        } else {
+          selecionarAula(payload.aula);
+        }
+        setAviso(status === "pendente" ? "Aula revertida para analise." : "Validacao salva.");
+      } catch (err) {
+        setAviso(`Erro ao salvar: ${err.message}`);
+      } finally {
+        document.querySelectorAll("[data-status]").forEach(btn => btn.disabled = false);
+      }
+    }
+
+    async function importar() {
+      $("btn-importar").disabled = true;
+      setAviso("Importando links da Kaltura. Aguarde...");
+      try {
+        const limite = Number($("limite-importacao").value || 0);
+        const data = await getJson("/api/importar", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({limite_disciplinas: limite, curso: state.curso})
+        });
+        await carregarCatalogo();
+        setAviso(`Importacao concluida: ${data.linhas} linhas em videos_importados.csv.`);
+      } catch (err) {
+        setAviso(err.message);
+      } finally {
+        $("btn-importar").disabled = false;
+      }
+    }
+
+    $("curso").addEventListener("change", (event) => {
+      state.curso = event.target.value;
+      preencherDisciplinas();
+    });
+
+    $("disciplina").addEventListener("change", (event) => {
+      state.discId = event.target.value;
+      carregarDisciplina(state.discId).catch(err => setAviso(err.message));
+    });
+
+    $("btn-recarregar").addEventListener("click", carregarCatalogo);
+    $("btn-importar").addEventListener("click", importar);
+    $("btn-logout").addEventListener("click", logout);
+    $("btn-reload-video").addEventListener("click", () => {
+      const aula = (state.detalhe?.aulas || []).find(a => a.aula === state.aula);
+      if (aula) carregarPreviewAula(aula);
+    });
+    document.querySelectorAll("[data-status]").forEach(btn => {
+      btn.addEventListener("click", () => salvar(btn.dataset.status));
+    });
+
+    // Verificar autenticação ao carregar
+    checkAuth().then(autenticado => {
+      if (autenticado) {
+        carregarCatalogo().catch(err => setAviso(err.message));
+      }
+    });
+  </script>
+</body>
+</html>
