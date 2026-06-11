@@ -1,6 +1,6 @@
 # AGENTS.md — UNIGRAN EAD Esteira de Produção
 
-> Este arquivo é lido automaticamente pelo Codex ao abrir o projeto.
+> Este arquivo é lido automaticamente pelo Claude ao abrir o projeto.
 > É a instrução-mãe. Tudo aqui prevalece, exceto `/docs/voz-unigran.md` em
 > questões de tom e voz editorial.
 Leia também o `README.md` para o status atual de implementação de cada módulo.
@@ -46,16 +46,19 @@ Escala alvo: ~1.200 disciplinas. Piloto: começar pelo material disponível.
 | Módulo | Agente | Modelo | Tarefa |
 |--------|--------|--------|--------|
 | **M01 — Extrator** | — | determinístico | Pandoc + PyMuPDF → Markdown + imagens |
-| **M02 — Analista de Conteúdo** | Agente E | Codex-opus-4-7 | Avaliação de qualidade → índice 0–10 |
+| **M02 — Analista de Conteúdo** | Agente E | claude-opus-4-7 | Avaliação de qualidade → índice 0–10 |
 | **M03 — Texto Display** | Agente A | claude-sonnet-4-6 | Texto reformulado |
 | **M04 — PDF Full** | — | Puppeteer | PDF do texto original |
-| **M05 — Micro-roteiros** | Agente B | Codex-sonnet-4-6 | Roteiros de vídeo 60–120s |
-| **M06 — Imagens** | Agente D | Codex-haiku-4-5 | Classificação em 3 trilhas |
-| **M07 — Quiz** | Agente C | Codex-sonnet-4-6 | Quiz HTML interativo |
-| **M08 — Montagem HTML** | Agente C | Codex-sonnet-4-6 | Combina texto + imagens + vídeos + quiz |
+| **M05 — Micro-roteiros** | Agente B | claude-sonnet-4-6 | Roteiros de vídeo 60–120s |
+| **M06 — Imagens** | Agente D | claude-haiku-4-5 | Classificação em 3 trilhas |
+| **M07 — Quiz** | Agente C | claude-sonnet-4-6 | Quiz HTML interativo |
+| **M08 — Montagem HTML** | Agente C | claude-sonnet-4-6 | Combina texto + imagens + vídeos + quiz |
 
 - **M01:** 100% determinístico, sem IA
 - **M02:** Agente E avalia; índice e veredito são aritmética pura via `modulo02/calculo.py`
+  - Validações: `validar_notas()` (B1–B5, 0–10), `validar_severidade()` (A1/A2)
+  - Sem fallback: falha do Agente E → `erro_agente_e`, sem score fictício
+  - Versionamento: `score_v01.json`, `score_v02.json`, ... (nunca sobrescreve)
 - **M02 veredito APROVAR:** segue para M03
 - **M02 veredito RECRIAR:** material vai para `07_incubadora/`, coordenador decide
 - **M08:** gate de aprovação pelo coordenador antes de publicar
