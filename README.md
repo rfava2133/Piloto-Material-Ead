@@ -289,6 +289,53 @@ A IA (Agente E) atribui notas 0–10 por indicador.
 O `calculo.py` faz a conta — o coordenador vê a conta exata.
 Isso responde: "a máquina só acha?" — não, o cálculo é auditável.
 
+## Validações Implementadas (pós-correção)
+
+O M02 agora valida estritamente antes de gerar score:
+
+| Validação | O que verifica | Resultado se falhar |
+|---|---|---|
+| `validar_notas()` | Exatamente B1–B5 presentes | `score_invalido` |
+| `validar_notas()` | Cada nota entre 0 e 10 | `score_invalido` |
+| `validar_severidade()` | A1/A2 ∈ {SEM_RESSALVA, RESSALVA, CRITICO} | `score_invalido` |
+| `avaliar_com_ia()` | Skill retorna JSON estruturado | `erro_agente_e` (sem fallback) |
+
+### Estados da API `/api/score`
+
+| Estado | Significado |
+|---|---|
+| `sem_material` | Aula não extraída pelo M01 |
+| `aguardando_avaliacao` | Material extraído, Agente E ainda não rodou |
+| `avaliada` | Score válido presente e verificado |
+| `erro_agente_e` | Falha explícita do Agente E (sem score gerado) |
+| `score_invalido` | Score existe mas não passou na validação |
+
+### Versionamento Automático
+
+Os arquivos de avaliação são versionados automaticamente:
+- `score_v01.json`, `score_v02.json`, ...
+- `avaliacao_v01.md`, `avaliacao_v02.md`, ...
+
+Use `--forcar` para reavaliar — cria nova versão, não sobrescreve.
+
+## Regra de veredito (4 faixas)
+
+| Faixa | Condição | Ação do coordenador |
+|---|---|---|
+| 🟢 APROVAR | Índice ≥ 8,0 e sem CRÍTICO | Libera para diagramação |
+| 🟡 APROVAR COM RESSALVA | 6,5–7,9 e sem CRÍTICO | Segue com relatório de ajustes |
+| 🟠 INTERVENÇÃO EDITORIAL | 5,0–6,4 e sem CRÍTICO | Decide: edita ou devolve ao autor |
+| 🔴 RECRIAR | Índice < 5,0 OU qualquer CRÍTICO | Retorna ao autor |
+
+**Cenário 4 do PPT:** índice 8,45 (ótimo) + A2 CRÍTICO → veredito RECRIAR.
+Verificação de Fundamentos ≠ Índice de Qualidade. São independentes.
+
+## Aritmética é código, não IA
+
+A IA (Agente E) atribui notas 0–10 por indicador.
+O `calculo.py` faz a conta — o coordenador vê a conta exata.
+Isso responde: "a máquina só acha?" — não, o cálculo é auditável.
+
 ---
 
 # MÓDULO 03 — TEXTO DISPLAY ✅

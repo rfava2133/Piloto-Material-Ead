@@ -56,6 +56,9 @@ Escala alvo: ~1.200 disciplinas. Piloto: começar pelo material disponível.
 
 - **M01:** 100% determinístico, sem IA
 - **M02:** Agente E avalia; índice e veredito são aritmética pura via `modulo02/calculo.py`
+  - Validações: `validar_notas()` (B1–B5, 0–10), `validar_severidade()` (A1/A2)
+  - Sem fallback: falha do Agente E → `erro_agente_e`, sem score fictício
+  - Versionamento: `score_v01.json`, `score_v02.json`, ... (nunca sobrescreve)
 - **M02 veredito APROVAR:** segue para M03
 - **M02 veredito RECRIAR:** material vai para `07_incubadora/`, coordenador decide
 - **M08:** gate de aprovação pelo coordenador antes de publicar
