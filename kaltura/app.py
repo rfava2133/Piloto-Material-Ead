@@ -54,10 +54,24 @@ def login_necessario(f):
     """Decorator para exigir autenticação."""
     @wraps(f)
     def decorated(*args, **kwargs):
-        if not db.verificar_sessao():
+        if not usuario_atual():
             return jsonify({"erro": "Não autorizado"}), 401
         return f(*args, **kwargs)
     return decorated
+
+
+def usuario_atual() -> dict[str, Any] | None:
+    """Retorna o usuário da sessão HTTP deste navegador."""
+    user = flask_session.get("user")
+    return user if isinstance(user, dict) else None
+
+
+def email_usuario_atual() -> str | None:
+    user = usuario_atual()
+    if not user:
+        return None
+    email = user.get("email")
+    return str(email) if email else None
 
 
 # ============================================
@@ -279,6 +293,7 @@ def api_login():
 
     try:
         user = db.autenticar(email, senha)
+        flask_session.clear()
         flask_session["user"] = user
         return jsonify({"ok": True, "user": user})
     except Exception as e:
@@ -287,23 +302,14 @@ def api_login():
 
 @app.route("/api/auth/logout", methods=["POST"])
 def api_logout():
-    db.logout()
-    flask_session.pop("user", None)
+    flask_session.clear()
     return jsonify({"ok": True})
 
 
 @app.route("/api/auth/me")
 def api_auth_me():
-    # Verificar cache do supabase_client primeiro
-    if db.verificar_sessao():
-        user = db.get_user()
-        return jsonify({"ok": True, "user": user})
-
-    # Fallback: verificar flask_session
-    if "user" in flask_session:
-        user = flask_session["user"]
-        # Atualizar cache do db
-        db.set_user(user)
+    user = usuario_atual()
+    if user:
         return jsonify({"ok": True, "user": user})
 
     return jsonify({"ok": False, "erro": "Não autenticado"}), 401
@@ -461,7 +467,12 @@ def api_importar():
         if saida != VIDEOS_CSV and saida.exists():
             saida.unlink()
 
-        db.log_action("importar_videos", "videos_kaltura", details={"curso": curso, "linhas": total_linhas})
+        db.log_action(
+            "importar_videos",
+            "videos_kaltura",
+            details={"curso": curso, "linhas": total_linhas},
+            user_email=email_usuario_atual(),
+        )
 
     except SystemExit as exc:
         return jsonify({"ok": False, "erro": str(exc)}), 400
@@ -578,6 +589,7 @@ def api_validar():
         "validacoes",
         record_id=resultado.get("id"),
         details={"disciplina": disciplina["disciplina"], "aula": aula, "status": status},
+        user_email=email_usuario_atual(),
     )
 
     return jsonify({"ok": True, "validacao": resultado})

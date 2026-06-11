@@ -5,28 +5,27 @@ Cliente Supabase para o Validador Kaltura UNIGRAN.
 Fornece:
   - Autenticação (email/senha)
   - CRUD para disciplinas, vídeos e validações
-  - Cache de sessão local
+  - Cache do cliente Supabase para acesso ao banco
 """
 
 from __future__ import annotations
 
 import os
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
 from supabase import Client, create_client
 
 # ============================================
-# CACHE DE SESSÃO
+# CACHE DO CLIENTE SUPABASE
 # ============================================
-_SESSION_CACHE: dict[str, Any] = {
+_CLIENT_CACHE: dict[str, Any] = {
     "client": None,
-    "user": None,
     "created_at": None,
 }
 
-# TTL da sessão: 55 minutos (refresh antes de expirar em 1h)
+# TTL do cliente: 55 minutos.
 SESSION_TTL_SECONDS = 3300
 
 
@@ -47,13 +46,13 @@ def carregar_env(caminho: Path) -> None:
 
 def get_supabase_client(env_path: Path | None = None) -> Client:
     """
-    Retorna o cliente Supabase, reutilizando sessão em cache se válida.
+    Retorna o cliente Supabase, reutilizando o cliente em cache se válido.
     """
-    criado_em = _SESSION_CACHE.get("created_at")
-    if _SESSION_CACHE.get("client") and criado_em:
+    criado_em = _CLIENT_CACHE.get("created_at")
+    if _CLIENT_CACHE.get("client") and criado_em:
         idade = (datetime.now() - criado_em).total_seconds()
         if idade < SESSION_TTL_SECONDS:
-            return _SESSION_CACHE["client"]
+            return _CLIENT_CACHE["client"]
 
     if env_path is None:
         env_path = Path(__file__).resolve().parent / ".env"
@@ -70,21 +69,28 @@ def get_supabase_client(env_path: Path | None = None) -> Client:
         )
 
     client = create_client(supabase_url, supabase_key)
-    _SESSION_CACHE["client"] = client
-    _SESSION_CACHE["created_at"] = datetime.now()
+    _CLIENT_CACHE["client"] = client
+    _CLIENT_CACHE["created_at"] = datetime.now()
     return client
 
 
-def get_user() -> dict[str, Any] | None:
-    """Retorna o usuário autenticado em cache."""
-    return _SESSION_CACHE.get("user")
+def criar_cliente_auth(env_path: Path | None = None) -> Client:
+    """Cria um cliente Supabase isolado para operações de autenticação."""
+    if env_path is None:
+        env_path = Path(__file__).resolve().parent / ".env"
 
+    carregar_env(env_path)
 
-def set_user(user: dict[str, Any] | None) -> None:
-    """Define o usuário autenticado em cache."""
-    _SESSION_CACHE["user"] = user
-    if user is None:
-        _SESSION_CACHE["created_at"] = None
+    supabase_url = os.environ.get("SUPABASE_URL")
+    supabase_key = os.environ.get("SUPABASE_KEY")
+
+    if not supabase_url or not supabase_key:
+        raise RuntimeError(
+            "SUPABASE_URL e/ou SUPABASE_KEY não configurados. "
+            "Verifique o arquivo .env"
+        )
+
+    return create_client(supabase_url, supabase_key)
 
 
 # ============================================
@@ -95,7 +101,7 @@ def autenticar(email: str, senha: str, env_path: Path | None = None) -> dict[str
     Autentica usuário no Supabase Auth.
     Retorna dados do usuário ou lança exceção.
     """
-    client = get_supabase_client(env_path)
+    client = criar_cliente_auth(env_path)
 
     response = client.auth.sign_in_with_password({
         "email": email,
@@ -110,24 +116,17 @@ def autenticar(email: str, senha: str, env_path: Path | None = None) -> dict[str
         "email": response.user.email,
         "created_at": response.user.created_at,
     }
-    set_user(user_data)
     return user_data
 
 
 def logout(env_path: Path | None = None) -> None:
-    """Invalida a sessão local e faz logout no Supabase."""
-    client = get_supabase_client(env_path)
-    try:
-        client.auth.sign_out()
-    except Exception:
-        pass  # Ignora erros se já estiver desconectado
-    finally:
-        set_user(None)
+    """Mantido por compatibilidade; a sessão HTTP é controlada pelo Flask."""
+    return None
 
 
 def verificar_sessao() -> bool:
-    """Verifica se há uma sessão válida em cache."""
-    return _SESSION_CACHE.get("user") is not None
+    """Mantido por compatibilidade; não há sessão global de usuário."""
+    return False
 
 
 # ============================================
@@ -341,14 +340,14 @@ def log_action(
     table_name: str,
     record_id: str | None = None,
     details: dict[str, Any] | None = None,
+    user_email: str | None = None,
     env_path: Path | None = None,
 ) -> None:
     """Registra uma ação no audit log."""
     client = get_supabase_client(env_path)
-    user = get_user()
 
     data = {
-        "user_email": user.get("email") if user else "anon",
+        "user_email": user_email or "anon",
         "action": action,
         "table_name": table_name,
         "record_id": record_id,

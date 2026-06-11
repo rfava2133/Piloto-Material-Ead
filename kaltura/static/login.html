@@ -212,21 +212,6 @@
         $("btn-login").textContent = "Entrar";
       }
     });
-
-    // Verificar se já está autenticado
-    (async function checkAuth() {
-      try {
-        const res = await fetch("/api/auth/me");
-        if (res.ok) {
-          const data = await res.json();
-          if (data.ok) {
-            window.location.href = "/";
-          }
-        }
-      } catch {
-        // Ignora, mostra login normal
-      }
-    })();
   </script>
 </body>
 </html>
