@@ -59,9 +59,100 @@ def carregar_markdown_aula(pasta_aula: Path) -> str:
     return md_files[0].read_text(encoding="utf-8")
 
 
+def avaliar_com_ollama(texto: str, aula_id: str, disciplina: str, curso: str, modelo: str = "codex") -> tuple:
+    """
+    Fallback local: chama modelo Ollama para avaliação quando skill está indisponível.
+
+    Returns
+    -------
+    tuple
+        (sucesso: bool, resultado: dict ou erro: str)
+    """
+    print(f"\n   🤖 Usando Ollama ({modelo}) como fallback...")
+
+    prompt = f"""Você é o Agente E — Analista de Conteúdo para material EAD.
+Avalie o material didático abaixo e retorne APENAS JSON válido com esta estrutura:
+
+{{
+  "fundamentos": {{
+    "A1": {{"severidade": "SEM_RESSALVA|RESSALVA|CRITICO", "justificativa": "...", "trecho": "..."}},
+    "A2": {{"severidade": "SEM_RESSALVA|RESSALVA|CRITICO", "justificativa": "...", "fontes_verificadas": []}}
+  }},
+  "indicadores": {{
+    "B1": {{"nota": 0-10, "justificativa": "..."}},
+    "B2": {{"nota": 0-10, "justificativa": "..."}},
+    "B3": {{"nota": 0-10, "justificativa": "..."}},
+    "B4": {{"nota": 0-10, "justificativa": "..."}},
+    "B5": {{"nota": 0-10, "justificativa": "..."}}
+  }}
+}}
+
+Critérios:
+- B1 (Dialogicidade): Tom conversacional, perguntas ao aluno, conexão com realidade EAD
+- B2 (Densidade): Conceitos sem empilhamento, exemplos intercalados
+- B3 (Estrutura): Objetivos claros, progressão lógica, fechamento
+- B4 (Engajamento): Exemplos atuais, estudos de caso, analogias
+- B5 (Legibilidade): Hierarquia visual, parágrafos curtos, figuras legendadas
+
+A1: Precisão conceitual e científica
+A2: Validade bibliográfica e fontes
+
+Material para avaliação:
+Curso: {curso}
+Disciplina: {disciplina}
+Aula: {aula_id}
+
+---
+{texto[:30000]}
+---
+
+Retorne apenas o JSON, sem markdown ou explicações."""
+
+    try:
+        result = subprocess.run(
+            ["ollama", "run", modelo, prompt],
+            capture_output=True,
+            text=True,
+            timeout=180,
+        )
+
+        if result.returncode != 0:
+            return (False, f"Ollama falhou: {result.stderr}")
+
+        output = result.stdout.strip()
+
+        # Extrai JSON do output
+        import re
+        json_match = re.search(r'\{.*\}', output, re.DOTALL)
+        if not json_match:
+            return (False, f"Ollama não retornou JSON: {output[:200]}")
+
+        dados = json.loads(json_match.group(0))
+
+        # Valida estrutura mínima
+        if "fundamentos" not in dados or "indicadores" not in dados:
+            return (False, "JSON sem estrutura required")
+
+        # Normaliza severidades
+        for key in ["A1", "A2"]:
+            sev = dados["fundamentos"][key].get("severidade", "SEM_RESSALVA").upper()
+            dados["fundamentos"][key]["severidade"] = sev.replace(" ", "_")
+
+        return (True, dados)
+
+    except FileNotFoundError:
+        return (False, "Ollama não encontrado — instale com 'brew install ollama'")
+    except subprocess.TimeoutExpired:
+        return (False, "Timeout no Ollama (3 min)")
+    except json.JSONDecodeError as e:
+        return (False, f"JSON inválido do Ollama: {e}")
+    except Exception as e:
+        return (False, f"Erro Ollama: {type(e).__name__}: {e}")
+
+
 def avaliar_com_ia(texto: str, aula_id: str, disciplina: str, curso: str) -> tuple:
     """
-    Chama o Agente E via Skill 'analista-conteudo'.
+    Chama o Agente E via Skill 'analista-conteudo' com fallback para Ollama.
 
     A skill deve gravar diretamente o JSON estruturado em:
     {pasta_aula}/03_avaliacao/score_vNN.json
@@ -85,7 +176,8 @@ def avaliar_com_ia(texto: str, aula_id: str, disciplina: str, curso: str) -> tup
     texto_file = tmp / "aula.md"
     texto_file.write_text(texto[:50000], encoding="utf-8")  # limita a 50k chars
 
-    print("\n   📡 Chamando skill /analista-conteudo (claude-opus-4-7)...")
+    # Tenta 1: Skill /analista-conteudo (Claude Opus)
+    print("\n   📡 Tentando skill /analista-conteudo (claude-opus-4-7)...")
 
     try:
         # Chama a skill analista-conteudo
@@ -167,11 +259,25 @@ def avaliar_com_ia(texto: str, aula_id: str, disciplina: str, curso: str) -> tup
         return (False, "Skill não retornou JSON estruturado nem rodapé machine-readable")
 
     except FileNotFoundError:
-        return (False, "Claude CLI não encontrado no PATH — instale com 'npm install -g @anthropic/claude-code'")
+        print("   ⚠️  Claude CLI não encontrado. Tentando fallback com Ollama...")
     except subprocess.TimeoutExpired:
-        return (False, "Timeout na análise (5 min) — material muito extenso ou rede lenta")
+        print("   ⚠️  Timeout na skill. Tentando fallback com Ollama...")
     except Exception as e:
-        return (False, f"Erro inesperado: {type(e).__name__}: {e}")
+        print(f"   ⚠️  Erro na skill: {type(e).__name__}. Tentando fallback com Ollama...")
+
+    # Fallback: Ollama (modelo local)
+    print("\n   🔄 Fallback: Usando Ollama (modelo local)...")
+    shutil.rmtree(tmp, ignore_errors=True)
+
+    # Tenta com 'codex' primeiro, depois 'llama3' se falhar
+    for modelo in ["codex", "llama3"]:
+        sucesso, resultado = avaliar_com_ollama(texto, aula_id, disciplina, curso, modelo)
+        if sucesso:
+            print(f"   ✅ Ollama ({modelo}) retornou avaliação válida")
+            return (True, resultado)
+        print(f"   ⚠️  Ollama ({modelo}) falhou: {resultado}")
+
+    return (False, "Skill e Ollama indisponíveis. Verifique conexão ou instale ollama 'brew install ollama'")
 
 
 def gerar_laudo_markdown(aula_id: str, resultado_ia: dict, score: dict) -> str:

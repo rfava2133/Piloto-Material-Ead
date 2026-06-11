@@ -320,14 +320,26 @@ Use `--forcar` para reavaliar — cria nova versão, não sobrescreve.
 
 ### Modo Fallback (IA indisponível)
 
-Quando os créditos da IA se esgotam, o sistema opera em **modo fallback**:
+Quando os créditos da IA se esgotam ou a skill está offline, o sistema opera em **modo fallback**:
 
 | Módulo | Com IA | Fallback (sem IA) |
 |--------|--------|-------------------|
-| **M02** | Claude Opus avalia | Análise heurística (palavras, parágrafos, imgs, refs) |
-| **M03** | Claude Sonnet reescreve | Gera prompt para execução manual |
+| **M02** | Claude Opus (skill) | **Ollama local** (codex, llama3) → JSON estruturado |
+| **M03** | Claude Sonnet (skill) | **Ollama local** (codex, llama3) → texto-display.md |
 
-**Indicador visual:** Topbar mostra status (🟢 online / 🟡 fallback / 🔴 offline).
+**Fluxo automático:**
+1. Tenta skill `/analista-conteudo` ou `/texto-display`
+2. Se falhar (timeout, erro, sem créditos) → tenta Ollama com `codex`
+3. Se `codex` falhar → tenta `llama3`
+4. Se tudo falhar → retorna erro explícito
+
+**Instalar Ollama:**
+```bash
+brew install ollama
+ollama pull codex      # ou llama3
+```
+
+**Indicador visual:** Topbar mostra status (🟢 online / 🟡 fallback Ollama / 🔴 offline).
 
 **API `/api/ia-status`:** Retorna status geral e por módulo.
 

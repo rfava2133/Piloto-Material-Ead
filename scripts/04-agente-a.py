@@ -106,17 +106,92 @@ def criar_backup(pasta_aula: Path):
         print(f"  Backup criado: {backup_meta.name}")
 
 
+def executar_agente_a_ollama(pasta_aula: Path, input_md: Path, modelo: str = "codex") -> tuple[bool, str]:
+    """
+    Executa M03 usando Ollama local como fallback.
+
+    Returns:
+        (sucesso, mensagem)
+    """
+    import subprocess
+    import re
+
+    output_dir = pasta_aula / "03_reformulado"
+    output_md = output_dir / "texto-display.md"
+    output_meta = output_dir / "display_meta.json"
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    texto_original = input_md.read_text(encoding="utf-8")
+
+    prompt = f"""Você é o Agente A — Texto Display para material EAD UNIGRAN.
+Reformule o material abaixo para versão DISPLAY DE TELA.
+
+REGRAS:
+1. Tom conversacional (2ª pessoa: "você", "seu")
+2. Preserve todos os marcadores [IMG-NN] exatamente como estão
+3. Volume mínimo: 80% do original
+4. Adicione 3-6 marcadores [VIDEO-NN] em pontos estratégicos
+5. Inclua callouts: conceito-chave, atenção, resumo, exercício, dica
+6. Termine com seção "## Glossário" com 5-10 termos técnicos
+7. Use markdown limpo, sem HTML
+
+Retorne APENAS o markdown reformulado, sem explicações.
+
+--- MATERIAL ORIGINAL ---
+{texto_original[:25000]}
+"""
+
+    try:
+        result = subprocess.run(
+            ["ollama", "run", modelo, prompt],
+            capture_output=True,
+            text=True,
+            timeout=300,
+        )
+
+        if result.returncode != 0:
+            return (False, f"Ollama falhou: {result.stderr}")
+
+        output = result.stdout.strip()
+
+        if len(output) < len(texto_original) * 0.5:
+            return (False, f"Output muito curto ({len(output)} chars)")
+
+        # Salva texto reformulado
+        output_md.write_text(output, encoding="utf-8")
+
+        # Gera metadados básicos
+        meta = {
+            "modelo": f"ollama/{modelo}",
+            "timestamp": datetime.now().isoformat(),
+            "volume_original": len(texto_original),
+            "volume_display": len(output),
+            "proporcao_pct": round(len(output) / len(texto_original) * 100, 1),
+            "marcadores_img": re.findall(r'\[IMG-(\d+)\]', output),
+            "marcadores_video": re.findall(r'\[VIDEO-(\d+)\]', output),
+            "glossario": "## Glossário" in output,
+        }
+
+        output_meta.write_text(json.dumps(meta, indent=2, ensure_ascii=False), encoding="utf-8")
+
+        return (True, f"Ollama ({modelo}) gerou {len(output)} chars")
+
+    except FileNotFoundError:
+        return (False, "Ollama não encontrado")
+    except subprocess.TimeoutExpired:
+        return (False, "Timeout no Ollama (5 min)")
+    except Exception as e:
+        return (False, f"Erro: {type(e).__name__}: {e}")
+
+
 def executar_agente_a(pasta_aula: Path, input_md: Path) -> tuple[bool, str]:
     """
-    Prepara ambiente para execução do Agente A (M03).
+    Prepara ambiente para execução do Agente A (M03) com fallback Ollama.
 
-    Para execução via Claude Code CLI, o operador deve:
-    1. Abrir o terminal
-    2. Executar: claude /texto-display {input_md}
-
-    Esta função cria:
-    - Arquivo de prompt pronto em 03_reformulado/_prompt_m03.txt
-    - Copia do markdown original para referência
+    Tenta:
+    1. Gera prompt para execução manual via Claude Code
+    2. Fallback: Ollama local (codex, luego llama3)
 
     Returns:
         (sucesso, mensagem)
@@ -128,7 +203,7 @@ def executar_agente_a(pasta_aula: Path, input_md: Path) -> tuple[bool, str]:
     # Garante que a pasta de saída existe
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # Criar arquivo de prompt
+    # Tenta 1: Prepara prompt para Claude Code (manual ou via skill)
     prompt_path = output_dir / "_prompt_m03.txt"
     prompt = f"""# M03 — TEXTO DISPLAY
 
@@ -162,13 +237,23 @@ Reformule o markdown original para versão display de tela seguindo:
     prompt += input_md.read_text(encoding="utf-8")
 
     prompt_path.write_text(prompt, encoding="utf-8")
+    print(f"   📄 Prompt gerado: {prompt_path.name}")
 
     # Copiar markdown original para referência
     ref_path = output_dir / "original_referencia.md"
-    import shutil
     shutil.copy2(input_md, ref_path)
 
-    return True, f"Prompt preparado em {prompt_path}. Execute: claude /texto-display {prompt_path}"
+    # Tenta 2: Fallback automático com Ollama
+    print("\n   🔄 Tentando Ollama como fallback...")
+    for modelo in ["codex", "llama3"]:
+        print(f"   → Testando modelo: {modelo}")
+        ok, msg = executar_agente_a_ollama(pasta_aula, input_md, modelo)
+        if ok:
+            print(f"   ✅ {msg}")
+            return (True, f"Ollama ({modelo}) executou com sucesso. {msg}")
+        print(f"   ⚠️  {modelo}: {msg}")
+
+    return (True, f"Prompt preparado em {prompt_path}. Execute manualmente: claude /texto-display {prompt_path}")
 
 
 def executar_agente_a_tela(curso: str, codigo: str, disciplina: str, aula_num: int, forcar: bool = False) -> dict:
