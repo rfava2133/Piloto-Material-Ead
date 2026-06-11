@@ -17,7 +17,7 @@ interativo + micro-roteiros de vídeo, com avaliação automática de qualidade.
 |--------|--------|--------|--------|---------------|
 | **M01 — Extrator** | — | determinístico | ✅ Implementado | Pandoc + PyMuPDF |
 | **M02 — Analista de Conteúdo** | Agente E | claude-opus-4-7 | ✅ Implementado | Avaliação + Relatório |
-| **M03 — Texto Display (Agente A)** | Agente A | claude-opus-4-7 | 📋 Pendente | — |
+| **M03 — Texto Display (Agente A)** | Agente A | claude-sonnet-4-6 | ✅ Implementado | `04-agente-a.py`, `validador.py`, `display.html` |
 | **M04 — PDF Full** | — | Puppeteer | 📋 Pendente | — |
 | **M05 — Micro-roteiros (Agente B)** | Agente B | claude-sonnet-4-6 | 📋 Pendente | — |
 | **M06 — Imagens (Agente D)** | Agente D | claude-haiku-4-5 | 📋 Pendente | — |
@@ -291,6 +291,85 @@ Isso responde: "a máquina só acha?" — não, o cálculo é auditável.
 
 ---
 
+# MÓDULO 03 — TEXTO DISPLAY ✅
+
+Reformula o markdown aprovado (M02) em versão display para tela: HTML responsivo + PDF final.
+
+## Componentes
+
+| Arquivo | Função |
+|---------|--------|
+| `skills/texto-display/SKILL.md` | Rubrica de reescrita + regras de marcação |
+| `.claude/agents/texto-display.md` | Prompt do Agente A (Sonnet 4.6) |
+| `modulo03/validador.py` | Validação determinística (sem IA) |
+| `modulo03/test_validador.py` | Casos de teste do validador |
+| `modulo03/display.html` | Tela de revisão (Opção B) |
+| `scripts/04-agente-a.py` | Execução via linha de comando |
+
+## Fluxo
+
+```
+02_markdown/{ID}.md (aprovado M02)
+        ↓
+   Agente A (Sonnet 4.6)
+        ↓
+03_reformulado/
+├── texto-display.md       ← fonte única da aula HTML e do PDF final
+└── display_meta.json      ← metadados para o pipeline
+        ↓
+   validador.py (automático)
+        ↓
+   display.html (revisão humana)
+        ↓
+   Aprovar → M04 (Imagens)
+```
+
+## Como Usar — Linha de Comando
+
+```bash
+python3 scripts/04-agente-a.py \
+    --curso "Administração" \
+    --codigo ADM \
+    --disciplina "Fundamentos de Administração" \
+    --aula 1
+
+# Reprocessar (cria backup do existente)
+python3 scripts/04-agente-a.py --forcar ...
+```
+
+## Regras de Reescrita (voz-unigran.md)
+
+- **Volume mínimo:** 80% do original — reescrever, não resumir
+- **Citações:** preservar intactas (M02 já validou)
+- **Marcadores IMG:** todos os `[IMG-NN]` devem ser mantidos
+- **Callouts:** máximo 2 por tópico (6 tipos: conceito, atenção, resumo, exercício, dica, leitura)
+- **Vídeos:** sugerir 3–6 marcadores `[VIDEO-NN]`
+- **Glossário:** 5–8 termos no final
+- **Estrutura:** abertura (pergunta-gancho) → H2 humanos → tópicos (explica→exemplifica→aplica→checa) → fechamento (bullets)
+
+## Validação (validador.py)
+
+Verificações críticas (falha → bloqueia):
+- Volume ≥ 80%
+- Marcadores IMG preservados
+- Glossário presente
+- Palavras proibidas ausentes ("vestibular", "a Uni", "Unicão", "estaremos")
+
+Alertas (não bloqueiam):
+- Abertura sem pergunta-gancho
+- Fechamento sem bullets
+- Nenhum [VIDEO-NN] sugerido
+
+## Tela de Revisão (display.html)
+
+- Renderiza callouts com cores institucionais
+- Placeholders visuais para `[IMG-NN]` e `[VIDEO-NN]`
+- Painel lateral com resultado do validador
+- Toggle "Ver markdown original"
+- Botão **"Aprovar e seguir para imagens →"** (só ativo se validador ok)
+
+---
+
 # MÓDULO KALTURA — CONFERÊNCIA DE LINKS *(separado da esteira)*
 
 > **Escopo:** ferramenta auxiliar que **roda à parte** — servidor, banco e deploy independentes.
@@ -341,9 +420,22 @@ esteira_conteudo/
 │   ├── config.yml                  # Configuração da esteira
 │   ├── 01-processar-entrada.py     # M01: Extrator (Pandoc + PyMuPDF)
 │   ├── 02-separar-aulas.py         # M01b: Separa PDF único em aulas
-│   └── 03-agente-e.py              # M02: Avaliação de qualidade
+│   ├── 03-agente-e.py              # M02: Avaliação de qualidade
+│   └── 04-agente-a.py              # M03: Texto Display
 ├── skills/
-│   └── analista-conteudo/          # Skill do Agente E (Claude Code)
+│   ├── analista-conteudo/          # Skill do Agente E (Claude Code)
+│   └── texto-display/              # Skill do Agente A (M03)
+├── modulo02/
+│   ├── calculo.py                  # M02: Aritmética pura (índice + veredito)
+│   ├── test_calculo.py             # M02: Validação dos 4 cenários
+│   ├── laudo.html                  # M02: Tela visual para coordenador
+│   ├── referencias.py              # M02: Extrai refs do markdown (fallback A2)
+│   ├── test-cenarios.html          # M02: Guia de teste dos cenários
+│   └── cenarios/                   # JSONs + README dos 4 vereditos
+├── modulo03/
+│   ├── validador.py                # M03: Validação determinística
+│   ├── test_validador.py           # M03: Casos de teste
+│   └── display.html                # M03: Tela de revisão
 ├── templates_design/               # Templates HTML/PDF aprovados
 ├── cursos/                         # Material processado (gerado pelo M01)
 │   └── {curso-slug}/{CODIGO-slug}/aulas/{NN}/
@@ -370,6 +462,7 @@ esteira_conteudo/
 | **M01** | Extração Word/PDF → Markdown + imagens | `01-processar-entrada.py`, `02-separar-aulas.py` |
 | **M01b** | Separação automática de PDF único | `02-separar-aulas.py` |
 | **M02** | Avaliação de qualidade (Agente E) | `03-agente-e.py`, `calculo.py`, `laudo.html` |
+| **M03** | Texto Display (Agente A) | `04-agente-a.py`, `validador.py`, `display.html` |
 
 ### 🔧 Interface da esteira
 

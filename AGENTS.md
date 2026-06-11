@@ -47,7 +47,7 @@ Escala alvo: ~1.200 disciplinas. Piloto: começar pelo material disponível.
 |--------|--------|--------|--------|
 | **M01 — Extrator** | — | determinístico | Pandoc + PyMuPDF → Markdown + imagens |
 | **M02 — Analista de Conteúdo** | Agente E | Codex-opus-4-7 | Avaliação de qualidade → índice 0–10 |
-| **M03 — Texto Display** | Agente A | Codex-opus-4-7 | Texto reformulado |
+| **M03 — Texto Display** | Agente A | claude-sonnet-4-6 | Texto reformulado |
 | **M04 — PDF Full** | — | Puppeteer | PDF do texto original |
 | **M05 — Micro-roteiros** | Agente B | Codex-sonnet-4-6 | Roteiros de vídeo 60–120s |
 | **M06 — Imagens** | Agente D | Codex-haiku-4-5 | Classificação em 3 trilhas |

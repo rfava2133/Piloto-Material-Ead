@@ -51,7 +51,7 @@ aulas digitais completas para o LMS EAD.
 | Agente | Modelo | Tarefa | Output |
 |--------|--------|--------|--------|
 | E | claude-opus-4-7 | Avaliação de qualidade | score_v01.json + avaliacao_v01.md |
-| A | claude-opus-4-7 | Texto display | texto-display.md |
+| A | claude-sonnet-4-6 | Texto display | texto-display.md |
 | B | claude-sonnet-4-6 | Micro-roteiros | micro-roteiros.md |
 | C | claude-sonnet-4-6 | Quiz HTML interativo | quiz-component.html |
 | D | claude-haiku-4-5 | Classificação imagens | classificacao.json |

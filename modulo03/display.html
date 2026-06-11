@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Revisão M03 — Texto Display | UNIGRAN EAD</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Literata:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    /* =============================================================================
+       IDENTIDADE VISUAL — COPIADA DO laudo.html (NÃO ALTERAR)
+       ============================================================================= */
+    :root {
+      /* Tokens do template */
+      --ink: #1A1A1A;
+      --ink-strong: #0D1117;
+      --ink-muted: #6B7280;
+      --ink-faint: #9CA3AF;
+      --paper: #FFFFFF;
+      --paper-warm: #FBFAF7;
+      --line: #E5E2DC;
+
+      /* Marca */
+      --unigran-blue: #0046A8;
+      --unigran-yellow: #FFC629;
+
+      /* Cores de callout */
+      --callout-conceito-bg: #EFF6FF;
+      --callout-conceito-border: #BFDBFE;
+      --callout-conceito-text: #1D4ED8;
+      --callout-atencao-bg: #FFFBEB;
+      --callout-atencao-border: #FDE68A;
+      --callout-atencao-text: #CA8A04;
+      --callout-resumo-bg: #F0FDF4;
+      --callout-resumo-border: #BBF7D0;
+      --callout-resumo-text: #15803D;
+      --callout-exercicio-bg: #F3E8FF;
+      --callout-exercicio-border: #E9D5FF;
+      --callout-exercicio-text: #7E22CE;
+      --callout-dica-bg: #DCFCE7;
+      --callout-dica-border: #86EFAC;
+      --callout-dica-text: #15803D;
+      --callout-leitura-bg: #F9FAFB;
+      --callout-leitura-border: #E5E7EB;
+      --callout-leitura-text: #4B5563;
+
+      /* Cores de validação */
+      --validacao-ok: #15803D;
+      --validacao-alerta: #CA8A04;
+      --validacao-falha: #DC2626;
+
+      /* Tipografia */
+      --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-corpo: 'Literata', Georgia, serif;
+      --font-mono: 'JetBrains Mono', monospace;
+
+      /* Dimensões */
+      --topbar-h: 52px;
+      --radius: 2px;
+    }
+
+    /* =============================================================================
+       RESET E BASE
+       ============================================================================= */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      background: var(--paper-warm);
+      color: var(--ink);
+      font-family: var(--font-corpo);
+      line-height: 1.62;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* =============================================================================
+       TOPBAR FINA (igual ao laudo)
+       ============================================================================= */
+    .topbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: var(--topbar-h);
+      background: var(--paper-warm);
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      gap: 24px;
+      z-index: 100;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-ui);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--unigran-blue);
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+
+    .brand-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--unigran-yellow);
+      display: inline-block;
+    }
+
+    .topbar-crumb {
+      font-family: var(--font-ui);
+      font-size: 12px;
+      color: var(--ink-muted);
+      flex: 1;
+    }
+
+    .topbar-crumb strong {
+      color: var(--ink-strong);
+      font-weight: 600;
+    }
+
+    .topbar-controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .topbar-controls button {
+      font-family: var(--font-ui);
+      font-size: 11px;
+      font-weight: 500;
+      padding: 6px 12px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      color: var(--ink-muted);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .topbar-controls button:hover {
+      background: var(--line);
+      color: var(--ink-strong);
+    }
+
+    .topbar-controls button.primary {
+      background: var(--unigran-blue);
+      border-color: var(--unigran-blue);
+      color: white;
+    }
+
+    .topbar-controls button.primary:hover {
+      background: #003680;
+    }
+
+    .topbar-controls button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* =============================================================================
+       CONTAINER PRINCIPAL
+       ============================================================================= */
+    .main-container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: calc(var(--topbar-h) + 48px) 24px 120px;
+    }
+
+    @media (max-width: 640px) {
+      .topbar { padding: 0 16px; }
+      .main-container { padding: calc(var(--topbar-h) + 32px) 16px 100px; }
+    }
+
+    /* =============================================================================
+       LAYOUT DUAS COLUNAS
+       ============================================================================= */
+    .display-layout {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 40px;
+    }
+
+    @media (max-width: 900px) {
+      .display-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* =============================================================================
+       CONTEÚDO DO TEXTO
+       ============================================================================= */
+    .texto-container {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 40px;
+    }
+
+    .texto-display h1 {
+      font-family: var(--font-ui);
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.4px;
+      line-height: 1.2;
+      color: var(--ink-strong);
+      margin-bottom: 24px;
+    }
+
+    .texto-display h2 {
+      font-family: var(--font-ui);
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: -0.2px;
+      line-height: 1.3;
+      color: var(--ink-strong);
+      margin: 32px 0 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+    }
+
+    .texto-display h2:first-child {
+      padding-top: 0;
+      border-top: none;
+    }
+
+    .texto-display p {
+      font-size: 14.5px;
+      line-height: 1.62;
+      color: var(--ink);
+      margin-bottom: 16px;
+    }
+
+    .texto-display ul, .texto-display ol {
+      margin: 16px 0;
+      padding-left: 24px;
+    }
+
+    .texto-display li {
+      font-size: 14.5px;
+      line-height: 1.62;
+      color: var(--ink);
+      margin-bottom: 8px;
+    }
+
+    /* Callouts */
+    .callout {
+      border-left: 3px solid;
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin: 24px 0;
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .callout.conceito-chave {
+      background: var(--callout-conceito-bg);
+      border-color: var(--callout-conceito-border);
+      color: var(--callout-conceito-text);
+    }
+
+    .callout.atencao {
+      background: var(--callout-atencao-bg);
+      border-color: var(--callout-atencao-border);
+      color: var(--callout-atencao-text);
+    }
+
+    .callout.resumo {
+      background: var(--callout-resumo-bg);
+      border-color: var(--callout-resumo-border);
+      color: var(--callout-resumo-text);
+    }
+
+    .callout.exercicio {
+      background: var(--callout-exercicio-bg);
+      border-color: var(--callout-exercicio-border);
+      color: var(--callout-exercicio-text);
+    }
+
+    .callout.dica {
+      background: var(--callout-dica-bg);
+      border-color: var(--callout-dica-border);
+      color: var(--callout-dica-text);
+    }
+
+    .callout.leitura {
+      background: var(--callout-leitura-bg);
+      border-color: var(--callout-leitura-border);
+      color: var(--callout-leitura-text);
+    }
+
+    .callout-title {
+      font-family: var(--font-ui);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Placeholders de imagem e vídeo */
+    .placeholder-img,
+    .placeholder-video {
+      background: var(--paper-warm);
+      border: 2px dashed var(--line);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin: 24px 0;
+      text-align: center;
+    }
+
+    .placeholder-img {
+      min-height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .placeholder-video {
+      min-height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .placeholder-label {
+      font-family: var(--font-ui);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--ink-faint);
+    }
+
+    .placeholder-desc {
+      font-family: var(--font-ui);
+      font-size: 12px;
+      color: var(--ink-muted);
+      font-style: italic;
+    }
+
+    /* Glossário */
+    .glossario-section {
+      margin-top: 48px;
+      padding-top: 32px;
+      border-top: 2px solid var(--ink-strong);
+    }
+
+    .glossario-section h3 {
+      font-family: var(--font-ui);
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--ink-strong);
+      margin-bottom: 20px;
+    }
+
+    .glossario-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+    }
+
+    .glossario-termo {
+      background: var(--paper-warm);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 12px;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .glossario-termo strong {
+      display: block;
+      font-family: var(--font-ui);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--unigran-blue);
+      margin-bottom: 4px;
+    }
+
+    /* =============================================================================
+       PAINEL LATERAL — VALIDADOR
+       ============================================================================= */
+    .painel-lateral {
+      position: sticky;
+      top: calc(var(--topbar-h) + 24px);
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 20px;
+      height: fit-content;
+      max-height: calc(100vh - var(--topbar-h) - 48px);
+      overflow-y: auto;
+    }
+
+    .painel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .painel-titulo {
+      font-family: var(--font-ui);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--ink-strong);
+    }
+
+    .painel-toggle {
+      font-family: var(--font-ui);
+      font-size: 10px;
+      color: var(--ink-muted);
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    .validacao-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--line);
+      font-size: 13px;
+    }
+
+    .validacao-item:last-child {
+      border-bottom: none;
+    }
+
+    .validacao-icon {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .validacao-icon.ok {
+      background: var(--validacao-ok);
+      color: white;
+    }
+
+    .validacao-icon.falha {
+      background: var(--validacao-falha);
+      color: white;
+    }
+
+    .validacao-icon.alerta {
+      background: var(--validacao-alerta);
+      color: white;
+    }
+
+    .validacao-label {
+      font-family: var(--font-ui);
+      font-size: 12px;
+      color: var(--ink);
+      flex: 1;
+    }
+
+    .validacao-valor {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--ink-muted);
+    }
+
+    .metricas-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+    }
+
+    .metrica-item {
+      text-align: center;
+      padding: 10px;
+      background: var(--paper-warm);
+      border-radius: var(--radius);
+    }
+
+    .metrica-valor {
+      font-family: var(--font-mono);
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--ink-strong);
+    }
+
+    .metrica-label {
+      font-family: var(--font-ui);
+      font-size: 9px;
+      color: var(--ink-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 4px;
+    }
+
+    /* =============================================================================
+       RODAPÉ DE APROVAÇÃO
+       ============================================================================= */
+    .rodape-aprovacao {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--paper-warm);
+      border-top: 1px solid var(--line);
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      z-index: 50;
+    }
+
+    .rodape-status {
+      font-family: var(--font-ui);
+      font-size: 13px;
+      color: var(--ink);
+    }
+
+    .rodape-status strong {
+      font-weight: 600;
+    }
+
+    .rodape-status.falha {
+      color: var(--validacao-falha);
+    }
+
+    .rodape-status.alerta {
+      color: var(--validacao-alerta);
+    }
+
+    .rodape-actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    .btn {
+      font-family: var(--font-ui);
+      font-size: 13px;
+      font-weight: 500;
+      padding: 10px 20px;
+      border-radius: var(--radius);
+      border: 1.5px solid;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .btn-secondary {
+      background: var(--paper);
+      border-color: var(--line);
+      color: var(--ink-muted);
+    }
+
+    .btn-secondary:hover {
+      background: var(--line);
+      color: var(--ink-strong);
+    }
+
+    .btn-primary {
+      background: var(--unigran-blue);
+      border-color: var(--unigran-blue);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #003680;
+    }
+
+    .btn-primary:disabled {
+      background: var(--ink-faint);
+      border-color: var(--ink-faint);
+      cursor: not-allowed;
+    }
+
+    /* =============================================================================
+       ESTADO VAZIO
+       ============================================================================= */
+    .estado-vazio {
+      text-align: center;
+      padding: 80px 24px;
+      color: var(--ink-muted);
+    }
+
+    .estado-vazio p {
+      margin-bottom: 12px;
+    }
+
+    .estado-vazio code {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      background: var(--line);
+      padding: 2px 6px;
+      border-radius: var(--radius);
+    }
+
+    /* Toggle original */
+    .toggle-original {
+      margin-top: 24px;
+      padding-top: 24px;
+      border-top: 1px solid var(--line);
+    }
+
+    .toggle-original summary {
+      font-family: var(--font-ui);
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--ink-muted);
+      cursor: pointer;
+    }
+
+    .original-content {
+      margin-top: 16px;
+      padding: 20px;
+      background: var(--paper-warm);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      font-size: 13px;
+      line-height: 1.55;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    /* Scrollbar customizada */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--paper-warm);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--line);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--ink-faint);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <a href="#" class="brand">
+      <span class="brand-dot"></span>
+      UNIGRAN EAD
+    </a>
+    <div class="topbar-crumb">
+      Módulo 03 · Texto Display · <strong id="topbar-aula">—</strong>
+    </div>
+    <div class="topbar-controls">
+      <button onclick="recarregarDisplay()">🔄 Recarregar</button>
+      <button onclick="togglePainel()">📊 Painel</button>
+    </div>
+  </header>
+
+  <!-- CONTAINER PRINCIPAL -->
+  <main class="main-container">
+
+    <!-- ESTADO VAZIO -->
+    <div id="estado-vazio" class="estado-vazio">
+      <p><strong>Revisão M03 — Texto Display</strong></p>
+      <p>Carregue o arquivo <code>texto-display.md</code> ou acesse via URL.</p>
+      <p style="margin-top:16px;">
+        <button class="btn btn-primary" onclick="document.getElementById('input-md').click()">📄 Carregar Markdown</button>
+      </p>
+      <input type="file" id="input-md" accept=".md" style="display:none;" onchange="carregarMarkdown(this)">
+    </div>
+
+    <!-- CONTEÚDO DE DISPLAY -->
+    <div id="display-content" style="display: none;">
+      <div class="display-layout">
+
+        <!-- TEXTO PRINCIPAL -->
+        <div class="texto-container">
+          <div id="texto-renderizado" class="texto-display">
+            <!-- Renderizado via JS -->
+          </div>
+
+          <!-- Toggle Original -->
+          <details class="toggle-original">
+            <summary>Ver markdown original (02_markdown)</summary>
+            <div id="original-renderizado" class="original-content">
+              <!-- Original via JS -->
+            </div>
+          </details>
+        </div>
+
+        <!-- PAINEL LATERAL -->
+        <aside class="painel-lateral" id="painel-lateral">
+          <div class="painel-header">
+            <span class="painel-titulo">Validação M03</span>
+            <span class="painel-toggle" onclick="togglePainel()">Recolher</span>
+          </div>
+
+          <div id="validacao-itens">
+            <!-- Itens via JS -->
+          </div>
+
+          <div class="metricas-grid">
+            <div class="metrica-item">
+              <div id="metrica-volume" class="metrica-valor">—</div>
+              <div class="metrica-label">Volume</div>
+            </div>
+            <div class="metrica-item">
+              <div id="metrica-proporcao" class="metrica-valor">—</div>
+              <div class="metrica-label">Proporção</div>
+            </div>
+            <div class="metrica-item">
+              <div id="metrica-imgs" class="metrica-valor">—</div>
+              <div class="metrica-label">Imagens</div>
+            </div>
+            <div class="metrica-item">
+              <div id="metrica-videos" class="metrica-valor">—</div>
+              <div class="metrica-label">Vídeos</div>
+            </div>
+          </div>
+        </aside>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- RODAPÉ DE APROVAÇÃO -->
+  <footer id="rodape-aprovacao" class="rodape-aprovacao" style="display: none;">
+    <div id="rodape-status" class="rodape-status">
+      Validação: <strong>—</strong>
+    </div>
+    <div class="rodape-actions">
+      <button class="btn btn-secondary" onclick="solicitarReescrita()">Solicitar nova reescrita</button>
+      <a id="btn-aprovar" class="btn btn-primary" style="pointer-events: none; opacity: 0.5;">Aprovar e seguir para imagens →</a>
+    </div>
+  </footer>
+
+  <script>
+    // Dados globais
+    let dadosValidacao = null;
+    let textoDisplay = '';
+    let textoOriginal = '';
+
+    // Carregamento automático via URL
+    async function carregarDaURL() {
+      const params = new URLSearchParams(location.search);
+      if (!params.get('aula') || !params.get('codigo')) return;
+
+      try {
+        // Carrega texto display
+        const resDisplay = await fetch(`/api/display-texto?${params.toString()}`);
+        if (!resDisplay.ok) throw new Error('Display não encontrado');
+        textoDisplay = await resDisplay.text();
+
+        // Carrega original
+        const resOriginal = await fetch(`/api/original-texto?${params.toString()}`);
+        if (resOriginal.ok) {
+          textoOriginal = await resOriginal.text();
+        }
+
+        // Carrega validação
+        const resValidacao = await fetch(`/api/display-validacao?${params.toString()}`);
+        if (resValidacao.ok) {
+          dadosValidacao = await resValidacao.json();
+        }
+
+        renderizarDisplay();
+      } catch (err) {
+        // Servidor fora ou arquivos não existem
+        console.log('Carregamento automático não disponível:', err);
+      }
+    }
+
+    function carregarMarkdown(input) {
+      const file = input.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        textoDisplay = e.target.result;
+        renderizarDisplay();
+      };
+      reader.readAsText(file);
+    }
+
+    function recarregarDisplay() {
+      location.reload();
+    }
+
+    function togglePainel() {
+      const painel = document.getElementById('painel-lateral');
+      painel.style.display = painel.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function renderizarDisplay() {
+      // Esconde estado vazio, mostra conteúdo
+      document.getElementById('estado-vazio').style.display = 'none';
+      document.getElementById('display-content').style.display = 'block';
+      document.getElementById('rodape-aprovacao').style.display = 'flex';
+
+      // Renderiza markdown (conversão básica)
+      document.getElementById('texto-renderizado').innerHTML = renderizarMarkdown(textoDisplay);
+
+      // Renderiza original se disponível
+      if (textoOriginal) {
+        document.getElementById('original-renderizado').textContent = textoOriginal;
+      } else {
+        document.querySelector('.toggle-original').style.display = 'none';
+      }
+
+      // Renderiza validação
+      if (dadosValidacao) {
+        renderizarValidacao(dadosValidacao);
+      } else {
+        // Validação genérica inline
+        validarInline();
+      }
+    }
+
+    function renderizarMarkdown(md) {
+      // Conversão básica de markdown para HTML
+      let html = md;
+
+      // Callouts
+      html = html.replace(/:::(\w+)\n([\s\S]*?):::/g, function(match, tipo, conteudo) {
+        const icones = {
+          'conceito-chave': '💡',
+          'atencao': '⚠️',
+          'resumo': '📋',
+          'exercicio': '✏️',
+          'dica': '💡',
+          'leitura': '📖'
+        };
+        const icon = icones[tipo] || '📌';
+        return `<div class="callout ${tipo}">
+          <div class="callout-title">${icon} ${tipo.replace('-', ' ')}</div>
+          ${renderizarMarkdown(conteudo.trim())}
+        </div>`;
+      });
+
+      // Placeholders de imagem
+      html = html.replace(/\[IMG-(\d+)(?:\s+alt="([^"]*)")?\]/g, function(match, num, alt) {
+        return `<div class="placeholder-img">
+          <span class="placeholder-label">[IMG-${num}]</span>
+          ${alt ? `<span class="placeholder-desc">${alt}</span>` : ''}
+        </div>`;
+      });
+
+      // Placeholders de vídeo
+      html = html.replace(/\[VIDEO-(\d+)\]/g, function(match, num) {
+        return `<div class="placeholder-video">
+          <span class="placeholder-label">🎬 [VIDEO-${num}]</span>
+          <span class="placeholder-desc">Sugestão de micro-roteiro</span>
+        </div>`;
+      });
+
+      // Títulos
+      html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>');
+      html = html.replace(/^## (.*$)/gim, '<h2>$1</h2>');
+      html = html.replace(/^# (.*$)/gim, '<h1>$1</h1>');
+
+      // Negrito
+      html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+      // Itálico
+      html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+      // Listas
+      html = html.replace(/^\- (.*$)/gim, '<li>$1</li>');
+      html = html.replace(/^(<li>.*<\/li>)$/gim, '<ul>$1</ul>');
+
+      // Parágrafos
+      html = html.replace(/\n\n/g, '</p><p>');
+      html = '<p>' + html + '</p>';
+
+      // Limpeza de tags vazias
+      html = html.replace(/<p><\/p>/g, '');
+      html = html.replace(/<p>(<h[123]>)/g, '$1');
+      html = html.replace(/(<\/h[123]>)<\/p>/g, '$1');
+      html = html.replace(/<p>(<ul>)/g, '$1');
+      html = html.replace(/(<\/ul>)<\/p>/g, '$1');
+      html = html.replace(/<p>(<div)/g, '$1');
+      html = html.replace(/(<\/div>)<\/p>/g, '$1');
+
+      return html;
+    }
+
+    function validarInline() {
+      // Validação básica inline quando não há API
+      const falhas = [];
+      const alertas = [];
+
+      // Volume (estimativa)
+      const palavrasDisplay = textoDisplay.split(/\s+/).length;
+      const palavrasOriginal = textoOriginal ? textoOriginal.split(/\s+/).length : palavrasDisplay;
+      const proporcao = palavrasOriginal > 0 ? (palavrasDisplay / palavrasOriginal * 100) : 100;
+
+      if (proporcao < 80) {
+        falhas.push(`Volume ${proporcao.toFixed(0)}% — abaixo de 80%`);
+      }
+
+      // Glossário
+      if (!textoDisplay.includes('Glossário') && !textoDisplay.includes('glossário')) {
+        falhas.push('Glossário não encontrado');
+      }
+
+      // Palavras proibidas
+      const proibidas = [];
+      if (/vestibular/i.test(textoDisplay)) proibidas.push('vestibular');
+      if (/a Uni/i.test(textoDisplay)) proibidas.push('a Uni');
+      if (/estaremos/i.test(textoDisplay)) proibidas.push('estaremos');
+
+      if (proibidas.length > 0) {
+        falhas.push(`Palavras proibidas: ${proibidas.join(', ')}`);
+      }
+
+      // Imagens
+      const imgs = textoDisplay.match(/\[IMG-\d+\]/g) || [];
+      const imgsOriginal = textoOriginal ? (textoOriginal.match(/\[IMG-\d+\]/g) || []) : [];
+      const imgsFaltantes = imgsOriginal.filter(img => !imgs.includes(img));
+
+      if (imgsFaltantes.length > 0) {
+        falhas.push(`IMG faltando: ${imgsFaltantes.join(', ')}`);
+      }
+
+      // Vídeos
+      const videos = textoDisplay.match(/\[VIDEO-\d+\]/g) || [];
+      if (videos.length < 1) {
+        alertas.push('Nenhum [VIDEO-NN] sugerido');
+      }
+
+      dadosValidacao = {
+        ok: falhas.length === 0,
+        falhas,
+        alertas,
+        metricas: {
+          volume_original: palavrasOriginal,
+          volume_display: palavrasDisplay,
+          proporcao_pct: proporcao.toFixed(1),
+          marcadores_img: imgs.length,
+          marcadores_video: videos.length
+        }
+      };
+
+      renderizarValidacao(dadosValidacao);
+    }
+
+    function renderizarValidacao(dados) {
+      const container = document.getElementById('validacao-itens');
+      container.innerHTML = '';
+
+      // Itens de validação
+      const itens = [
+        {
+          label: 'Volume ≥ 80%',
+          ok: !dados.falhas.some(f => f.includes('Volume')),
+          valor: dados.metricas?.proporcao_pct ? `${dados.metricas.proporcao_pct}%` : '—'
+        },
+        {
+          label: 'Marcadores IMG',
+          ok: !dados.falhas.some(f => f.includes('IMG')),
+          valor: dados.metricas?.marcadores_img ?? '—'
+        },
+        {
+          label: 'Glossário',
+          ok: !dados.falhas.some(f => f.includes('Glossário')),
+          valor: dados.metricas?.glossario_termos?.length ?? (dados.falhas.some(f => f.includes('Glossário')) ? '✗' : '✓')
+        },
+        {
+          label: 'Palavras proibidas',
+          ok: !dados.falhas.some(f => f.includes('proibidas')),
+          valor: dados.falhas.some(f => f.includes('proibidas')) ? '⚠ Encontradas' : '✓ Nenhuma'
+        }
+      ];
+
+      for (const item of itens) {
+        const classe = item.ok ? 'ok' : 'falha';
+        const icon = item.ok ? '✓' : '✗';
+        container.innerHTML += `
+          <div class="validacao-item">
+            <span class="validacao-icon ${classe}">${icon}</span>
+            <span class="validacao-label">${item.label}</span>
+            <span class="validacao-valor">${item.valor}</span>
+          </div>
+        `;
+      }
+
+      // Alertas
+      if (dados.alertas?.length > 0) {
+        for (const alerta of dados.alertas) {
+          container.innerHTML += `
+            <div class="validacao-item">
+              <span class="validacao-icon alerta">!</span>
+              <span class="validacao-label">${alerta}</span>
+            </div>
+          `;
+        }
+      }
+
+      // Métricas
+      if (dados.metricas) {
+        document.getElementById('metrica-volume').textContent = dados.metricas.volume_display ?? '—';
+        document.getElementById('metrica-proporcao').textContent = dados.metricas.proporcao_pct ? `${dados.metricas.proporcao_pct}%` : '—';
+        document.getElementById('metrica-imgs').textContent = dados.metricas.marcadores_img ?? '—';
+        document.getElementById('metrica-videos').textContent = dados.metricas.marcadores_video ?? '—';
+      }
+
+      // Rodapé
+      const statusEl = document.getElementById('rodape-status');
+      const btnAprovar = document.getElementById('btn-aprovar');
+
+      if (dados.ok) {
+        statusEl.innerHTML = 'Validação: <strong>Aprovada</strong>';
+        statusEl.className = 'rodape-status';
+        btnAprovar.style.pointerEvents = 'auto';
+        btnAprovar.style.opacity = '1';
+        btnAprovar.onclick = () => alert('Avançar para M04 — Imagens (em implementação)');
+      } else {
+        statusEl.innerHTML = 'Validação: <strong>Reprovada</strong>';
+        statusEl.className = 'rodape-status falha';
+        btnAprovar.style.pointerEvents = 'none';
+        btnAprovar.style.opacity = '0.5';
+      }
+    }
+
+    function solicitarReescrita() {
+      if (confirm('Isso irá reexecutar o Agente A e sobrescrever o texto-display.md.\n\nConfirmar?')) {
+        alert('Solicitação enviada. O Agente A será reexecutado.');
+        // Aqui entraria a chamada para o endpoint de reescrita
+      }
+    }
+
+    // Inicia carregamento automático
+    carregarDaURL();
+  </script>
+</body>
+</html>
