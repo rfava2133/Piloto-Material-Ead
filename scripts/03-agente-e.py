@@ -59,14 +59,19 @@ def carregar_markdown_aula(pasta_aula: Path) -> str:
     return md_files[0].read_text(encoding="utf-8")
 
 
-def avaliar_com_ia(texto: str, aula_id: str, disciplina: str, curso: str) -> dict:
+def avaliar_com_ia(texto: str, aula_id: str, disciplina: str, curso: str) -> tuple:
     """
     Chama o Agente E via Skill 'analista-conteudo'.
 
-    A skill retorna um laudo estruturado com rodapé machine-readable:
-    VEREDITO=[VERDE|AMARELO|LARANJA|VERMELHO] INDICE=[X.X] A1=[SR|R|C] A2=[SR|R|C]
+    A skill deve gravar diretamente o JSON estruturado em:
+    {pasta_aula}/03_avaliacao/score_vNN.json
 
-    Retorna o JSON de notas com fundamentos (A1, A2) e indicadores (B1-B5).
+    Returns
+    -------
+    tuple
+        (sucesso: bool, resultado: dict ou erro: str)
+        - Se sucesso: (True, dict_com_dados)
+        - Se falha: (False, "mensagem_de_erro")
     """
     print("\n🔍 Agente E — Avaliando material...")
     print(f"   Aula: {aula_id}")
@@ -94,93 +99,79 @@ def avaliar_com_ia(texto: str, aula_id: str, disciplina: str, curso: str) -> dic
 
         shutil.rmtree(tmp, ignore_errors=True)
 
-        if result.returncode == 0:
-            output = result.stdout + result.stderr
+        if result.returncode != 0:
+            return (False, f"Skill falhou com código {result.returncode}: {result.stderr}")
 
-            # Extrai o rodapé machine-readable
-            # Formato: VEREDITO=... INDICE=... A1=... A2=...
-            import re
-            match = re.search(r"VEREDITO=(\w+)\s+INDICE=([\d.]+)\s+A1=(\w+)\s+A2=(\w+)", output)
+        output = result.stdout + result.stderr
 
-            if match:
-                veredito_str, indice_str, a1_str, a2_str = match.groups()
+        # Tenta extrair JSON do output (a skill deve gravar JSON estruturado)
+        import re
+        json_match = re.search(r'\{[^{}]*"aula_id"[^{}]*\}', output, re.DOTALL)
 
-                # Mapeia para estrutura esperada
-                veredito_map = {
-                    "VERDE": "APROVAR",
-                    "AMARELO": "APROVAR_COM_RESSALVA",
-                    "LARANJA": "INTERVENCAO_EDITORIAL",
-                    "VERMELHO": "RECRIAR",
-                }
+        if json_match:
+            try:
+                dados = json.loads(json_match.group(0))
+                # Valida estrutura mínima
+                if "fundamentos" not in dados or "indicadores" not in dados:
+                    return (False, "JSON sem estrutura required: 'fundamentos' e 'indicadores'")
+                return (True, dados)
+            except json.JSONDecodeError as e:
+                return (False, f"JSON inválido: {e}")
 
-                a1_map = {"SR": "SEM_RESSALVA", "R": "RESSALVA", "C": "CRITICO"}
-                a2_map = {"SR": "SEM_RESSALVA", "R": "RESSALVA", "C": "CRITICO"}
+        # Fallback: tenta parsing do rodapé machine-readable (legado)
+        match = re.search(r"VEREDITO=(\w+)\s+INDICE=([\d.]+)\s+A1=(\w+)\s+A2=(\w+)", output)
 
-                # Extrai notas do laudo (procura padrão "B1 Dialogicidade | X/10 | 20%")
-                notas = {}
-                for ind in ["B1", "B2", "B3", "B4", "B5"]:
-                    match_ind = re.search(rf"{ind}\s+[^\|]+\|\s*(\d+)/10", output)
-                    if match_ind:
-                        notas[ind] = float(match_ind.group(1))
-                    else:
-                        notas[ind] = 5.0  # fallback
+        if match:
+            veredito_str, indice_str, a1_str, a2_str = match.groups()
 
-                return {
-                    "fundamentos": {
-                        "A1": {
-                            "severidade": a1_map.get(a1_str, "SEM_RESSALVA"),
-                            "justificativa": "Verificado via skill analista-conteudo.",
-                            "trecho": ""
-                        },
-                        "A2": {
-                            "severidade": a2_map.get(a2_str, "SEM_RESSALVA"),
-                            "justificativa": "Verificado via skill analista-conteudo.",
-                            "fontes_verificadas": []
-                        }
-                    },
-                    "indicadores": {
-                        ind: {"nota": nota, "justificativa": "Atribuído pela skill analista-conteudo."}
-                        for ind, nota in notas.items()
-                    },
-                    "_raw_output": output,  # debug
-                    "_veredito_skill": veredito_map.get(veredito_str, "APROVAR"),
-                    "_indice_skill": float(indice_str),
-                }
-            else:
-                print("   ⚠️  Não encontrou rodapé machine-readable no output")
-                print(f"   Output (primeiros 500 chars): {output[:500]}...")
-        else:
-            print(f"   ⚠️  Skill falhou: {result.stderr}")
-    except FileNotFoundError:
-        print("   ⚠️  Claude CLI não encontrado no PATH")
-    except subprocess.TimeoutExpired:
-        print("   ⚠️  Timeout na análise (5 min)")
-    except Exception as e:
-        print(f"   ⚠️  Erro inesperado: {e}")
-
-    # Fallback: retorna placeholder para desenvolvimento
-    print("\n   ⚠️  Usando dados de exemplo (fallback)")
-    return {
-        "fundamentos": {
-            "A1": {
-                "severidade": "SEM_RESSALVA",
-                "justificativa": "Conceitos corretos e atualizados.",
-                "trecho": ""
-            },
-            "A2": {
-                "severidade": "SEM_RESSALVA",
-                "justificativa": "Referências localizáveis.",
-                "fontes_verificadas": []
+            veredito_map = {
+                "VERDE": "APROVAR",
+                "AMARELO": "APROVAR_COM_RESSALVA",
+                "LARANJA": "INTERVENCAO_EDITORIAL",
+                "VERMELHO": "RECRIAR",
             }
-        },
-        "indicadores": {
-            "B1": {"nota": 7.0, "justificativa": "Tom adequado, mas poderia interpelar mais o aluno."},
-            "B2": {"nota": 6.5, "justificativa": "Densidade aceitável, alguns trechos concentrados."},
-            "B3": {"nota": 7.5, "justificativa": "Estrutura pedagógica clara com objetivos e fechamento."},
-            "B4": {"nota": 6.0, "justificativa": "Exemplos presentes, mas genéricos."},
-            "B5": {"nota": 8.0, "justificativa": "Hierarquia clara, parágrafos bem dimensionados."}
-        }
-    }
+
+            a1_map = {"SR": "SEM_RESSALVA", "R": "RESSALVA", "C": "CRITICO"}
+            a2_map = {"SR": "SEM_RESSALVA", "R": "RESSALVA", "C": "CRITICO"}
+
+            # Extrai notas do laudo (procura padrão "B1 Dialogicidade | X/10 | 20%")
+            notas = {}
+            for ind in ["B1", "B2", "B3", "B4", "B5"]:
+                match_ind = re.search(rf"{ind}\s+[^\|]+\|\s*(\d+)/10", output)
+                if match_ind:
+                    notas[ind] = float(match_ind.group(1))
+                else:
+                    # NOTA FALTANTE → falha, não fallback
+                    return (False, f"Nota de {ind} não encontrada no laudo")
+
+            return (True, {
+                "fundamentos": {
+                    "A1": {
+                        "severidade": a1_map.get(a1_str, "SEM_RESSALVA"),
+                        "justificativa": "Verificado via skill analista-conteudo.",
+                        "trecho": ""
+                    },
+                    "A2": {
+                        "severidade": a2_map.get(a2_str, "SEM_RESSALVA"),
+                        "justificativa": "Verificado via skill analista-conteudo.",
+                        "fontes_verificadas": []
+                    }
+                },
+                "indicadores": {
+                    ind: {"nota": nota, "justificativa": "Atribuído pela skill analista-conteudo."}
+                    for ind, nota in notas.items()
+                },
+            })
+
+        # Sem JSON e sem rodapé → falha explícita
+        return (False, "Skill não retornou JSON estruturado nem rodapé machine-readable")
+
+    except FileNotFoundError:
+        return (False, "Claude CLI não encontrado no PATH — instale com 'npm install -g @anthropic/claude-code'")
+    except subprocess.TimeoutExpired:
+        return (False, "Timeout na análise (5 min) — material muito extenso ou rede lenta")
+    except Exception as e:
+        return (False, f"Erro inesperado: {type(e).__name__}: {e}")
 
 
 def gerar_laudo_markdown(aula_id: str, resultado_ia: dict, score: dict) -> str:
@@ -264,6 +255,34 @@ def gerar_laudo_markdown(aula_id: str, resultado_ia: dict, score: dict) -> str:
     linhas.append("> com cálculo determinístico via `modulo02/calculo.py`.")
 
     return "\n".join(linhas)
+
+
+def proxima_versao(pasta_avaliacao: Path) -> str:
+    """
+    Retorna próxima versão disponível para score/laudo.
+
+    Ex: v01, v02, v03...
+
+    Parameters
+    ----------
+    pasta_avaliacao : Path
+        Pasta 03_avaliacao onde os arquivos serão gravados.
+
+    Returns
+    -------
+    str
+        Versão no formato 'v01', 'v02', etc.
+    """
+    existentes = sorted(pasta_avaliacao.glob("score_v*.json"))
+    if not existentes:
+        return "v01"
+
+    ultimo = existentes[-1].stem  # ex: score_v01
+    try:
+        num = int(ultimo.replace("score_v", "").replace("v", ""))
+        return f"v{num + 1:02d}"
+    except ValueError:
+        return "v01"
 
 
 def criar_incubadora(pasta_aula: Path, score: dict, laudo_md: str):
@@ -354,7 +373,28 @@ def agente_e(
         }
 
     # Avalia com IA
-    resultado_ia = avaliar_com_ia(texto, aula_id, disciplina, curso)
+    sucesso, resultado_ia_ou_erro = avaliar_com_ia(texto, aula_id, disciplina, curso)
+
+    if not sucesso:
+        # Falha explícita do Agente E — NÃO gera score
+        print(f"\n   ❌ Erro no Agente E: {resultado_ia_ou_erro}")
+        return {
+            "ok": False,
+            "erro": "erro_agente_e",
+            "mensagem": resultado_ia_ou_erro,
+            "sugestao": "Verifique se o Claude CLI está instalado e tente novamente."
+        }
+
+    resultado_ia = resultado_ia_ou_erro
+
+    # Valida estrutura do resultado
+    if "fundamentos" not in resultado_ia or "indicadores" not in resultado_ia:
+        return {
+            "ok": False,
+            "erro": "score_invalido",
+            "mensagem": "Resultado da IA não tem estrutura required (fundamentos, indicadores)",
+            "sugestao": "Verifique se a skill está retornando JSON estruturado."
+        }
 
     # Extrai notas para cálculo
     notas = {
@@ -364,8 +404,31 @@ def agente_e(
     a1 = resultado_ia["fundamentos"]["A1"]["severidade"]
     a2 = resultado_ia["fundamentos"]["A2"]["severidade"]
 
+    # Valida notas antes de calcular (defesa em profundidade)
+    from modulo02.calculo import validar_notas, validar_severidade
+    erros_notas = validar_notas(notas)
+    erros_severidade = validar_severidade(a1, a2)
+
+    if erros_notas or erros_severidade:
+        todos_erros = erros_notas + erros_severidade
+        return {
+            "ok": False,
+            "erro": "score_invalido",
+            "mensagem": f"Notas ou severidades inválidas: {'; '.join(todos_erros)}",
+            "sugestao": "A skill deve retornar B1-B5 com notas 0-10 e A1/A2 com SEM_RESSALVA/RESSALVA/CRITICO"
+        }
+
     # Calcula índice e veredito (aritmética pura)
     score = calcular_score(notas, a1, a2)
+
+    # Verifica se o cálculo foi válido
+    if not score.get("valido", True):
+        return {
+            "ok": False,
+            "erro": "score_invalido",
+            "mensagem": f"Cálculo falhou: {'; '.join(score.get('erros', []))}",
+            "sugestao": "Verifique as notas e severidades retornadas pela skill."
+        }
 
     # Gera laudo Markdown
     laudo_md = gerar_laudo_markdown(aula_id, resultado_ia, score)
@@ -416,8 +479,8 @@ def agente_e(
         "indicadores": indicadores_formatados,
     }
 
-    # Salva arquivos
-    versao = "v01"
+    # Salva arquivos (versionamento automático)
+    versao = proxima_versao(pasta_avaliacao)
     (pasta_avaliacao / f"avaliacao_{versao}.md").write_text(laudo_md, encoding="utf-8")
     (pasta_avaliacao / f"score_{versao}.json").write_text(
         json.dumps(score_json, indent=2, ensure_ascii=False),

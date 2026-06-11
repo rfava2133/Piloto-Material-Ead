@@ -230,6 +230,13 @@ def api_score():
     """
     Localiza o score_v*.json gerado pelo Agente E (M02) para uma aula.
     Usado pelo laudo.html para carregar o laudo automaticamente.
+
+    Estados possíveis:
+    - sem_material: aula ainda não foi extraída pelo M01
+    - aguardando_avaliacao: material extraído, sem score ainda
+    - avaliada: score válido encontrado
+    - erro_agente_e: falha na avaliação (arquivo de erro presente)
+    - score_invalido: score existe mas não passou na validação
     """
     curso = request.args.get("curso", "").strip()
     codigo = request.args.get("codigo", "").strip()
@@ -256,6 +263,26 @@ def api_score():
             "mensagem": "Aula ainda não foi extraída pelo Módulo 01.",
         }), 404
 
+    # Verifica se há erro do Agente E (fallback removido — erro é explícito)
+    log_path = pasta_aula / "_log.json"
+    if log_path.exists():
+        try:
+            log = json.loads(log_path.read_text(encoding="utf-8"))
+            if isinstance(log, list):
+                ultimo_log = log[-1] if log else {}
+            else:
+                ultimo_log = log
+
+            if ultimo_log.get("modulo") == "M02" and ultimo_log.get("erro") in ("erro_agente_e", "score_invalido"):
+                return jsonify({
+                    "status": "erro_agente_e",
+                    "aula_id": aula_id,
+                    "mensagem": f"Erro na avaliação: {ultimo_log.get('mensagem', 'Erro desconhecido')}",
+                    "sugestao": ultimo_log.get("sugestao", "Tente reavaliar a aula."),
+                }), 404
+        except (json.JSONDecodeError, OSError):
+            pass  # Ignora erro de log, continua para verificação de score
+
     # procura score_v*.json em qualquer subpasta (03_avaliacao etc.)
     scores = sorted(pasta_aula.glob("*/score_v*.json"))
     if not scores:
@@ -269,6 +296,26 @@ def api_score():
     try:
         dados = json.loads(scores[-1].read_text(encoding="utf-8"))
         score = _normalizar_score(dados, aula_id)
+
+        # Validação estrita: verifica se score tem estrutura mínima
+        if not score.get("fundamentos") or not score.get("indicadores"):
+            return jsonify({
+                "status": "score_invalido",
+                "aula_id": aula_id,
+                "mensagem": "Score existe mas estrutura é inválida (sem fundamentos ou indicadores).",
+                "arquivo": str(scores[-1]),
+            }), 404
+
+        # Verifica se todas as notas B1-B5 estão presentes
+        indicadores = score.get("indicadores", {})
+        notas_faltantes = {"B1", "B2", "B3", "B4", "B5"} - set(indicadores.keys())
+        if notas_faltantes:
+            return jsonify({
+                "status": "score_invalido",
+                "aula_id": aula_id,
+                "mensagem": f"Notas faltando: {', '.join(sorted(notas_faltantes))}",
+                "arquivo": str(scores[-1]),
+            }), 404
 
         # Se o Agente E não preencheu bibliografia, extrai do markdown da aula (M01)
         a2 = score["fundamentos"].get("A2", {})
@@ -284,9 +331,14 @@ def api_score():
                     )
                 score["fundamentos"]["A2"] = a2
     except (json.JSONDecodeError, OSError, TypeError, ValueError) as e:
-        return jsonify({"erro": f"score inválido: {e}"}), 500
+        return jsonify({
+            "status": "score_invalido",
+            "aula_id": aula_id,
+            "mensagem": f"Score inválido: {e}",
+            "arquivo": str(scores[-1]) if scores else None,
+        }), 404
 
-    return jsonify({"status": "ok", "score": score, "arquivo": str(scores[-1])})
+    return jsonify({"status": "avaliada", "score": score, "arquivo": str(scores[-1])})
 
 
 @app.route("/api/processar", methods=["POST"])

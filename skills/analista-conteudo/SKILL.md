@@ -116,6 +116,10 @@ Achados em nível RESSALVA não rebaixam o veredito: entram como intervenção d
 
 ## Saída (laudo)
 
+A skill deve produzir **duas saídas**:
+
+### 1. Laudo markdown (leitura humana)
+
 ```markdown
 # Laudo — [Disciplina] · Aula [N]
 Analista: Claude (Opus) | Data: [data] | Material: [arquivo]
@@ -152,26 +156,15 @@ Analista: Claude (Opus) | Data: [data] | Material: [arquivo]
 [lista específica, cada erro com a correção correta e a fonte que a sustenta]
 ```
 
-Rodapé roteável (obrigatório, para o pipeline):
-```
-VEREDITO=[VERDE|AMARELO|LARANJA|VERMELHO] INDICE=[X.X] A1=[SR|R|C] A2=[SR|R|C] PROXIMA_ACAO=[diagramar|camada_editorial|decisao_aprovador|recriar] DECISAO=HUMANA
-```
+### 2. JSON estruturado (leitura automática — OBRIGATÓRIO)
 
-## Saída machine-readable (obrigatória — contrato do laudo.html)
+**IMPORTANTE:** O JSON deve ser gravado diretamente em `{pasta_da_aula}/03_avaliacao/score_vNN.json`.
 
-Além do laudo markdown, grave **exatamente** este JSON (schema dos `modulo02/cenarios/*.json`,
-consumido por `laudo.html` via `/api/score`):
-
-**Caminho:** `{pasta_da_aula}/03_avaliacao/score_v01.json` — se já existir, grave `score_v02.json`
-(nunca sobrescreva). O laudo markdown vai em `03_avaliacao/avaliacao_v01.md` (mesma regra).
+Use a função `proxima_versao()` para determinar a versão (v01, v02, ...). Nunca sobrescreva.
 
 ```json
 {
   "aula_id": "PSU-01",
-  "indice": 7.12,
-  "veredito": "APROVAR_COM_RESSALVA",
-  "emoji": "🟡",
-  "acao": "Libera com relatório de ajustes",
   "fundamentos": {
     "A1": {"severidade": "SEM_RESSALVA", "justificativa": "..."},
     "A2": {"severidade": "SEM_RESSALVA", "justificativa": "...",
@@ -189,11 +182,24 @@ consumido por `laudo.html` via `/api/score`):
 }
 ```
 
-Regras invioláveis do JSON:
-- `indice` é **número** (2 casas) e `veredito` é **string** de faixa, ambos copiados da saída
-  do `calculo.py`: `APROVAR` | `APROVAR_COM_RESSALVA` | `INTERVENCAO_EDITORIAL` | `RECRIAR`.
-- `severidade` sem acento e com underscore: `SEM_RESSALVA` | `RESSALVA` | `CRITICO`.
-- Não acrescente nem renomeie chaves; não aninhe `indice`/`veredito` em objetos.
+**Schema obrigatório:**
+- `aula_id`: string (ex: "ADM-01")
+- `fundamentos.A1.severidade`: "SEM_RESSALVA" | "RESSALVA" | "CRITICO"
+- `fundamentos.A1.justificativa`: string
+- `fundamentos.A2.severidade`: "SEM_RESSALVA" | "RESSALVA" | "CRITICO"
+- `fundamentos.A2.justificativa`: string
+- `fundamentos.A2.fontes_verificadas`: array (pode ser vazio)
+- `indicadores.B1–B5.nota`: número entre 0 e 10
+- `indicadores.B1–B5.peso`: número (0.20, 0.15, 0.30, 0.15, 0.20)
+- `indicadores.B1–B5.contribuicao`: número (nota × peso)
+- `indicadores.B1–B5.justificativa`: string
+
+**NÃO inclua** `indice` ou `veredito` no JSON — o `calculo.py` calcula deterministicamente.
+
+**Rodapé machine-readable (legado, opcional):**
+```
+VEREDITO=[VERDE|AMARELO|LARANJA|VERMELHO] INDICE=[X.X] A1=[SR|R|C] A2=[SR|R|C] PROXIMA_ACAO=[diagramar|camada_editorial|decisao_aprovador|recriar] DECISAO=HUMANA
+```
 
 ## Conduta
 

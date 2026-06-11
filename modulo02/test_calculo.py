@@ -19,7 +19,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 
-from calculo import calcular_indice, determinar_veredito, avaliar
+from calculo import calcular_indice, determinar_veredito, avaliar, validar_notas, validar_severidade
 
 
 def formatar_resultado(nome: str, indice: float, veredito: dict, indice_esperado: float, veredito_esperado: str) -> str:
@@ -179,6 +179,78 @@ def test_funcao_avaliar():
     print("\n✅ test_funcao_avaliar: estrutura do laudo validada")
 
 
+# =============================================================================
+# TESTES DE VALIDAÇÃO — NOVAS FUNÇÕES
+# =============================================================================
+
+def test_validar_notas_ok():
+    """Notas válidas devem passar sem erros."""
+    notas = {"B1": 8.0, "B2": 7.0, "B3": 6.0, "B4": 8.0, "B5": 7.5}
+    erros = validar_notas(notas)
+    assert erros == [], f"Esperado nenhum erro, got: {erros}"
+    print("\n✅ test_validar_notas_ok: passou")
+
+
+def test_validar_notas_b_faltante():
+    """Nota B faltante deve gerar erro."""
+    notas = {"B1": 8.0, "B2": 7.0, "B4": 8.0, "B5": 7.5}  # falta B3
+    erros = validar_notas(notas)
+    assert len(erros) > 0, "Esperado erro por B3 faltante"
+    assert "B3" in erros[0], f"Esperado menção a B3, got: {erros}"
+    print("\n✅ test_validar_notas_b_faltante: passou")
+
+
+def test_validar_notas_b_extra():
+    """Nota B extra deve gerar erro."""
+    notas = {"B1": 8.0, "B2": 7.0, "B3": 6.0, "B4": 8.0, "B5": 7.5, "B6": 9.0}
+    erros = validar_notas(notas)
+    assert len(erros) > 0, "Esperado erro por indicador extra"
+    assert "B6" in erros[0] or "extras" in erros[0].lower(), f"Esperado menção a B6 ou extras, got: {erros}"
+    print("\n✅ test_validar_notas_b_extra: passou")
+
+
+def test_validar_notas_fora_faixa():
+    """Nota fora de 0-10 deve gerar erro."""
+    notas = {"B1": 15.0, "B2": 7.0, "B3": 6.0, "B4": 8.0, "B5": 7.5}
+    erros = validar_notas(notas)
+    assert len(erros) > 0, "Esperado erro por nota > 10"
+    assert "B1" in erros[0], f"Esperado menção a B1, got: {erros}"
+    print("\n✅ test_validar_notas_fora_faixa: passou")
+
+
+def test_validar_notas_negativa():
+    """Nota negativa deve gerar erro."""
+    notas = {"B1": -5.0, "B2": 7.0, "B3": 6.0, "B4": 8.0, "B5": 7.5}
+    erros = validar_notas(notas)
+    assert len(erros) > 0, "Esperado erro por nota negativa"
+    assert "B1" in erros[0], f"Esperado menção a B1, got: {erros}"
+    print("\n✅ test_validar_notas_negativa: passou")
+
+
+def test_validar_severidade_ok():
+    """Severidades válidas devem passar."""
+    erros = validar_severidade("SEM_RESSALVA", "CRITICO")
+    assert erros == [], f"Esperado nenhum erro, got: {erros}"
+    print("\n✅ test_validar_severidade_ok: passou")
+
+
+def test_validar_severidade_invalida():
+    """Severidade inválida deve gerar erro."""
+    erros = validar_severidade("VALIDO", "CRITICO")
+    assert len(erros) > 0, "Esperado erro por severidade inválida"
+    assert "A1" in erros[0], f"Esperado menção a A1, got: {erros}"
+    print("\n✅ test_validar_severidade_invalida: passou")
+
+
+def test_avaliar_notas_invalidas():
+    """Função avaliar() deve retornar valido=False para notas inválidas."""
+    notas = {"B1": 15.0}  # inválidas
+    resultado = avaliar(notas, "SEM_RESSALVA", "SEM_RESSALVA")
+    assert resultado["valido"] == False, "Esperado valido=False"
+    assert len(resultado["erros"]) > 0, "Esperado erros na validação"
+    print("\n✅ test_avaliar_notas_invalidas: passou")
+
+
 if __name__ == "__main__":
     print("=" * 60)
     print("VALIDAÇÃO DOS 4 CENÁRIOS DO PPT — MÓDULO 02")
@@ -190,6 +262,19 @@ if __name__ == "__main__":
     test_cenario_4()
     test_cenario_4_sem_critico()
     test_funcao_avaliar()
+
+    print("\n" + "=" * 60)
+    print("TESTES DE VALIDAÇÃO — NOVAS FUNÇÕES")
+    print("=" * 60)
+
+    test_validar_notas_ok()
+    test_validar_notas_b_faltante()
+    test_validar_notas_b_extra()
+    test_validar_notas_fora_faixa()
+    test_validar_notas_negativa()
+    test_validar_severidade_ok()
+    test_validar_severidade_invalida()
+    test_avaliar_notas_invalidas()
 
     print("\n" + "=" * 60)
     print("TODOS OS TESTES PASSARAM ✅")

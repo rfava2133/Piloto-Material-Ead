@@ -21,14 +21,12 @@ PESOS = {
     "B5": 0.20,  # Legibilidade — peso 20%
 }
 
+INDICADORES_OBRIGATORIOS = frozenset(PESOS.keys())  # {"B1", "B2", "B3", "B4", "B5"}
+
 # =============================================================================
 # CONSTANTES DE SEVERIDADE
 # =============================================================================
-SEVERIDADE = {
-    "SEM_RESSALVA": 0,
-    "RESSALVA": 1,
-    "CRITICO": 2,
-}
+SEVERIDADE_VALIDAS = frozenset({"SEM_RESSALVA", "RESSALVA", "CRITICO"})
 
 # =============================================================================
 # TABELA DE VEREDITOS (4 faixas)
@@ -68,6 +66,76 @@ VEREDITOS = [
 ]
 
 
+def validar_notas(notas: dict) -> list:
+    """
+    Valida estrutura e valores das notas B1–B5.
+
+    Regras:
+    - Exatamente 5 indicadores: B1, B2, B3, B4, B5 (nem mais, nem menos)
+    - Cada nota deve ser número (int ou float) entre 0 e 10
+
+    Parameters
+    ----------
+    notas : dict
+        Dicionário com as notas dos indicadores.
+
+    Returns
+    -------
+    list
+        Lista de erros (vazia se válido).
+    """
+    erros = []
+
+    # Verifica indicadores obrigatórios
+    indicadores_recebidos = set(notas.keys())
+    faltantes = INDICADORES_OBRIGATORIOS - indicadores_recebidos
+    extras = indicadores_recebidos - INDICADORES_OBRIGATORIOS
+
+    if faltantes:
+        erros.append(f"Indicadores faltando: {', '.join(sorted(faltantes))}")
+    if extras:
+        erros.append(f"Indicadores extras não permitidos: {', '.join(sorted(extras))}")
+
+    # Verifica valores das notas
+    for indicador, nota in notas.items():
+        if indicador not in INDICADORES_OBRIGATORIOS:
+            continue  # já reportado acima
+        if not isinstance(nota, (int, float)):
+            erros.append(f"{indicador}: nota deve ser número, recebido {type(nota).__name__}")
+        elif not (0 <= nota <= 10):
+            erros.append(f"{indicador}: nota deve estar entre 0 e 10, recebido {nota}")
+
+    return erros
+
+
+def validar_severidade(a1: str, a2: str) -> list:
+    """
+    Valida valores de severidade de A1 e A2.
+
+    Valores válidos: SEM_RESSALVA | RESSALVA | CRITICO
+
+    Parameters
+    ----------
+    a1 : str
+        Severidade de A1.
+    a2 : str
+        Severidade de A2.
+
+    Returns
+    -------
+    list
+        Lista de erros (vazia se válido).
+    """
+    erros = []
+
+    if a1 not in SEVERIDADE_VALIDAS:
+        erros.append(f"A1: severidade inválida '{a1}' — válido: {SEVERIDADE_VALIDAS}")
+    if a2 not in SEVERIDADE_VALIDAS:
+        erros.append(f"A2: severidade inválida '{a2}' — válido: {SEVERIDADE_VALIDAS}")
+
+    return erros
+
+
 def calcular_indice(notas: dict) -> dict:
     """
     Calcula o Índice de Qualidade Didática (0–10).
@@ -87,7 +155,17 @@ def calcular_indice(notas: dict) -> dict:
         Dicionário com:
         - contribuicoes: contribuição de cada indicador (nota × peso)
         - indice: soma das contribuições (arredondado 2 casas)
+
+    Raises
+    ------
+    ValueError
+        Se as notas não passarem na validação.
     """
+    # Validação estrita antes de calcular
+    erros = validar_notas(notas)
+    if erros:
+        raise ValueError(f"Notas inválidas: {'; '.join(erros)}")
+
     contribuicoes = {}
     indice = 0.0
 
@@ -179,7 +257,28 @@ def avaliar(notas: dict, a1: str, a2: str) -> dict:
         - indice: resultado de calcular_indice()
         - veredito: resultado de determinar_veredito()
         - laudo: texto formatado para leitura humana
+        - valido: True se avaliação é válida, False caso contrário
+        - erros: lista de erros de validação (vazia se válido)
+
+    Raises
+    ------
+    ValueError
+        Se as notas ou severidades não passarem na validação.
     """
+    # Validação estrita de entradas
+    erros_notas = validar_notas(notas)
+    erros_severidade = validar_severidade(a1, a2)
+    todos_erros = erros_notas + erros_severidade
+
+    if todos_erros:
+        return {
+            "valido": False,
+            "erros": todos_erros,
+            "indice": None,
+            "veredito": None,
+            "laudo": f" Avaliação inválida: {'; '.join(todos_erros)}",
+        }
+
     resultado_indice = calcular_indice(notas)
     veredito = determinar_veredito(
         indice=resultado_indice["indice"], a1=a1, a2=a2
@@ -209,6 +308,8 @@ def avaliar(notas: dict, a1: str, a2: str) -> dict:
     laudo.append("=" * 60)
 
     return {
+        "valido": True,
+        "erros": [],
         "indice": resultado_indice,
         "veredito": veredito,
         "laudo": "\n".join(laudo),
