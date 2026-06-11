@@ -318,6 +318,19 @@ Os arquivos de avaliação são versionados automaticamente:
 
 Use `--forcar` para reavaliar — cria nova versão, não sobrescreve.
 
+### Modo Fallback (IA indisponível)
+
+Quando os créditos da IA se esgotam, o sistema opera em **modo fallback**:
+
+| Módulo | Com IA | Fallback (sem IA) |
+|--------|--------|-------------------|
+| **M02** | Claude Opus avalia | Análise heurística (palavras, parágrafos, imgs, refs) |
+| **M03** | Claude Sonnet reescreve | Gera prompt para execução manual |
+
+**Indicador visual:** Topbar mostra status (🟢 online / 🟡 fallback / 🔴 offline).
+
+**API `/api/ia-status`:** Retorna status geral e por módulo.
+
 ## Regra de veredito (4 faixas)
 
 | Faixa | Condição | Ação do coordenador |

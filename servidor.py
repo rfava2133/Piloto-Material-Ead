@@ -14,6 +14,7 @@ import json
 import shutil
 import tempfile
 import csv
+from datetime import datetime
 from pathlib import Path
 from collections import defaultdict
 from urllib.parse import urlencode
@@ -148,6 +149,43 @@ def api_catalogo():
 def api_status():
     """Retorna status atual do processamento (para polling)."""
     return jsonify(processamento_status)
+
+
+@app.route("/api/ia-status", methods=["GET"])
+def api_ia_status():
+    """Verifica disponibilidade do Claude (IA)."""
+    import subprocess
+    try:
+        result = subprocess.run(
+            ["claude", "--version"],
+            capture_output=True,
+            text=True,
+            timeout=5
+        )
+        if result.returncode == 0:
+            return jsonify({
+                "geral": "online",
+                "mensagem": "IA disponível.",
+                "modo_fallback": False,
+                "modulos": {
+                    "M02": {"modelo": "claude-opus-4-7", "status": "online"},
+                    "M03": {"modelo": "claude-sonnet-4-6", "status": "online"}
+                }
+            })
+    except subprocess.TimeoutExpired:
+        pass
+    except Exception:
+        pass
+
+    return jsonify({
+        "geral": "fallback",
+        "mensagem": "⚠️ IA FORA DO AR — Timeout. M02/M03 usarão modo fallback.",
+        "modo_fallback": True,
+        "modulos": {
+            "M02": {"modelo": "claude-opus-4-7", "status": "online"},
+            "M03": {"modelo": "claude-sonnet-4-6", "status": "online"}
+        }
+    })
 
 
 def _normalizar_severidade(valor) -> str:
@@ -448,6 +486,66 @@ def api_m03_check():
         "meta": meta,
         "caminho": str(display_path),
     })
+
+
+@app.route("/api/m02-decisao", methods=["POST"])
+def api_m02_decisao():
+    """Processa decisão do M02 (APROVAR ou RECRIAR)."""
+    curso = request.args.get("curso", "").strip()
+    codigo = request.args.get("codigo", "").strip()
+    disciplina = request.args.get("disciplina", "").strip()
+    aula = request.args.get("aula", "")
+    decisao = request.args.get("decisao", "").strip().lower()
+
+    if not (curso and codigo and disciplina and aula):
+        return jsonify({"ok": False, "erro": "Parâmetros inválidos."}), 400
+
+    try:
+        aula_num = int(aula)
+    except ValueError:
+        return jsonify({"ok": False, "erro": "Número da aula inválido."}), 400
+
+    raiz = Path(cfg()["raiz"]).expanduser()
+    pasta_aula = (
+        raiz / "cursos" / pastas.slugify(curso)
+        / pastas.nome_pasta_disciplina(codigo, disciplina)
+        / "aulas" / f"{aula_num:02d}"
+    )
+
+    if not pasta_aula.exists():
+        return jsonify({"ok": False, "erro": "Pasta da aula não encontrada."}), 404
+
+    if decisao == "recrir":
+        # Mover para incubadora
+        incubadora_dir = pasta_aula / "07_incubadora" / "material_atualizado"
+        incubadora_dir.mkdir(parents=True, exist_ok=True)
+
+        # Copiar markdown e score para incubadora
+        markdown_dir = pasta_aula / "02_markdown"
+        avaliacao_dir = pasta_aula / "03_avaliacao"
+
+        if markdown_dir.exists():
+            for f in markdown_dir.iterdir():
+                shutil.copy2(f, incubadora_dir / f.name)
+        if avaliacao_dir.exists():
+            for f in avaliacao_dir.iterdir():
+                shutil.copy2(f, incubadora_dir / f.name)
+
+        # Atualizar _log.json
+        log_path = pasta_aula / "_log.json"
+        if log_path.exists():
+            log = json.loads(log_path.read_text(encoding="utf-8"))
+            if isinstance(log, dict):
+                log["veredito_m02"] = "RECRIAR"
+                log["decisao_timestamp"] = datetime.now().isoformat()
+                log_path.write_text(json.dumps(log, indent=2, ensure_ascii=False), encoding="utf-8")
+
+        return jsonify({
+            "ok": True,
+            "mensagem": "Material movido para 07_incubadora/material_atualizado",
+        })
+
+    return jsonify({"ok": False, "erro": "Decisão não reconhecida."}), 400
 
 
 @app.route("/api/m03-executar", methods=["POST"])

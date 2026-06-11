@@ -57,7 +57,7 @@ Escala alvo: ~1.200 disciplinas. Piloto: começar pelo material disponível.
 - **M01:** 100% determinístico, sem IA
 - **M02:** Agente E avalia; índice e veredito são aritmética pura via `modulo02/calculo.py`
   - Validações: `validar_notas()` (B1–B5, 0–10), `validar_severidade()` (A1/A2)
-  - Sem fallback: falha do Agente E → `erro_agente_e`, sem score fictício
+  - **Fallback:** IA indisponível → `_gerar_score_minimo()` (análise heurística)
   - Versionamento: `score_v01.json`, `score_v02.json`, ... (nunca sobrescreve)
 - **M02 veredito APROVAR:** segue para M03
 - **M02 veredito RECRIAR:** material vai para `07_incubadora/`, coordenador decide
@@ -101,3 +101,15 @@ cursos/{curso-slug}/{CODIGO-disciplina-slug}/aulas/{NN}/
 ## ESTADOS DO PAINEL
 
 Não iniciado · Aguardando · Em revisão · Pronto
+
+## MODO FALLBACK (IA INDISPONÍVEL)
+
+Quando os créditos da IA se esgotam, o sistema opera em **modo fallback**:
+
+| Módulo | Com IA | Fallback (sem IA) |
+|--------|--------|-------------------|
+| **M02** | Claude Opus avalia | `_gerar_score_minimo()` — análise heurística |
+| **M03** | Claude Sonnet reescreve | Gera `_prompt_m03.txt` para execução manual |
+
+**Indicador visual:** Topbar mostra status (🟢 online / 🟡 fallback / ⚫ offline).
+**API `/api/ia-status`:** Retorna status geral e por módulo.

@@ -840,6 +840,22 @@
             <span id="veredito-label" class="veredito-label">APROVAR</span>
           </div>
           <p id="veredito-acao" class="veredito-acao">Ação: Libera para diagramação</p>
+
+          <!-- BOTÕES DE AÇÃO -->
+          <div id="botoes-decisao" style="margin-top: 20px; display: flex; gap: 12px; flex-wrap: wrap;">
+            <button id="btn-aprovar" onclick="aprovarM03()"
+                    style="background: var(--aprovar); color: white; border: none; padding: 12px 24px;
+                           border-radius: var(--radius); font-family: var(--font-ui); font-weight: 600;
+                           font-size: 13px; cursor: pointer; transition: opacity 0.15s;">
+              ✓ APROVAR E IR PARA M03
+            </button>
+            <button id="btn-recriar" onclick="recrirM02()"
+                    style="background: var(--recriar); color: white; border: none; padding: 12px 24px;
+                           border-radius: var(--radius); font-family: var(--font-ui); font-weight: 600;
+                           font-size: 13px; cursor: pointer; transition: opacity 0.15s;">
+              ✕ RECRIAR (Enviar para Incubadora)
+            </button>
+          </div>
         </div>
       </section>
 
@@ -1039,6 +1055,31 @@
 
     function carregarDadosTeste() {
       renderizarLaudo(DADOS_TESTE);
+    }
+
+    // Funções dos botões de decisão
+    function aprovarM03() {
+      // Redireciona para tela M03
+      const params = new URLSearchParams(location.search);
+      window.location.href = '/m03-preview?' + params.toString();
+    }
+
+    function recriarM02() {
+      if (confirm('Tem certeza que deseja enviar este material para a Incubadora (07_incubadora)?\n\nO coordenador poderá decidir sobre recriação ou edição.')) {
+        // Chama API para mover para incubadora
+        const params = new URLSearchParams(location.search);
+        fetch('/api/m02-decisao?' + params.toString() + '&decisao=recrir', { method: 'POST' })
+          .then(r => r.json())
+          .then(d => {
+            if (d.ok) {
+              alert('Material enviado para Incubadora.\n' + (d.mensagem || ''));
+              window.location.href = '/';
+            } else {
+              alert('Erro: ' + (d.erro || 'Falha ao processar decisão.'));
+            }
+          })
+          .catch(err => alert('Erro: ' + err.message));
+      }
     }
 
     // Carregamento automático: /modulo02/laudo.html?curso=..&codigo=..&disciplina=..&aula=N
