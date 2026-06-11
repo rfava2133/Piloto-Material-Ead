@@ -2,12 +2,12 @@
 """
 servidor.py — Servidor local que conecta a interface HTML aos scripts do MÓDULO 01 — EXTRATOR.
 
-Roda em http://127.0.0.1:5000
+Roda em http://127.0.0.1:5050
 Instalar: pip install flask pyyaml
 
 Uso:
   python3 servidor.py
-  (depois abra http://127.0.0.1:5000 no navegador)
+  (depois abra http://127.0.0.1:5050 no navegador)
 """
 import sys
 import json

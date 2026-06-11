@@ -1,0 +1,27 @@
+# Credenciais — nunca versionar
+.env
+.env.*
+!.env.example
+deploy/env-servidor.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Dados locais / importação gerada
+videos_importados.csv
+videos_importados.tmp-*
+validacoes_links_videos.csv
+
+# Logs
+logs/
+*.log
+
+# macOS / IDE
+.DS_Store
+.idea/
+.vscode/
+.claude/

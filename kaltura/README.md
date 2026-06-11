@@ -1,8 +1,8 @@
 # Validador Kaltura UNIGRAN
 
-> **Módulo temporário** — fora da esteira principal de produção (`servidor.py`).
-> Usado enquanto o catálogo de vídeos da Kaltura é conferido manualmente antes
-> de integrar os links definitivos às aulas da esteira.
+> **Roda à parte da esteira** — servidor, banco e deploy independentes do hub principal
+> (`servidor.py` na porta 5050). Ferramenta temporária para conferir manualmente o catálogo
+> de vídeos da Kaltura antes de integrar os links definitivos às aulas da esteira M01–M08.
 
 Aplicação web para validar se os vídeos da Kaltura correspondem às aulas de cada disciplina.
 
@@ -20,11 +20,11 @@ python3 app.py
 # Abre http://127.0.0.1:5070
 ```
 
-**Usuários disponíveis:**
-| Email | Senha |
-|-------|-------|
-| `analista.usa@unigran.br` | `Yhs2312*` |
-| `giovane@unigran.br` | `123456` |
+**Usuários:** criados via `criar_usuario.py` (não versionar senhas no repositório).
+
+```bash
+python3 criar_usuario.py operador@unigran.br SenhaForte123
+```
 
 ---
 
@@ -79,7 +79,7 @@ Acesse: **http://127.0.0.1:5070**
 
 ---
 
-## ️ Banco de Dados (Supabase)
+## Banco de Dados (Supabase)
 
 ### Tabelas
 
@@ -233,7 +233,7 @@ python3 -c "import supabase_client as db; print(db.listar_disciplinas()[:3])"
 ```bash
 curl -X POST http://127.0.0.1:5070/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"analista.usa@unigran.br","senha":"Yhs2312*"}'
+  -d '{"email":"operador@unigran.br","senha":"SUA_SENHA"}'
 ```
 
 ---
@@ -242,7 +242,7 @@ curl -X POST http://127.0.0.1:5070/api/auth/login \
 
 ```
 kaltura/
-├── app.py                        # Servidor Flask principal
+├── app.py                        # Servidor Flask principal (:5070)
 ├── supabase_client.py            # Cliente Supabase (auth + DB)
 ├── exportar_videos_catalogo.py   # Importador API Kaltura
 ├── migrar_csv_supabase.py        # Migração CSV → Supabase
@@ -250,6 +250,9 @@ kaltura/
 ├── setup.py                      # Script de setup inicial
 ├── check_rls.py                  # Verifica políticas RLS
 ├── schema.sql                    # Schema do banco
+├── install.txt                   # Guia de instalação local (Mac)
+├── deploy/
+│   └── env-servidor.env          # Modelo de .env para servidor
 ├── static/
 │   ├── index.html                # App principal
 │   └── login.html                # Tela de login
@@ -312,4 +315,4 @@ kaltura/
 
 ---
 
-*Atualizado em 2026-06-10 — operacional; módulo temporário de conferência de links*
+*Atualizado em 2026-06-11 — operacional; roda à parte da esteira de produção (M01–M08)*

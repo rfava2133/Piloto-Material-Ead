@@ -11,6 +11,7 @@ Uso:
 from __future__ import annotations
 
 import hashlib
+import os
 import sys
 from argparse import Namespace
 from datetime import datetime
@@ -32,8 +33,10 @@ BASE_DIR = Path(__file__).resolve().parent
 CATALOGO_CSV = BASE_DIR / "catalogo_teste_links_videos.csv"
 VIDEOS_CSV = BASE_DIR / "videos_importados.csv"
 
+kaltura_export.carregar_env(BASE_DIR / ".env")
+
 app = Flask(__name__, static_folder=str(BASE_DIR / "static"))
-app.secret_key = "kaltura-validador-secret-change-in-production"
+app.secret_key = os.environ.get("FLASK_SECRET_KEY") or "kaltura-validador-secret-change-in-production"
 
 # ============================================
 # UTILITÁRIOS

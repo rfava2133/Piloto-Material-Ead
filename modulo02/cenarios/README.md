@@ -2,9 +2,21 @@
 
 ## Como Testar
 
-1. Abra `laudo.html` no navegador
+1. Abra `../laudo.html` no navegador ou via hub: `http://127.0.0.1:5050/modulo02/laudo.html`
 2. Clique em **"Usar Dados de Teste"** para ver o laudo padrão (6,30 🟠)
 3. Para cada cenário abaixo, clique em **"📄 Carregar JSON"** e selecione o arquivo
+
+### Via código
+
+```bash
+python3 modulo02/test_calculo.py
+```
+
+### Via servidor
+
+`http://127.0.0.1:5050/modulo02/test-cenarios.html`
+
+> Quando carregado via `/api/score`, o índice é **recalculado** por `calculo.py` a partir das notas — o valor gravado no JSON pode divergir do índice exibido na tela.
 
 ---
 
@@ -31,7 +43,7 @@
 
 | Métrica | Valor |
 |---------|-------|
-| Índice | **7,15** |
+| Índice | **7,40** |
 | Veredito | 🟡 APROVAR_COM_RESSALVA |
 | A1 | SEM_RESSALVA |
 | A2 | SEM_RESSALVA |

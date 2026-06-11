@@ -7,7 +7,7 @@ Esteira de produção automatizada de material EAD UNIGRAN. Transforma material 
 interativo + micro-roteiros de vídeo, com avaliação automática de qualidade.
 
 **Escala alvo:** ~1.200 disciplinas (dados virão de planilha de cursos/professores)
-**Piloto atual:** entrada manual pela interface
+**Piloto atual:** entrada manual pela interface (`dados/catalogo.csv`)
 
 ---
 
@@ -23,11 +23,11 @@ interativo + micro-roteiros de vídeo, com avaliação automática de qualidade.
 | **M06 — Imagens (Agente D)** | Agente D | claude-haiku-4-5 | 📋 Pendente | — |
 | **M07 — Quiz (Agente C)** | Agente C | claude-sonnet-4-6 | 📋 Pendente | — |
 | **M08 — Montagem HTML** | Agente C | claude-sonnet-4-6 | 📋 Pendente | — |
-| **Kaltura — Conferência de links** *(temporário)* | — | determinístico | ✅ Operacional | `kaltura/` · Flask + Supabase |
 
-> **Hub:** `python3 servidor.py` → `http://127.0.0.1:5050`  
-> **Conferência Kaltura** *(temporário):* `python3 kaltura/app.py` → `http://127.0.0.1:5070`  
+> **Hub da esteira:** `python3 servidor.py` → `http://127.0.0.1:5050`  
 > **Agente E:** skill `analista-conteudo` (Claude Code) grava `score_v01.json`; o servidor normaliza e recalcula via `calculo.py` antes de exibir o relatório.
+
+> **Kaltura (separado):** o validador de links em `kaltura/` roda **à parte** da esteira — servidor próprio na porta `5070`, banco Supabase próprio. Documentação em [`kaltura/README.md`](kaltura/README.md).
 
 ---
 
@@ -48,16 +48,24 @@ pip install flask pyyaml pymupdf pymupdf4llm --break-system-packages
 ```yaml
 raiz: "/Users/rfava/PROJETOS IA/esteira_conteudo"
 
+curso_padrao: "EAD"
+
+sheets:
+  sheet_id: ""
+  aba_aulas: "aulas"
+  aba_disciplinas: "disciplinas"
+  habilitado: false          # true quando a planilha Google existir
+
 subpastas:
   - "01_source"
   - "02_markdown"
-  - "03_avaliacao"
-  - "04_reformulado"
-  - "05_imagens/antigas"
-  - "05_imagens/prontas"
-  - "06_output"
-  - "07_revisao"
-  # _incubadora/ criada dinamicamente pelo M02 quando veredito = RECRIAR
+  - "03_reformulado"
+  - "04_imagens/antigas"
+  - "04_imagens/prontas"
+  - "05_output"
+  - "06_revisao"
+  - "07_incubadora/material_atualizado"
+  - "07_incubadora/historico"
 
 extracao:
   pandoc_extract_media: true
@@ -67,8 +75,14 @@ extracao:
 
 servidor:
   host: "127.0.0.1"
-  porta: 5000
+  porta: 5050  # 5000 ocupada pelo AirPlay Receiver do macOS
 ```
+
+> **Nota:** `03_avaliacao/` não está no `config.yml` — o M02 cria essa pasta dinamicamente ao avaliar.
+
+## Catálogo — `dados/catalogo.csv`
+
+Colunas: `curso_final`, `disciplina`, `semestre`, `professor`. Alimenta o combo da interface via `/api/catalogo`.
 
 ## Como Usar — Interface Visual (Hub de Entrada)
 
@@ -99,46 +113,50 @@ python3 servidor.py
 
 ```bash
 python3 scripts/01-processar-entrada.py \
-    --curso "administracao" \
+    --curso "Administração" \
     --codigo ADM \
     --disciplina "Fundamentos de Administração" \
     --aula 1 \
     --word /caminho/aula.docx   # ou --pdf /caminho/aula.pdf
 ```
 
+> O parâmetro `--curso` aceita o nome legível (ex.: `"Administração"`); internamente vira slug (`administracao`).
+
 ## Estrutura de Pastas Gerada
 
 ```
 cursos/
-└── {curso}/
-    └── disciplinas/
-        └── {CODIGO}-{slug}/
-            ├── _disciplina.yml
-            └── aula-{NN}/
-                ├── 01_source/        M01: originais
-                ├── 02_markdown/      M01: texto extraído
-                ├── 03_avaliacao/     M02: laudo + score
-                ├── 04_reformulado/   M03+M05+M08
-                ├── 05_imagens/
-                │   ├── antigas/      M01: extraídas
-                │   └── prontas/      M06: redesenhadas
-                ├── 06_output/        M07: HTML + PDF finais
-                ├── 07_revisao/       Coordenador
-                ├── _incubadora/      condicional (veredito RECRIAR)
-                │   ├── material_atualizado/
-                │   └── historico/
-                └── _log.json
+└── {curso-slug}/
+    └── {CODIGO-disciplina-slug}/
+        ├── _disciplina.yml          # criado por 02-separar-aulas.py
+        └── aulas/{NN}/
+            ├── 01_source/           M01: originais
+            ├── 02_markdown/         M01: texto extraído
+            ├── 03_avaliacao/        M02: laudo + score (criada na avaliação)
+            ├── 03_reformulado/      M03+M05
+            ├── 04_imagens/
+            │   ├── antigas/         M01: extraídas
+            │   └── prontas/         M06: redesenhadas
+            ├── 05_output/           M07+M08: HTML + PDF finais
+            ├── 06_revisao/          Coordenador
+            ├── 07_incubadora/       Pré-criada pelo M01 (config.yml)
+            ├── _incubadora/         M02 cria se veredito = RECRIAR (legado)
+            └── _log.json
 ```
+
+Exemplo: `cursos/administracao/ADM-fundamentos-administracao/aulas/01/`
+
+> **Pendência conhecida:** o M02 ainda grava material RECRIAR em `_incubadora/`; a estrutura canônica futura é `07_incubadora/`.
 
 ## Roteamento por Formato
 
 ```
 Veio Word (.docx)
-  → Pandoc → 02_markdown/{ID}.md + imagens → 05_imagens/antigas/
+  → Pandoc → 02_markdown/{ID}.md + imagens → 04_imagens/antigas/
 
 Veio PDF
   → pymupdf4llm → 02_markdown/{ID}.md
-  → PyMuPDF → 05_imagens/antigas/
+  → PyMuPDF → 04_imagens/antigas/
 ```
 
 ## `_disciplina.yml`
@@ -147,8 +165,8 @@ Veio PDF
 codigo: "ADM"
 nome: "Fundamentos de Administração"
 slug: "ADM-fundamentos-administracao"
-curso: "administracao"
-aulas_total: 0
+curso: "Administração"
+aulas_total: 8
 professor:
   nome: ""
   email: ""
@@ -170,10 +188,12 @@ Avalia a substância do material antes de qualquer reformulação.
 | Arquivo | Função |
 |---------|--------|
 | `modulo02/calculo.py` | Aritmética pura: índice + veredito (sem IA) |
-| `modulo02/test_calculo.py` | Valida os 4 cenários do PPT (5,70 · 7,15 · 4,00 · 8,45) |
+| `modulo02/test_calculo.py` | Valida os 4 cenários do PPT (5,70 · 7,40 · 4,00 · 8,45) |
 | `modulo02/laudo.html` | Tela visual do **Relatório** (carregamento automático por URL) |
 | `modulo02/referencias.py` | Extrai referências do markdown quando o Agente E não as grava |
+| `modulo02/cenarios/` | JSONs de teste dos 4 vereditos — ver `cenarios/README.md` |
 | `skills/analista-conteudo/SKILL.md` | Skill do Agente E — rubricas + schema obrigatório do score |
+| `.claude/agents/analista-conteudo.md` | Prompt do Agente E (Opus 4.7) |
 | `servidor.py` `/api/score` | Normaliza score, recalcula via `calculo.py` e enriquece A2 com refs |
 
 ## Como Usar — Interface Visual
@@ -201,7 +221,7 @@ python3 scripts/03-agente-e.py \
     --codigo ADM \
     --disciplina "Fundamentos de Administração" \
     --aula 1 \
-    --curso "administracao"
+    --curso "Administração"
 
 # Reavaliar (ignora score existente)
 python3 scripts/03-agente-e.py --forcar ...
@@ -211,7 +231,7 @@ python3 scripts/03-agente-e.py --forcar ...
 
 1. **Automático:** Após a avaliação, o hub redireciona para `/modulo02/laudo.html?params`
 2. **Manual:** Abra `modulo02/laudo.html` e carregue `03_avaliacao/score_v01.json`
-3. **URL direta:** `http://127.0.0.1:5050/modulo02/laudo.html?curso=adm&codigo=ADM&disciplina=...&aula=1`
+3. **URL direta:** `http://127.0.0.1:5050/modulo02/laudo.html?curso=Administração&codigo=ADM&disciplina=...&aula=1`
 
 ## Outputs por Aula
 
@@ -219,6 +239,8 @@ python3 scripts/03-agente-e.py --forcar ...
 03_avaliacao/
 ├── avaliacao_v01.md     # Laudo completo (markdown)
 └── score_v01.json       # Dados estruturados (JSON)
+
+_incubadora/             # criada apenas se veredito = RECRIAR (comportamento atual do M02)
 ```
 
 ## Dois mecanismos independentes
@@ -261,25 +283,6 @@ fator que mais impacta a aprendizagem real (Biggs, 1996).
 **Cenário 4 do PPT:** índice 8,45 (ótimo) + A2 CRÍTICO → veredito RECRIAR.
 Verificação de Fundamentos ≠ Índice de Qualidade. São independentes.
 
-## Outputs por aula
-
-```
-03_avaliacao/
-├── avaliacao_v01.md     laudo completo (humano lê)
-└── score_v01.json       machine-readable (pipeline consome)
-
-_incubadora/             criada apenas se veredito = RECRIAR
-```
-
-## Componentes técnicos
-
-| Arquivo | Função |
-|---|---|
-| `modulo02/calculo.py` | Aritmética pura: índice + veredito (sem IA) |
-| `modulo02/test_calculo.py` | Valida os 4 cenários do PPT (7,15·5,70·4,00·8,45) |
-| `.claude/agents/analista-conteudo.md` | Prompt do Agente E (Opus 4.7) |
-| `modulo02/laudo.html` | Tela visual do laudo para o coordenador |
-
 ## Aritmética é código, não IA
 
 A IA (Agente E) atribui notas 0–10 por indicador.
@@ -288,41 +291,17 @@ Isso responde: "a máquina só acha?" — não, o cálculo é auditável.
 
 ---
 
-# MÓDULO TEMPORÁRIO — CONFERÊNCIA DE LINKS KALTURA ✅
+# MÓDULO KALTURA — CONFERÊNCIA DE LINKS *(separado da esteira)*
 
-> **Escopo:** módulo auxiliar, **fora da esteira de produção de aulas**.
-> Permite que analistas validem manualmente se cada vídeo da Kaltura está
-> vinculado à aula correta de cada disciplina (~1000+ registros no catálogo).
+> **Escopo:** ferramenta auxiliar que **roda à parte** — servidor, banco e deploy independentes.
+> Não faz parte do pipeline M01–M08 nem do hub `servidor.py`.
 > Será descontinuado quando os links estiverem corrigidos e integrados à esteira.
 
-## Como usar
+Documentação completa, instalação e operação: **[`kaltura/README.md`](kaltura/README.md)**
 
 ```bash
-cd kaltura
-python3 app.py
-# abre http://127.0.0.1:5070
+cd kaltura && python3 app.py   # http://127.0.0.1:5070
 ```
-
-**Fluxo:**
-1. Login com email/senha (Supabase Auth)
-2. Selecionar curso → disciplina → aula
-3. Assistir o vídeo e marcar **Vínculo correto** ou **Vínculo errado**
-4. Usar **Reverter para análise** se precisar reavaliar uma aula já validada
-
-## O que faz
-
-| Função | Descrição |
-|--------|-----------|
-| Importação | Busca vídeos na API Kaltura por playlist e grava no Supabase |
-| Conferência humana | Analista valida vínculo vídeo ↔ aula |
-| Progresso | Contadores por disciplina (ok / erradas / pendentes) |
-| Auditoria | Todas as ações registradas em `audit_log` |
-
-## Stack e dados
-
-- **Backend:** Flask (`kaltura/app.py`)
-- **Banco:** Supabase — tabelas `disciplinas`, `videos_kaltura`, `validacoes`, `audit_log`
-- **Documentação completa:** [`kaltura/README.md`](kaltura/README.md)
 
 ---
 
@@ -337,8 +316,6 @@ python3 app.py
 
 ---
 
----
-
 ## Estrutura de Arquivos do Projeto
 
 ```
@@ -346,64 +323,69 @@ esteira_conteudo/
 ├── .claude/
 │   └── agents/
 │       └── analista-conteudo.md    # M02: Prompt do Agente E
+├── dados/
+│   └── catalogo.csv                # Catálogo de cursos/disciplinas (piloto)
+├── docs/
+│   ├── INSTRUCOES_CHAT.md
+│   └── PROMPT_MESTRE.md
+├── interface/
+│   └── index.html                  # Hub de entrada (:5050)
 ├── modulo02/
 │   ├── calculo.py                  # M02: Aritmética pura (índice + veredito)
 │   ├── test_calculo.py             # M02: Validação dos 4 cenários
 │   ├── laudo.html                  # M02: Tela visual para coordenador
 │   ├── referencias.py              # M02: Extrai refs do markdown (fallback A2)
-│   └── test-cenarios.html          # M02: Guia de teste dos cenários
+│   ├── test-cenarios.html          # M02: Guia de teste dos cenários
+│   └── cenarios/                   # JSONs + README dos 4 vereditos
 ├── scripts/
+│   ├── config.yml                  # Configuração da esteira
 │   ├── 01-processar-entrada.py     # M01: Extrator (Pandoc + PyMuPDF)
 │   ├── 02-separar-aulas.py         # M01b: Separa PDF único em aulas
-│   └── 03-agente-e.py              # M02: Avaliacao de qualidade
-├── cursos/
-│   └── {curso}/disciplinas/{CODIGO}-{slug}/aula-{NN}/
-│       ├── 01_source/              # Material bruto (não editar)
-│       ├── 02_markdown/            # Texto extraído
-│       ├── 03_avaliacao/           # M02: avaliacao_v01.md + score_v01.json
-│       ├── 04_reformulado/         # M03+M05+M08
-│       ├── 05_imagens/
-│       ├── 06_output/              # M07: HTML + PDF finais
-│       ├── 07_revisao/             # Coordenador
-│       └── _incubadora/            # Criado se veredito = RECRIAR
-├── kaltura/                        # TEMP: conferência de links Kaltura (Flask :5070)
-│   ├── app.py                      # Servidor web
-│   ├── supabase_client.py          # Auth + CRUD Supabase
-│   ├── schema.sql                  # Schema do banco
-│   └── README.md                   # Documentação completa do módulo
+│   └── 03-agente-e.py              # M02: Avaliação de qualidade
+├── skills/
+│   └── analista-conteudo/          # Skill do Agente E (Claude Code)
+├── templates_design/               # Templates HTML/PDF aprovados
+├── cursos/                         # Material processado (gerado pelo M01)
+│   └── {curso-slug}/{CODIGO-slug}/aulas/{NN}/
+├── kaltura/                        # SEPARADO: validador de links (Flask :5070)
+│   └── README.md                   # Documentação completa — roda à parte
 ├── CLAUDE.md                       # Instruções do projeto
+├── AGENTS.md
 ├── README.md                       # Este arquivo
-├── servidor.py                     # Interface web (Flask)
-└── etapa01-unigran.zip             # Material bruto de referência
+└── servidor.py                     # Hub da esteira (Flask :5050)
 ```
 
 ---
 
-*Atualizado em 2026-06-10 — módulo temporário Kaltura (conferência de links) operacional*
+*Atualizado em 2026-06-11*
 
 ---
 
 ## 📋 Resumo do Status
 
-### ✅ Implementado
+### ✅ Implementado (esteira)
 
 | Módulo | Funcionalidade | Arquivos |
 |--------|----------------|----------|
 | **M01** | Extração Word/PDF → Markdown + imagens | `01-processar-entrada.py`, `02-separar-aulas.py` |
 | **M01b** | Separação automática de PDF único | `02-separar-aulas.py` |
 | **M02** | Avaliação de qualidade (Agente E) | `03-agente-e.py`, `calculo.py`, `laudo.html` |
-| **Kaltura** *(temp.)* | Conferência humana de vínculos vídeo ↔ aula | `kaltura/app.py`, `kaltura/README.md` |
 
-### 🔧 Interface
+### 🔧 Interface da esteira
 
 - Hub de entrada com catálogo de disciplinas (`interface/index.html`)
 - Laudo visual com carregamento automático (`modulo02/laudo.html` — tela de **Relatório**)
-- **Conferência Kaltura** *(temporário):* `kaltura/static/index.html` — validação de links na `:5070`
 - API REST (`servidor.py`): `/api/catalogo`, `/api/processar`, `/api/score`
+
+### 📦 Fora da esteira (documentado)
+
+| Módulo | Função | Documentação |
+|--------|--------|--------------|
+| **Kaltura** *(temp.)* | Conferência humana de vínculos vídeo ↔ aula | [`kaltura/README.md`](kaltura/README.md) — roda em `:5070`, Supabase próprio |
 
 ### 📊 Métricas do M02
 
 - **2 Fundamentos** (A1, A2): verificação de integridade
 - **5 Indicadores** (B1–B5): qualidade didática
 - **4 Vereditos**: APROVAR · APROVAR_COM_RESSALVA · INTERVENCAO · RECRIAR
-- **_incubadora/**: criada automaticamente para material RECRIAR
+- **_incubadora/**: criada automaticamente para material RECRIAR (comportamento atual)
