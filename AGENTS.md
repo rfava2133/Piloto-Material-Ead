@@ -41,50 +41,36 @@ Escala alvo: ~1.200 disciplinas. Piloto: começar pelo material disponível.
 - Nunca culpabilizar o aluno
 - Nunca exemplos políticos partidários ou religiosos específicos
 
-## PIPELINE — 5 MACRO-MÓDULOS
+## PIPELINE — MÓDULOS
 
-**MÓDULO 01 — EXTRATOR**
-   - Pandoc: Word → Markdown limpo (+ extrai imagens do Word)
-   - PyMuPDF: extrai imagens do PDF
-   - Cria estrutura de pastas da aula
-   - 100% determinístico, sem IA
+| Módulo | Agente | Modelo | Tarefa |
+|--------|--------|--------|--------|
+| **M01 — Extrator** | — | determinístico | Pandoc + PyMuPDF → Markdown + imagens |
+| **M02 — Analista de Conteúdo** | Agente E | Codex-opus-4-7 | Avaliação de qualidade → índice 0–10 |
+| **M03 — Texto Display** | Agente A | Codex-opus-4-7 | Texto reformulado |
+| **M04 — PDF Full** | — | Puppeteer | PDF do texto original |
+| **M05 — Micro-roteiros** | Agente B | Codex-sonnet-4-6 | Roteiros de vídeo 60–120s |
+| **M06 — Imagens** | Agente D | Codex-haiku-4-5 | Classificação em 3 trilhas |
+| **M07 — Quiz** | Agente C | Codex-sonnet-4-6 | Quiz HTML interativo |
+| **M08 — Montagem HTML** | Agente C | Codex-sonnet-4-6 | Combina texto + imagens + vídeos + quiz |
 
-2. ANÁLISE + GERAÇÃO DE TEXTO
-   - 2a Agente E (Opus 4.7): avalia qualidade → score 0-100
-   - 2b Report: BOM segue · RUIM dispara coordenador
-   - 2c Agente A (Opus 4.7): texto display
-   - 2d PDF Full (Puppeteer): do texto original
-   - 2e Fila HTML: aguarda imagens + vídeos
+- **M01:** 100% determinístico, sem IA
+- **M02:** Agente E avalia; índice e veredito são aritmética pura via `modulo02/calculo.py`
+- **M02 veredito APROVAR:** segue para M03
+- **M02 veredito RECRIAR:** material vai para `07_incubadora/`, coordenador decide
+- **M08:** gate de aprovação pelo coordenador antes de publicar
 
-3. MINI-ROTEIROS DE VÍDEO
-   - Agente B (Sonnet 4.6): roteiros 60-120s
+## MÓDULOS DETERMINÍSTICOS (SEM IA)
 
-4. PROCESSAMENTO DE IMAGENS
-   - Agente D (Haiku 4.5): classifica em 3 trilhas
-   - Vetor (Mermaid) · Chart (Chart.js) · Foto (Gemini)
-
-5. MONTAR HTML FINAL
-   - Combina texto + imagens + vídeos + quiz (Agente C, Sonnet 4.6)
-   - Gate de aprovação: Coordenador
-
-## MODELOS POR AGENTE
-
-| Agente | Modelo | Tarefa |
-|--------|--------|--------|
-| E | Codex-opus-4-7 | Avaliação de qualidade |
-| A | Codex-opus-4-7 | Texto display |
-| B | Codex-sonnet-4-6 | Micro-roteiros |
-| C | Codex-sonnet-4-6 | Quiz HTML interativo |
-| D | Codex-haiku-4-5 | Classificação de imagens |
-
-Módulo 01 (Extrator), PDF Full e montagem HTML: scripts determinísticos, sem IA.
+M01 (Extrator), M04 (PDF Full) e M08 (montagem HTML): scripts determinísticos.
 
 ## ESTRUTURA DE PASTAS POR AULA
 
 ```
-disciplinas/{CODIGO}-{slug}/aula-{NN}/
+cursos/{curso-slug}/{CODIGO-disciplina-slug}/aulas/{NN}/
 ├── 01_source/          INPUT (Word + PDF) — não editar
 ├── 02_markdown/        Pandoc gera — não editar
+├── 03_avaliacao/       M02: laudo + score (criada na avaliação)
 ├── 03_reformulado/     Agentes A/B/C escrevem
 ├── 04_imagens/         Agente D + redesenho
 │   ├── antigas/        Extraídas automaticamente
@@ -92,7 +78,9 @@ disciplinas/{CODIGO}-{slug}/aula-{NN}/
 │   └── prontas/        Redesenhadas
 ├── 05_output/          HTML + PDF finais
 ├── 06_revisao/         Notas do coordenador
-└── 07_incubadora/      Material com score < 70
+└── 07_incubadora/      Material com veredito RECRIAR
+    ├── material_atualizado/
+    └── historico/
 ```
 
 ## NOMENCLATURA

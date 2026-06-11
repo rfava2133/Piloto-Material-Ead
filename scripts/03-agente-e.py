@@ -12,7 +12,7 @@ Recebe:
 Gera:
   - 03_avaliacao/avaliacao_v01.md (laudo completo)
   - 03_avaliacao/score_v01.json (dados estruturados)
-  - _incubadora/ (se veredito = RECRIAR)
+  - 07_incubadora/ (se veredito = RECRIAR)
 
 Uso:
   python3 scripts/03-agente-e.py \\
@@ -267,8 +267,8 @@ def gerar_laudo_markdown(aula_id: str, resultado_ia: dict, score: dict) -> str:
 
 
 def criar_incubadora(pasta_aula: Path, score: dict, laudo_md: str):
-    """Cria pasta _incubadora/ quando veredito = RECRIAR."""
-    incubadora = pasta_aula / "_incubadora"
+    """Cria pasta 07_incubadora/ quando veredito = RECRIAR."""
+    incubadora = pasta_aula / "07_incubadora"
     historico = incubadora / "historico"
     material_atualizado = incubadora / "material_atualizado"
 
@@ -285,14 +285,14 @@ def criar_incubadora(pasta_aula: Path, score: dict, laudo_md: str):
         "veredito": score["veredito"]["faixa"],
         "indice": score["indice"],
         "fundamentos": score["fundamentos"],
-        "motivo": "Material enviado para _incubadora devido ao veredito RECRIAR."
+        "motivo": "Material enviado para incubadora devido ao veredito RECRIAR."
     }
     (incubadora / "motivo.json").write_text(
         json.dumps(motivo, indent=2, ensure_ascii=False),
         encoding="utf-8"
     )
 
-    print(f"   📁 _incubadora/ criada em {incubadora}")
+    print(f"   📁 07_incubadora/ criada em {incubadora}")
 
 
 def agente_e(

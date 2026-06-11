@@ -216,10 +216,10 @@ Após obter o resultado de `modulo02/calculo.py`, gere:
 }
 ```
 
-### 3. Pasta _incubadora/ (se aplicável)
+### 3. Pasta 07_incubadora/ (se aplicável)
 
 Se **veredito == RECRIAR**:
-- Criar pasta `_incubadora/` dentro da pasta da aula
+- Criar pasta `07_incubadora/` dentro da pasta da aula
 - Registrar o laudo e as razões do veredito
 - Esta pasta sinaliza que o material requer intervenção do autor
 
@@ -257,7 +257,7 @@ print(resultado["laudo"])
 - [ ] Chamar `modulo02/calculo.py` para obter índice e veredito
 - [ ] Gerar `avaliacao_v01.md` com laudo completo
 - [ ] Gerar `score_v01.json` com dados estruturados
-- [ ] Se veredito == RECRIAR, criar `_incubadora/` e registrar
+- [ ] Se veredito == RECRIAR, criar `07_incubadora/` e registrar
 
 ---
 

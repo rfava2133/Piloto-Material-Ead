@@ -139,14 +139,14 @@ cursos/
             │   └── prontas/         M06: redesenhadas
             ├── 05_output/           M07+M08: HTML + PDF finais
             ├── 06_revisao/          Coordenador
-            ├── 07_incubadora/       Pré-criada pelo M01 (config.yml)
-            ├── _incubadora/         M02 cria se veredito = RECRIAR (legado)
+            ├── 07_incubadora/       M01 cria; M02 grava se veredito = RECRIAR
+            │   ├── material_atualizado/
+            │   └── historico/
             └── _log.json
 ```
 
 Exemplo: `cursos/administracao/ADM-fundamentos-administracao/aulas/01/`
 
-> **Pendência conhecida:** o M02 ainda grava material RECRIAR em `_incubadora/`; a estrutura canônica futura é `07_incubadora/`.
 
 ## Roteamento por Formato
 
@@ -240,7 +240,7 @@ python3 scripts/03-agente-e.py --forcar ...
 ├── avaliacao_v01.md     # Laudo completo (markdown)
 └── score_v01.json       # Dados estruturados (JSON)
 
-_incubadora/             # criada apenas se veredito = RECRIAR (comportamento atual do M02)
+07_incubadora/           # criada pelo M01; M02 grava laudo + motivo se veredito = RECRIAR
 ```
 
 ## Dois mecanismos independentes
@@ -388,4 +388,4 @@ esteira_conteudo/
 - **2 Fundamentos** (A1, A2): verificação de integridade
 - **5 Indicadores** (B1–B5): qualidade didática
 - **4 Vereditos**: APROVAR · APROVAR_COM_RESSALVA · INTERVENCAO · RECRIAR
-- **_incubadora/**: criada automaticamente para material RECRIAR (comportamento atual)
+- **07_incubadora/**: M02 grava laudo + motivo automaticamente quando veredito = RECRIAR

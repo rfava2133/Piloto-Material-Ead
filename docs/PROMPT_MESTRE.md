@@ -41,7 +41,7 @@ aulas digitais completas para o LMS EAD.
 ## PIPELINE — 5 MACRO-ETAPAS
 
 1. **Material Bruto › Extração** — Pandoc + PyMuPDF → MD limpo + imagens em pastas (sem IA)
-2. **Análise + Geração de Texto** — Agente E avalia (score 0-100) → Agente A texto display → PDF Full → Fila HTML
+2. **Análise + Geração de Texto** — Agente E avalia (índice 0–10) → Agente A texto display → PDF Full → Fila HTML
 3. **Mini-roteiros de vídeo** — Agente B (3-6 vídeos de 60-120s)
 4. **Processamento de imagens** — Agente D classifica em 3 trilhas (Vetor/Chart/Foto)
 5. **Montar HTML final** — combina tudo + quiz (Agente C) → gate do Coordenador
@@ -59,14 +59,17 @@ aulas digitais completas para o LMS EAD.
 ## ESTRUTURA DE PASTAS POR AULA
 
 ```
-disciplinas/{CODIGO}-{slug}/aula-{NN}/
-├── 01_source/       Word + PDF (não editar)
-├── 02_markdown/     Pandoc gera (não editar)
-├── 03_reformulado/  Agentes A/B/C
-├── 04_imagens/      antigas/ · classificacao.json · prontas/
-├── 05_output/       HTML + PDF finais
-├── 06_revisao/      Notas do coordenador
-└── 07_incubadora/   Material score < 70
+cursos/{curso-slug}/{CODIGO-disciplina-slug}/aulas/{NN}/
+├── 01_source/          Word + PDF (não editar)
+├── 02_markdown/        Pandoc gera (não editar)
+├── 03_avaliacao/       M02: laudo + score
+├── 03_reformulado/     Agentes A/B/C
+├── 04_imagens/         antigas/ · classificacao.json · prontas/
+├── 05_output/          HTML + PDF finais
+├── 06_revisao/         Notas do coordenador
+└── 07_incubadora/      Material com veredito RECRIAR
+    ├── material_atualizado/
+    └── historico/
 ```
 
 ## AVALIAÇÃO DE QUALIDADE (Agente E)
