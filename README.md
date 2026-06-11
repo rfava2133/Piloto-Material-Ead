@@ -46,7 +46,7 @@ pip install flask pyyaml pymupdf pymupdf4llm --break-system-packages
 ## Configuração — `scripts/config.yml`
 
 ```yaml
-raiz: "/Users/rfava/PROJETOS IA/esteira_conteudo"
+raiz: "/Users/rfava/projetos_ia/esteira_conteudo"
 
 curso_padrao: "EAD"
 
