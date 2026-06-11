@@ -23,7 +23,11 @@ from pathlib import Path
 # Adiciona o projeto ao path para imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from scripts.config import carregar_config
+# Import condicional para funcionar tanto via CLI quanto via servidor
+try:
+    from scripts.config import carregar_config
+except ImportError:
+    carregar_config = None
 
 
 def slugify(texto: str) -> str:
@@ -67,7 +71,12 @@ def verificar_pre_condicoes(pasta_aula: Path) -> tuple[bool, str]:
     if score_path.exists():
         with open(score_path, "r", encoding="utf-8") as f:
             score = json.load(f)
-        veredito = score.get("veredito", {}).get("rotulo", "")
+        # Suporta tanto string ("INTERVENCAO_EDITORIAL") quanto objeto ({"rotulo": "..."})
+        veredito_raw = score.get("veredito", "")
+        if isinstance(veredito_raw, dict):
+            veredito = veredito_raw.get("rotulo", "")
+        else:
+            veredito = veredito_raw
         if veredito == "RECRIAR":
             return False, "Material com veredito RECRIAR — não avançar sem aprovação do coordenador"
 
@@ -99,79 +108,67 @@ def criar_backup(pasta_aula: Path):
 
 def executar_agente_a(pasta_aula: Path, input_md: Path) -> tuple[bool, str]:
     """
-    Executa o Agente A via Claude Code CLI.
+    Prepara ambiente para execução do Agente A (M03).
+
+    Para execução via Claude Code CLI, o operador deve:
+    1. Abrir o terminal
+    2. Executar: claude /texto-display {input_md}
+
+    Esta função cria:
+    - Arquivo de prompt pronto em 03_reformulado/_prompt_m03.txt
+    - Copia do markdown original para referência
 
     Returns:
         (sucesso, mensagem)
     """
-    # Prepara o prompt para o agente
-    output_md = pasta_aula / "03_reformulado" / "texto-display.md"
-    output_meta = pasta_aula / "03_reformulado" / "display_meta.json"
+    output_dir = pasta_aula / "03_reformulado"
+    output_md = output_dir / "texto-display.md"
+    output_meta = output_dir / "display_meta.json"
 
     # Garante que a pasta de saída existe
-    output_md.parent.mkdir(parents=True, exist_ok=True)
+    output_dir.mkdir(parents=True, exist_ok=True)
 
-    prompt = f"""Você é o Agente A da esteira UNIGRAN EAD — Módulo 03 Texto Display.
+    # Criar arquivo de prompt
+    prompt_path = output_dir / "_prompt_m03.txt"
+    prompt = f"""# M03 — TEXTO DISPLAY
 
-TAREFA:
-Reformule o arquivo `{input_md}` para versão display de tela.
+## Entrada
+Arquivo original: `{input_md}`
 
-SAÍDAS:
+## Tarefa
+Reformule o markdown original para versão display de tela seguindo:
+1. `skills/texto-display/SKILL.md` — regras de reescrita
+2. `docs/voz-unigran.md` — tom, proibições, callouts
+
+## Requisitos obrigatórios
+- Preserve TODOS os marcadores [IMG-NN] do original
+- Volume mínimo: 80% do original
+- Citações: preservar intactas
+- Adicione 3-6 marcadores [VIDEO-NN] sugeridos
+- Inclua seção "Glossário" no final
+
+## Saídas esperadas
 1. `{output_md}` — texto reformulado
-2. `{output_meta}` — metadados (JSON)
+2. `{output_meta}` — metadados JSON com:
+   - volume_original, volume_display, proporcao_pct
+   - marcadores_img: lista de IDs
+   - marcadores_video: lista de IDs
+   - callouts: contagem por tipo
+   - glossario_termos: lista de termos
+   - bloom_niveis_cobertos: lista
 
-INSTRUÇÕES:
-1. Leia `skills/texto-display/SKILL.md` — regras de reescrita
-2. Leia `docs/voz-unigran.md` — tom, proibições, callouts
-3. Preserve TODOS os marcadores [IMG-NN] do original
-4. Volume mínimo: 80% do original
-5. Citações: preservar intactas
-6. Adicione 3-6 marcadores [VIDEO-NN] sugeridos
-7. Inclua seção "Glossário" no final
+## Conteúdo original
+"""
+    prompt += input_md.read_text(encoding="utf-8")
 
-Ao final, gere o display_meta.json com:
-- volume_original, volume_display, proporcao_pct
-- marcadores_img: lista de IDs
-- marcadores_video: lista de IDs
-- callouts: contagem por tipo
-- glossario_termos: lista de termos
-- bloom_niveis_cobertos: lista
+    prompt_path.write_text(prompt, encoding="utf-8")
 
-IMPORTANTE: Escreva APENAS os dois arquivos de saída, nada mais."""
+    # Copiar markdown original para referência
+    ref_path = output_dir / "original_referencia.md"
+    import shutil
+    shutil.copy2(input_md, ref_path)
 
-    # Usa o Claude Code CLI para executar o agente
-    import subprocess
-
-    cmd = [
-        "claude",
-        "--agent", "texto-display",
-        "--prompt", prompt,
-    ]
-
-    try:
-        result = subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-            timeout=600,  # 10 minutos timeout
-        )
-
-        if result.returncode != 0:
-            return False, f"Erro ao executar Agente A:\n{result.stderr}"
-
-        # Verifica se arquivos foram criados
-        if not output_md.exists():
-            return False, "texto-display.md não foi criado"
-
-        if not output_meta.exists():
-            return False, "display_meta.json não foi criado"
-
-        return True, "Agente A executado com sucesso"
-
-    except subprocess.TimeoutExpired:
-        return False, "Timeout — Agente A demorou mais de 10 minutos"
-    except FileNotFoundError:
-        return False, "Claude Code CLI não encontrado — instale com 'npm install -g @anthropic/claude-code'"
+    return True, f"Prompt preparado em {prompt_path}. Execute: claude /texto-display {prompt_path}"
 
 
 def executar_agente_a_tela(curso: str, codigo: str, disciplina: str, aula_num: int, forcar: bool = False) -> dict:
@@ -209,17 +206,15 @@ def executar_agente_a_tela(curso: str, codigo: str, disciplina: str, aula_num: i
     if not ok:
         return {"ok": False, "erro": msg}
 
-    # Rodar validador
-    from modulo03.validador import validar_e_salvar_log
-    resultado = validar_e_salvar_log(pasta_aula)
+    # Retornar informações sobre o prompt preparado
+    prompt_path = pasta_aula / "03_reformulado" / "_prompt_m03.txt"
 
     return {
-        "ok": resultado["ok"],
-        "erro": None if resultado["ok"] else "; ".join(resultado["falhas"]),
+        "ok": True,
+        "erro": None,
         "detalhes": {
-            "validacao": resultado["ok"],
-            "falhas": resultado["falhas"],
-            "metricas": resultado["metricas"],
+            "prompt_path": str(prompt_path),
+            "instrucao": f"Execute: claude /texto-display {prompt_path}",
         }
     }
 

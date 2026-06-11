@@ -531,13 +531,9 @@
         const resM02 = await fetch(`/api/score?curso=${encodeURIComponent(curso)}&codigo=${encodeURIComponent(codigo)}&disciplina=${encodeURIComponent(disciplina)}&aula=${encodeURIComponent(aula)}`);
         const m02 = await resM02.json();
 
-        if (m02.status === 'avaliada' && m02.score?.veredito?.rotulo === 'APROVAR') {
+        if (m02.status === 'avaliada' && ['APROVAR', 'APROVAR COM RESSALVA', 'INTERVENCAO_EDITORIAL'].includes(m02.score?.veredito?.rotulo)) {
           statusM02.className = 'status-tag tag-concluido';
-          statusM02.textContent = '✅ Aprovado';
-          step2.classList.add('completed');
-        } else if (m02.status === 'avaliada' && m02.score?.veredito?.rotulo === 'APROVAR COM RESSALVA') {
-          statusM02.className = 'status-tag tag-concluido';
-          statusM02.textContent = '✅ Com ressalva';
+          statusM02.textContent = '✅ ' + (m02.score?.veredito?.rotulo || 'Avaliado');
           step2.classList.add('completed');
         } else if (m02.status === 'aguardando_avaliacao') {
           statusM02.className = 'status-tag tag-pendente';
@@ -666,7 +662,7 @@
     }
 
     async function iniciarM03() {
-      spinnerMensagem.textContent = 'Executando Agente A — Texto Display...';
+      spinnerMensagem.textContent = 'Preparando ambiente M03...';
       spinnerOverlay.style.display = 'flex';
 
       try {
@@ -683,19 +679,39 @@
 
         if (!resultado.ok) {
           spinnerOverlay.style.display = 'none';
-          alert('⚠ ' + (resultado.erro || 'Erro ao executar M03'));
+          alert('⚠ ' + (resultado.erro || 'Erro ao preparar M03'));
           return;
         }
 
-        // Sucesso - recarregar para mostrar resultado
-        spinnerMensagem.textContent = 'M03 concluído! Carregando...';
+        // Sucesso - mostrar prompt e instruções
+        spinnerOverlay.style.display = 'none';
+
+        const cmd = `claude /texto-display "${resultado.detalhes.prompt_path}"`;
+
+        if (confirm(
+          '✅ Ambiente M03 preparado!\n\n' +
+          '📄 Prompt gerado em: ' + resultado.detalhes.prompt_path + '\n\n' +
+          '📝 INSTRUÇÕES:\n' +
+          '1. Abra o terminal\n' +
+          '2. Execute: ' + cmd + '\n' +
+          '3. Aguarde a geração dos arquivos\n' +
+          '4. Clique em OK para recarregar e verificar\n\n' +
+          'Deseja abrir o terminal agora?'
+        )) {
+          // Tentar abrir terminal (funciona em alguns sistemas)
+          window.open('terminal://');
+        }
+
+        // Recarregar após alguns segundos para verificar se arquivos foram criados
         setTimeout(() => {
-          window.location.reload();
-        }, 1000);
+          if (confirm('Os arquivos foram gerados? Clique OK para verificar.')) {
+            window.location.reload();
+          }
+        }, 30000); // 30 segundos
 
       } catch (err) {
         spinnerOverlay.style.display = 'none';
-        alert('Erro ao executar M03: ' + err.message);
+        alert('Erro ao preparar M03: ' + err.message);
       }
     }
 
