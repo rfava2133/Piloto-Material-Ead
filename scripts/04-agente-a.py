@@ -174,6 +174,56 @@ IMPORTANTE: Escreva APENAS os dois arquivos de saída, nada mais."""
         return False, "Claude Code CLI não encontrado — instale com 'npm install -g @anthropic/claude-code'"
 
 
+def executar_agente_a_tela(curso: str, codigo: str, disciplina: str, aula_num: int, forcar: bool = False) -> dict:
+    """
+    Executa o M03 — Texto Display via interface (API).
+
+    Returns:
+        dict: {"ok": bool, "erro": str|None, "detalhes": dict}
+    """
+    curso_slug = slugify(curso)
+    disciplina_slug = slugify(disciplina)
+    pasta_aula = construir_caminhos(curso_slug, codigo, disciplina_slug, aula_num)
+
+    # Verificar pré-condições
+    ok, msg = verificar_pre_condicoes(pasta_aula)
+
+    if not ok:
+        if forcar and "já existe" in msg:
+            criar_backup(pasta_aula)
+        else:
+            return {"ok": False, "erro": msg}
+
+    # Encontrar arquivo de entrada
+    markdown_dir = pasta_aula / "02_markdown"
+    input_files = list(markdown_dir.glob("*.md"))
+
+    if not input_files:
+        return {"ok": False, "erro": "Nenhum arquivo .md encontrado em 02_markdown/"}
+
+    input_md = input_files[0]
+
+    # Executar Agente A
+    ok, msg = executar_agente_a(pasta_aula, input_md)
+
+    if not ok:
+        return {"ok": False, "erro": msg}
+
+    # Rodar validador
+    from modulo03.validador import validar_e_salvar_log
+    resultado = validar_e_salvar_log(pasta_aula)
+
+    return {
+        "ok": resultado["ok"],
+        "erro": None if resultado["ok"] else "; ".join(resultado["falhas"]),
+        "detalhes": {
+            "validacao": resultado["ok"],
+            "falhas": resultado["falhas"],
+            "metricas": resultado["metricas"],
+        }
+    }
+
+
 def main():
     parser = argparse.ArgumentParser(description="M03 — Agente A: Texto Display")
     parser.add_argument("--curso", required=True, help="Nome do curso")

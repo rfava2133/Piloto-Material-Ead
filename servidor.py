@@ -44,6 +44,7 @@ def _importar_script(nome_modulo: str, arquivo: str):
 processar_mod = _importar_script("processar", "01-processar-entrada.py")
 separar_mod = _importar_script("separar_aulas", "02-separar-aulas.py")
 agente_e_mod = _importar_script("agente_e", "03-agente-e.py")
+agente_a_mod = None  # Import lazy para evitar erro de sintaxe (04-agente-a.py tem hífen)
 
 app = Flask(__name__, static_folder="interface")
 
@@ -340,6 +341,156 @@ def api_score():
 
     return jsonify({"status": "avaliada", "score": score, "arquivo": str(scores[-1])})
 
+
+# ============================================
+# ROTAS M03 — TEXTO DISPLAY
+# ============================================
+
+@app.route("/m03-preview")
+def m03_preview():
+    """Tela de preview do fluxo M03 (passo-a-passo)."""
+    return send_from_directory("interface", "m03-preview.html")
+
+
+@app.route("/modulo03/<path:arquivo>")
+def modulo03_estatico(arquivo):
+    """Serve arquivos estáticos do M03 (ex.: display.html)."""
+    return send_from_directory("modulo03", arquivo)
+
+
+@app.route("/api/m01-check", methods=["GET"])
+def api_m01_check():
+    """Verifica se M01 foi executado e retorna markdown."""
+    curso = request.args.get("curso", "").strip()
+    codigo = request.args.get("codigo", "").strip()
+    disciplina = request.args.get("disciplina", "").strip()
+    aula = request.args.get("aula", "").strip()
+
+    try:
+        aula_num = int(aula)
+    except ValueError:
+        return jsonify({"ok": False, "erro": "Número da aula inválido."}), 400
+
+    raiz = Path(cfg()["raiz"]).expanduser()
+    pasta_aula = (
+        raiz / "cursos" / pastas.slugify(curso)
+        / pastas.nome_pasta_disciplina(codigo, disciplina)
+        / "aulas" / f"{aula_num:02d}"
+    )
+
+    if not pasta_aula.exists():
+        return jsonify({"ok": False, "erro": "Pasta da aula não encontrada."}), 404
+
+    # Procurar markdown em 02_markdown
+    markdown_dir = pasta_aula / "02_markdown"
+    if not markdown_dir.exists():
+        return jsonify({"ok": False, "erro": "M01 não executado — sem markdown."}), 404
+
+    md_files = list(markdown_dir.glob("*.md"))
+    if not md_files:
+        return jsonify({"ok": False, "erro": "Nenhum arquivo .md encontrado."}), 404
+
+    md_path = md_files[0]
+    markdown = md_path.read_text(encoding="utf-8")
+
+    return jsonify({
+        "ok": True,
+        "markdown": markdown,
+        "caminho": str(md_path),
+    })
+
+
+@app.route("/api/m03-check", methods=["GET"])
+def api_m03_check():
+    """Verifica se M03 foi executado e retorna texto-display."""
+    curso = request.args.get("curso", "").strip()
+    codigo = request.args.get("codigo", "").strip()
+    disciplina = request.args.get("disciplina", "").strip()
+    aula = request.args.get("aula", "").strip()
+
+    try:
+        aula_num = int(aula)
+    except ValueError:
+        return jsonify({"ok": False, "erro": "Número da aula inválido."}), 400
+
+    raiz = Path(cfg()["raiz"]).expanduser()
+    pasta_aula = (
+        raiz / "cursos" / pastas.slugify(curso)
+        / pastas.nome_pasta_disciplina(codigo, disciplina)
+        / "aulas" / f"{aula_num:02d}"
+    )
+
+    if not pasta_aula.exists():
+        return jsonify({"ok": False, "erro": "Pasta da aula não encontrada."}), 404
+
+    # Procurar texto-display em 03_reformulado
+    reformulado_dir = pasta_aula / "03_reformulado"
+    if not reformulado_dir.exists():
+        return jsonify({"ok": False, "erro": "M03 não executado."}), 404
+
+    display_path = reformulado_dir / "texto-display.md"
+    meta_path = reformulado_dir / "display_meta.json"
+
+    if not display_path.exists():
+        return jsonify({"ok": False, "erro": "texto-display.md não encontrado."}), 404
+
+    markdown = display_path.read_text(encoding="utf-8")
+    meta = None
+    if meta_path.exists():
+        try:
+            meta = json.loads(meta_path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            pass
+
+    return jsonify({
+        "ok": True,
+        "markdown": markdown,
+        "meta": meta,
+        "caminho": str(display_path),
+    })
+
+
+@app.route("/api/m03-executar", methods=["POST"])
+def api_m03_executar():
+    """Executa o M03 — Texto Display (Agente A)."""
+    dados = request.get_json() or {}
+    curso = dados.get("curso", "").strip()
+    codigo = dados.get("codigo", "").strip()
+    disciplina = dados.get("disciplina", "").strip()
+    aula = dados.get("aula", "")
+    forcar = dados.get("forcar", False)
+
+    if not (curso and codigo and disciplina and aula):
+        return jsonify({"ok": False, "erro": "Parâmetros inválidos."}), 400
+
+    try:
+        aula_num = int(aula)
+    except ValueError:
+        return jsonify({"ok": False, "erro": "Número da aula inválido."}), 400
+
+    # Import dinâmica do script M03 (nome com hífen)
+    agente_a = _importar_script("agente_a", "04-agente-a.py")
+
+    resultado = agente_a.executar_agente_a_tela(
+        curso, codigo, disciplina, aula_num, forcar
+    )
+
+    if not resultado.get("ok"):
+        return jsonify({
+            "ok": False,
+            "erro": resultado.get("erro", "Erro ao executar M03"),
+        }), 400
+
+    return jsonify({
+        "ok": True,
+        "mensagem": "M03 executado com sucesso.",
+        "detalhes": resultado.get("detalhes", {}),
+    })
+
+
+# ============================================
+# ROTAS EXISTENTES
+# ============================================
 
 @app.route("/api/processar", methods=["POST"])
 def api_processar():

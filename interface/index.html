@@ -1006,7 +1006,17 @@
             const mdPath = resultado.texto?.markdown || 'N/A';
             const imgsCount = resultado.imagens?.qtd_imagens_pdf
               ?? resultado.texto?.qtd_imagens_word ?? 0;
-            alert('Extração concluída!\n\nMarkdown: ' + mdPath + '\nImagens: ' + imgsCount);
+
+            // Mostrar opção de ir para M03
+            if (confirm('Extração concluída!\n\nMarkdown: ' + mdPath + '\nImagens: ' + imgsCount + '\n\nDeseja visualizar o material extraído e iniciar o M03?')) {
+              const params = new URLSearchParams({
+                curso: comboCurso.value,
+                codigo: gerarCodigo(comboDisciplina.value),
+                disciplina: comboDisciplina.value,
+                aula: comboAula.value
+              });
+              window.location.href = '/m03-preview?' + params.toString();
+            }
           }, 1000);
         }
       } catch (err) {

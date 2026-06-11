@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>M03 — Texto Display</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Literata:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #1A1A1A;
+      --ink-strong: #0D1117;
+      --ink-muted: #6B7280;
+      --ink-faint: #9CA3AF;
+      --paper: #FFFFFF;
+      --paper-warm: #FBFAF7;
+      --line: #E5E2DC;
+      --unigran-blue: #0046A8;
+      --unigran-yellow: #FFC629;
+      --aprovar: #15803D;
+      --radius: 2px;
+      --topbar-h: 52px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      background: var(--paper-warm);
+      color: var(--ink);
+      font-family: 'Literata', Georgia, serif;
+      line-height: 1.62;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* TOPBAR */
+    .topbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: var(--topbar-h);
+      background: var(--paper-warm);
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      gap: 24px;
+      z-index: 100;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--unigran-blue);
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+
+    .brand-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--unigran-yellow);
+      display: inline-block;
+    }
+
+    .brand-sep { color: var(--ink-faint); font-weight: 400; }
+
+    .topbar-crumb {
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      color: var(--ink-muted);
+      flex: 1;
+    }
+
+    /* CONTAINER */
+    .main-container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: calc(var(--topbar-h) + 40px) 24px 80px;
+    }
+
+    /* HEADER */
+    .page-header {
+      margin-bottom: 32px;
+      padding-bottom: 20px;
+      border-bottom: 1.5px solid var(--ink-strong);
+    }
+
+    .eyebrow {
+      font-family: 'Inter', sans-serif;
+      font-size: 9px;
+      font-weight: 500;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--unigran-blue);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 16px;
+      height: 1.5px;
+      background: var(--unigran-blue);
+    }
+
+    .page-title {
+      font-family: 'Inter', sans-serif;
+      font-size: clamp(18px, 4vw, 24px);
+      font-weight: 700;
+      letter-spacing: -0.4px;
+      line-height: 1.15;
+      color: var(--ink-strong);
+    }
+
+    .page-subtitle {
+      font-family: 'Literata', serif;
+      font-size: 13px;
+      color: var(--ink-muted);
+      margin-top: 6px;
+    }
+
+    /* STATUS CARD */
+    .status-card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 32px;
+    }
+
+    .status-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .status-row:last-child { border-bottom: none; }
+
+    .status-label {
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+    }
+
+    .status-value {
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      color: var(--ink-strong);
+    }
+
+    .status-tag {
+      font-family: 'Inter', sans-serif;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 4px;
+    }
+
+    .tag-pendente { background: #FEF3C7; color: #92400E; border: 1px solid #FCD34D; }
+    .tag-concluido { background: #D1FAE5; color: #065F46; border: 1px solid #6EE7B7; }
+    .tag-erro { background: #FEE2E2; color: #991B1B; border: 1px solid #FCA5A5; }
+
+    /* MARKDOWN VIEWER */
+    .markdown-viewer {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 32px;
+      margin-bottom: 32px;
+      max-height: 60vh;
+      overflow-y: auto;
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    .markdown-viewer h1, .markdown-viewer h2, .markdown-viewer h3 {
+      font-family: 'Inter', sans-serif;
+      margin-top: 24px;
+      margin-bottom: 12px;
+      color: var(--ink-strong);
+    }
+
+    .markdown-viewer h1 { font-size: 24px; }
+    .markdown-viewer h2 { font-size: 20px; }
+    .markdown-viewer h3 { font-size: 17px; }
+
+    .markdown-viewer p { margin-bottom: 16px; }
+    .markdown-viewer ul, .markdown-viewer ol { margin-bottom: 16px; padding-left: 24px; }
+    .markdown-viewer li { margin-bottom: 6px; }
+
+    .markdown-viewer code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      background: #F5F5F5;
+      padding: 2px 6px;
+      border-radius: 2px;
+    }
+
+    .markdown-viewer pre {
+      background: #F5F5F5;
+      padding: 16px;
+      border-radius: var(--radius);
+      overflow-x: auto;
+      margin-bottom: 16px;
+    }
+
+    .markdown-viewer pre code {
+      background: none;
+      padding: 0;
+    }
+
+    .markdown-viewer blockquote {
+      border-left: 3px solid var(--unigran-blue);
+      padding-left: 16px;
+      margin: 16px 0;
+      color: var(--ink-muted);
+      font-style: italic;
+    }
+
+    .markdown-viewer img {
+      max-width: 100%;
+      height: auto;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      margin: 16px 0;
+    }
+
+    .img-placeholder {
+      display: inline-block;
+      background: #F3F4F6;
+      border: 2px dashed var(--ink-faint);
+      border-radius: var(--radius);
+      padding: 8px 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--ink-muted);
+    }
+
+    /* ACTION BAR */
+    .action-bar {
+      display: flex;
+      gap: 16px;
+      justify-content: flex-end;
+      padding-top: 24px;
+      border-top: 1px solid var(--line);
+    }
+
+    .btn {
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 12px 24px;
+      border-radius: var(--radius);
+      border: none;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-secondary {
+      background: var(--paper);
+      color: var(--ink-strong);
+      border: 1px solid var(--line);
+    }
+
+    .btn-secondary:hover {
+      background: #F5F5F5;
+      border-color: var(--ink-faint);
+    }
+
+    .btn-primary {
+      background: var(--unigran-blue);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #003D8F;
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* SPINNER */
+    .spinner-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(251,250,247,0.95);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 3px solid var(--line);
+      border-top-color: var(--unigran-blue);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .spinner-text {
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      color: var(--ink-muted);
+    }
+
+    /* PROGRESS STEPS */
+    .progress-steps {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 32px;
+    }
+
+    .step {
+      flex: 1;
+      padding: 12px;
+      text-align: center;
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--paper);
+      color: var(--ink-muted);
+    }
+
+    .step.active {
+      border-color: var(--unigran-blue);
+      color: var(--unigran-blue);
+      background: #EFF6FF;
+    }
+
+    .step.completed {
+      background: var(--aprovar);
+      border-color: var(--aprovar);
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <a href="/" class="brand">
+      <span class="brand-dot"></span>
+      UNIGRAN EAD
+      <span class="brand-sep">·</span>
+      Esteira de Produção
+    </a>
+    <div class="topbar-crumb" id="topbar-crumb"></div>
+  </header>
+
+  <!-- CONTAINER -->
+  <main class="main-container">
+    <!-- PROGRESS STEPS -->
+    <div class="progress-steps">
+      <div class="step" id="step-1">1. Material Original</div>
+      <div class="step" id="step-2">2. Texto Display</div>
+      <div class="step" id="step-3">3. Validação</div>
+    </div>
+
+    <!-- HEADER -->
+    <header class="page-header">
+      <div class="eyebrow">Módulo 03 — Texto Display</div>
+      <h1 class="page-title" id="page-title">Carregando...</h1>
+      <p class="page-subtitle" id="page-subtitle">Aguardando dados da aula.</p>
+    </header>
+
+    <!-- STATUS CARD -->
+    <div class="status-card">
+      <div class="status-row">
+        <span class="status-label">Curso</span>
+        <span class="status-value" id="status-curso">—</span>
+      </div>
+      <div class="status-row">
+        <span class="status-label">Disciplina</span>
+        <span class="status-value" id="status-disciplina">—</span>
+      </div>
+      <div class="status-row">
+        <span class="status-label">Aula</span>
+        <span class="status-value" id="status-aula">—</span>
+      </div>
+      <div class="status-row">
+        <span class="status-label">Status M01</span>
+        <span class="status-tag" id="status-m01">Pendente</span>
+      </div>
+      <div class="status-row">
+        <span class="status-label">Status M02</span>
+        <span class="status-tag" id="status-m02">Pendente</span>
+      </div>
+      <div class="status-row">
+        <span class="status-label">Status M03</span>
+        <span class="status-tag" id="status-m03">Pendente</span>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div id="content-area">
+      <!-- Dynamic content loaded here -->
+    </div>
+
+    <!-- ACTION BAR -->
+    <div class="action-bar" id="action-bar" style="display: none;">
+      <button class="btn btn-secondary" onclick="window.location.href='/'">← Voltar</button>
+      <button class="btn btn-primary" id="btn-start" onclick="iniciarM03()">
+        ▶ Iniciar M03 — Texto Display
+      </button>
+      <button class="btn btn-primary" id="btn-revisar" onclick="revisarTexto()" style="display: none;">
+        ✓ Revisar e Salvar
+      </button>
+    </div>
+  </main>
+
+  <!-- SPINNER -->
+  <div id="spinner-overlay" class="spinner-overlay">
+    <div class="spinner"></div>
+    <p class="spinner-text" id="spinner-mensagem">Processando...</p>
+  </div>
+
+  <script>
+    // URL params
+    const urlParams = new URLSearchParams(window.location.search);
+    const curso = urlParams.get('curso');
+    const codigo = urlParams.get('codigo');
+    const disciplina = urlParams.get('disciplina');
+    const aula = urlParams.get('aula');
+
+    // Estado
+    let markdownOriginal = '';
+    let textoDisplay = '';
+    let metaDisplay = null;
+
+    // Elementos
+    const topbarCrumb = document.getElementById('topbar-crumb');
+    const pageTitle = document.getElementById('page-title');
+    const pageSubtitle = document.getElementById('page-subtitle');
+    const statusCurso = document.getElementById('status-curso');
+    const statusDisciplina = document.getElementById('status-disciplina');
+    const statusAula = document.getElementById('status-aula');
+    const statusM01 = document.getElementById('status-m01');
+    const statusM02 = document.getElementById('status-m02');
+    const statusM03 = document.getElementById('status-m03');
+    const contentArea = document.getElementById('content-area');
+    const actionBar = document.getElementById('action-bar');
+    const btnStart = document.getElementById('btn-start');
+    const btnRevisar = document.getElementById('btn-revisar');
+    const spinnerOverlay = document.getElementById('spinner-overlay');
+    const spinnerMensagem = document.getElementById('spinner-mensagem');
+    const step1 = document.getElementById('step-1');
+    const step2 = document.getElementById('step-2');
+    const step3 = document.getElementById('step-3');
+
+    // Inicializar
+    async function init() {
+      if (!curso || !disciplina || !aula) {
+        contentArea.innerHTML = '<p>❌ Parâmetros inválidos. Volte e selecione a aula.</p>';
+        return;
+      }
+
+      // Atualizar header
+      topbarCrumb.textContent = `${curso} → ${disciplina} → Aula ${aula}`;
+      pageTitle.textContent = `Aula ${aula} — ${disciplina}`;
+      pageSubtitle.textContent = 'Fluxo M03: Texto Display';
+
+      statusCurso.textContent = curso;
+      statusDisciplina.textContent = disciplina;
+      statusAula.textContent = `Aula ${aula}`;
+
+      // Carregar status
+      await carregarStatus();
+    }
+
+    async function carregarStatus() {
+      try {
+        // Verificar M01
+        const resM01 = await fetch(`/api/m01-check?curso=${encodeURIComponent(curso)}&codigo=${encodeURIComponent(codigo)}&disciplina=${encodeURIComponent(disciplina)}&aula=${encodeURIComponent(aula)}`);
+        const m01 = await resM01.json();
+
+        if (m01.ok) {
+          statusM01.className = 'status-tag tag-concluido';
+          statusM01.textContent = '✅ Concluído';
+          markdownOriginal = m01.markdown || '';
+          step1.classList.add('completed');
+
+          // Mostrar markdown
+          mostrarMarkdownOriginal(m01.markdown, m01.caminho);
+        } else {
+          statusM01.className = 'status-tag tag-pendente';
+          statusM01.textContent = 'Pendente';
+          contentArea.innerHTML = `
+            <div class="status-card">
+              <p><strong>⚠️ Módulo 01 não foi executado para esta aula.</strong></p>
+              <p style="margin-top: 12px; color: var(--ink-muted);">
+                Volte para a tela inicial e execute o Módulo 01 (Extrator) primeiro.
+              </p>
+            </div>
+          `;
+          actionBar.style.display = 'none';
+          return;
+        }
+
+        // Verificar M02
+        const resM02 = await fetch(`/api/score?curso=${encodeURIComponent(curso)}&codigo=${encodeURIComponent(codigo)}&disciplina=${encodeURIComponent(disciplina)}&aula=${encodeURIComponent(aula)}`);
+        const m02 = await resM02.json();
+
+        if (m02.status === 'avaliada' && m02.score?.veredito?.rotulo === 'APROVAR') {
+          statusM02.className = 'status-tag tag-concluido';
+          statusM02.textContent = '✅ Aprovado';
+          step2.classList.add('completed');
+        } else if (m02.status === 'avaliada' && m02.score?.veredito?.rotulo === 'APROVAR COM RESSALVA') {
+          statusM02.className = 'status-tag tag-concluido';
+          statusM02.textContent = '✅ Com ressalva';
+          step2.classList.add('completed');
+        } else if (m02.status === 'aguardando_avaliacao') {
+          statusM02.className = 'status-tag tag-pendente';
+          statusM02.textContent = 'Aguardando';
+        } else if (m02.status === 'erro_agente_e' || m02.status === 'score_invalido') {
+          statusM02.className = 'status-tag tag-erro';
+          statusM02.textContent = '❌ Erro M02';
+        } else {
+          statusM02.className = 'status-tag tag-pendente';
+          statusM02.textContent = 'Pendente';
+        }
+
+        // Verificar M03
+        const resM03 = await fetch(`/api/m03-check?curso=${encodeURIComponent(curso)}&codigo=${encodeURIComponent(codigo)}&disciplina=${encodeURIComponent(disciplina)}&aula=${encodeURIComponent(aula)}`);
+        const m03 = await resM03.json();
+
+        if (m03.ok) {
+          statusM03.className = 'status-tag tag-concluido';
+          statusM03.textContent = '✅ Concluído';
+          step3.classList.add('completed');
+          textoDisplay = m03.markdown || '';
+          metaDisplay = m03.meta || null;
+
+          // Mostrar texto display
+          mostrarTextoDisplay(m03.markdown, m03.meta, m03.caminho);
+          btnStart.style.display = 'none';
+          btnRevisar.style.display = 'inline-flex';
+        } else {
+          statusM03.className = 'status-tag tag-pendente';
+          statusM03.textContent = 'Pendente';
+        }
+
+      } catch (err) {
+        console.error('Erro ao carregar status:', err);
+        contentArea.innerHTML = `<p>❌ Erro ao carregar: ${err.message}</p>`;
+      }
+    }
+
+    function mostrarMarkdownOriginal(markdown, caminho) {
+      step1.classList.add('active');
+
+      // Converter markdown para HTML simples
+      let html = markdown
+        .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+        .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+        .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>')
+        .replace(/\n/g, '<br>');
+
+      // Destacar placeholders de imagem
+      html = html.replace(/\[IMG-\d+\]/g, match => `<span class="img-placeholder">${match}</span>`);
+
+      contentArea.innerHTML = `
+        <h2 style="font-family: 'Inter'; font-size: 14px; margin-bottom: 16px; color: var(--ink-muted);">
+          📄 Material Original (M01)
+        </h2>
+        <div class="markdown-viewer">${html}</div>
+        <p style="font-size: 12px; color: var(--ink-muted); font-family: 'JetBrains Mono';">
+          📁 ${caminho}
+        </p>
+      `;
+    }
+
+    function mostrarTextoDisplay(markdown, meta, caminho) {
+      step2.classList.add('active');
+      step1.classList.remove('active');
+
+      // Converter markdown para HTML
+      let html = markdown
+        .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+        .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+        .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>')
+        .replace(/\n/g, '<br>');
+
+      // Destacar placeholders
+      html = html.replace(/\[IMG-\d+\]/g, match => `<span class="img-placeholder">${match}</span>`);
+      html = html.replace(/\[VIDEO-\d+\]/g, match => `<span class="img-placeholder" style="border-color: var(--unigran-blue);">${match}</span>`);
+
+      // Adicionar métricas se disponíveis
+      let metricsHtml = '';
+      if (meta) {
+        metricsHtml = `
+          <div class="status-card" style="margin-bottom: 24px;">
+            <h3 style="font-family: 'Inter'; font-size: 12px; text-transform: uppercase; color: var(--ink-muted); margin-bottom: 16px;">
+              📊 Métricas da Conversão
+            </h3>
+            <div class="status-row">
+              <span class="status-label">Volume Original</span>
+              <span class="status-value">${meta.volume_original || 'N/A'} palavras</span>
+            </div>
+            <div class="status-row">
+              <span class="status-label">Volume Display</span>
+              <span class="status-value">${meta.volume_display || 'N/A'} palavras</span>
+            </div>
+            <div class="status-row">
+              <span class="status-label">Proporção</span>
+              <span class="status-value">${meta.proporcao_pct || 'N/A'}%</span>
+            </div>
+            <div class="status-row">
+              <span class="status-label">Imagens</span>
+              <span class="status-value">${(meta.marcadores_img || []).length} marcadores</span>
+            </div>
+            <div class="status-row">
+              <span class="status-label">Vídeos Sugeridos</span>
+              <span class="status-value">${(meta.marcadores_video || []).length} marcadores</span>
+            </div>
+          </div>
+        `;
+      }
+
+      contentArea.innerHTML = `
+        ${metricsHtml}
+        <h2 style="font-family: 'Inter'; font-size: 14px; margin-bottom: 16px; color: var(--aprovar);">
+          ✅ Texto Display Gerado
+        </h2>
+        <div class="markdown-viewer">${html}</div>
+        <p style="font-size: 12px; color: var(--ink-muted); font-family: 'JetBrains Mono';">
+          📁 ${caminho}
+        </p>
+      `;
+    }
+
+    async function iniciarM03() {
+      spinnerMensagem.textContent = 'Executando Agente A — Texto Display...';
+      spinnerOverlay.style.display = 'flex';
+
+      try {
+        const res = await fetch('/api/m03-executar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            curso, codigo, disciplina, aula,
+            forcar: false
+          })
+        });
+
+        const resultado = await res.json();
+
+        if (!resultado.ok) {
+          spinnerOverlay.style.display = 'none';
+          alert('⚠ ' + (resultado.erro || 'Erro ao executar M03'));
+          return;
+        }
+
+        // Sucesso - recarregar para mostrar resultado
+        spinnerMensagem.textContent = 'M03 concluído! Carregando...';
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+
+      } catch (err) {
+        spinnerOverlay.style.display = 'none';
+        alert('Erro ao executar M03: ' + err.message);
+      }
+    }
+
+    async function revisarTexto() {
+      // Redirecionar para display.html
+      const aulaId = `${codigo}-${aula.padStart(2, '0')}`;
+      const cursoSlug = slugify(curso);
+      const discSlug = slugify(disciplina);
+      window.location.href = `/modulo03/display.html?curso=${encodeURIComponent(curso)}&codigo=${encodeURIComponent(codigo)}&disciplina=${encodeURIComponent(disciplina)}&aula=${encodeURIComponent(aula)}`;
+    }
+
+    function slugify(texto) {
+      return texto
+        .normalize('NFD')
+        .replace(/[̀-ͯ]/g, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '');
+    }
+
+    // Iniciar
+    init();
+  </script>
+</body>
+</html>
