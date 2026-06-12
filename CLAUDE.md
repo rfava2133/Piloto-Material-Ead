@@ -93,7 +93,7 @@ Escala alvo: ~1.200 disciplinas. Piloto: começar pelo material disponível.
   - Citações: preservar intactas (M02 já validou)
   - Marcadores IMG: todos os `[IMG-NN]` mantidos
   - Callouts: máximo 2 por tópico, sintaxe `:::conceito-chave`
-  - Vídeos: sugerir 3–6 marcadores `[VIDEO-NN]`
+  - Vídeos: sugerir **exatamente 1** marcador `[VIDEO-01]` por aula
   - Glossário: 5–8 termos no final
   - Estrutura: abertura (pergunta-gancho) → H2 humanos → tópicos → fechamento (bullets)
 - **Validação (`validador.py`):**
