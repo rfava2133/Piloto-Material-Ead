@@ -1231,6 +1231,30 @@
             // Se houver referência bibliográfica completa, exibir abaixo
             if (fonte.referencia_completa) {
               bibliografia = `<br><span style="font-size:12px; color:var(--ink-muted); font-style:italic;">📚 ${fonte.referencia_completa}</span>`;
+            } else if (fonte.obra === 'Citação no corpo do texto' && a2.referencias_bibliograficas) {
+              // Buscar referência completa cruzando autor+ano
+              const sobrenome = (fonte.autor || '').split(' ')[0].toLowerCase();
+              const refCompleta = a2.referencias_bibliograficas.find(
+                r => {
+                  const autorRef = (r.autor || r.citação || '').toLowerCase();
+                  return autorRef.includes(sobrenome) && r.ano === fonte.ano;
+                }
+              );
+              if (refCompleta) {
+                const obra = refCompleta.obra || refCompleta.titulo || '';
+                const ano = refCompleta.ano || fonte.ano;
+                const url = refCompleta.url || refCompleta.link || '';
+                const doi = refCompleta.doi || '';
+                let refTexto = '';
+                if (obra) {
+                  refTexto = `${refCompleta.autor || fonte.autor} — ${trunc(obra, 80)} (${ano})`;
+                } else {
+                  refTexto = `${refCompleta.autor || fonte.autor} (${ano})`;
+                }
+                if (url) refTexto += ` · ${trunc(url, 50)}`;
+                if (doi) refTexto += ` · DOI: ${doi}`;
+                bibliografia = `<br><span style="font-size:12px; color:var(--ink-muted); font-style:italic;">📚 ${refTexto}</span>`;
+              }
             }
           } else {
             // Entrada bibliográfica estruturada

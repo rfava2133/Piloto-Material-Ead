@@ -7,7 +7,8 @@ Faz:
   2. Copia Word/PDF para 01_source/
   3. Converte Word → Markdown + extrai imagens do Word (Pandoc)
   4. Extrai imagens do PDF (PyMuPDF)
-  5. Registra log
+  5. Normaliza referências de imagens para marcadores [IMG-NN]
+  6. Registra log
 
 Uso (linha de comando):
   python3 01-processar-entrada.py \
@@ -20,6 +21,7 @@ Uso (linha de comando):
 Também é chamado pela interface HTML via servidor.py.
 """
 import argparse
+import re
 import shutil
 import sys
 from pathlib import Path
@@ -34,6 +36,78 @@ def carregar_config() -> dict:
     cfg_path = Path(__file__).parent / "config.yml"
     with open(cfg_path, "r", encoding="utf-8") as f:
         return yaml.safe_load(f)
+
+
+def normalizar_marcadores_imagens(md_path: Path) -> dict:
+    """
+    Normaliza referências de imagens no markdown para o formato [IMG-NN].
+
+    Detecta padrões como:
+    - **Figura 1 -** descrição
+    - **Figura 2:** descrição
+    - Figura 1: descrição
+    - ![alt](media/image.png)
+
+    E substitui por: [IMG-01 alt="descrição"]
+
+    Retorna dict com quantidade normalizada.
+    """
+    if not md_path.exists():
+        return {"ok": False, "aviso": "Markdown não encontrado"}
+
+    texto = md_path.read_text(encoding="utf-8")
+    original = texto
+    contador = 0
+
+    # Padrão 1: **Figura N -** ou **Figura N:** (negrito)
+    def replace_figura_negrito(m):
+        nonlocal contador
+        contador += 1
+        num = m.group(1)
+        desc = m.group(2).strip()
+        return f'[IMG-{num:02d} alt="{desc}"]'
+
+    texto = re.sub(
+        r'\*\*Figura\s+(\d+)\s*[-:]\*\*\s*(.+?)(?=\n|$)',
+        replace_figura_negrito,
+        texto,
+        flags=re.IGNORECASE
+    )
+
+    # Padrão 2: Figura N: descrição (sem negrito)
+    def replace_figura_simples(m):
+        nonlocal contador
+        contador += 1
+        num = m.group(1)
+        desc = m.group(2).strip()
+        return f'[IMG-{num:02d} alt="{desc}"]'
+
+    texto = re.sub(
+        r'(?<!\*\*)Figura\s+(\d+)\s*:\s*(.+?)(?=\n|$)',
+        replace_figura_simples,
+        texto,
+        flags=re.IGNORECASE
+    )
+
+    # Padrão 3: ![alt](media/image.png) ou ![alt](image.png)
+    def replace_markdown_img(m):
+        nonlocal contador
+        contador += 1
+        alt = m.group(1) or ''
+        return f'[IMG-{contador:02d} alt="{alt}"]'
+
+    texto = re.sub(
+        r'!\[([^\]]*)\]\([^)]+\)',
+        replace_markdown_img,
+        texto
+    )
+
+    # Salvar se houve mudança
+    if texto != original:
+        md_path.write_text(texto, encoding="utf-8")
+        return {"ok": True, "qtd_imagens_normalizadas": contador}
+
+    return {"ok": True, "qtd_imagens_normalizadas": 0}
 
 
 def processar(codigo, disciplina, numero_aula, word_path=None, pdf_path=None,
@@ -78,6 +152,12 @@ def processar(codigo, disciplina, numero_aula, word_path=None, pdf_path=None,
     else:
         resultado["texto"] = {"ok": False, "aviso": "Nenhum arquivo fornecido"}
 
+    # 3b. Normalizar referências de imagens para marcadores [IMG-NN]
+    if resultado["texto"].get("ok") and resultado["texto"].get("markdown"):
+        md_path = Path(resultado["texto"]["markdown"])
+        r_norm = normalizar_marcadores_imagens(md_path)
+        resultado["texto"]["imagens_normalizadas"] = r_norm
+
     # 4. Imagens do PDF (se veio PDF)
     if pdf_path:
         ext = cfg["extracao"]
@@ -93,6 +173,12 @@ def processar(codigo, disciplina, numero_aula, word_path=None, pdf_path=None,
 
     # 5. log
     logger.registrar(pasta_aula, resultado)
+
+    # Consolidar contagem de imagens
+    qtd_word = resultado.get("texto", {}).get("qtd_imagens_word", 0)
+    qtd_pdf = resultado.get("imagens", {}).get("qtd_imagens_pdf", 0)
+    qtd_normalizadas = resultado.get("texto", {}).get("imagens_normalizadas", {}).get("qtd_imagens_normalizadas", 0)
+    resultado["total_imagens_referenciadas"] = qtd_normalizadas
 
     resultado["ok"] = True
     return resultado
@@ -123,6 +209,10 @@ def main():
                 print(f"🖼  Imagens Word: {r['texto'].get('qtd_imagens_word', 0)}")
             elif fonte == "pdf":
                 print(f"📄 Páginas PDF: {r['texto'].get('qtd_paginas', 0)}")
+            # Imagens normalizadas (marcadores [IMG-NN])
+            qtd_norm = r["texto"].get("imagens_normalizadas", {}).get("qtd_imagens_normalizadas", 0)
+            if qtd_norm > 0:
+                print(f"🏷️  Marcadores [IMG-NN] criados: {qtd_norm}")
         if r.get("imagens", {}).get("ok"):
             print(f"🖼  Imagens PDF extraídas: {r['imagens']['qtd_imagens_pdf']} "
                   f"(descartadas: {r['imagens']['descartadas_pequenas']})")

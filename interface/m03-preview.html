@@ -533,9 +533,10 @@
         const resM02 = await fetch(`/api/score?curso=${encodeURIComponent(curso)}&codigo=${encodeURIComponent(codigo)}&disciplina=${encodeURIComponent(disciplina)}&aula=${encodeURIComponent(aula)}`);
         const m02 = await resM02.json();
 
-        if (m02.status === 'avaliada' && ['APROVAR', 'APROVAR COM RESSALVA', 'INTERVENCAO_EDITORIAL'].includes(m02.score?.veredito?.rotulo)) {
+        const veredito = m02.score?.veredito || '';
+        if (m02.status === 'avaliada' && ['APROVAR', 'APROVAR COM RESSALVA', 'INTERVENCAO_EDITORIAL'].includes(veredito)) {
           statusM02.className = 'status-tag tag-concluido';
-          statusM02.textContent = '✅ ' + (m02.score?.veredito?.rotulo || 'Avaliado');
+          statusM02.textContent = '✅ ' + veredito;
           step2.classList.add('completed');
           // M02 ok: botão com texto padrão
           btnStart.textContent = '▶ Criar Texto Display (M03)';

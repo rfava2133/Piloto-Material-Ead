@@ -37,9 +37,9 @@ Ativada ao pedir "reescreve para display" ou "M03 texto display".
 - **NUNCA remover marcadores do original**
 
 ### Marcadores de vídeo (M03 SUGERE posição)
-- `[VIDEO-01]`... após o H2 onde o conceito mais se beneficia de explicação audiovisual
+- `[VIDEO-01]` — após o H2 onde o conceito mais se beneficia de explicação audiovisual
 - Critério: prefira posições após conceito abstrato ou processo sequencial
-- Sugerir de 3 a 6 por aula
+- **Sugerir exatamente 1 vídeo por aula**
 
 ### Glossário
 - 5–8 termos técnicos ao final
