@@ -664,7 +664,7 @@ LEMBRE: mínimo de {minimo_palavras} palavras na versão final.
             "volume_original": palavras_orig,
             "volume_display": palavras_display,
             "proporcao_pct": round(palavras_display / palavras_orig * 100, 1) if palavras_orig else 0,
-            "marcadores_img": re.findall(r'\[IMG-\d+\]', texto_display),
+            "marcadores_img": re.findall(r'\[IMG-\d+(?:\s+alt="[^"]*")?\]', texto_display),
             "marcadores_video": re.findall(r'\[VIDEO-\d+\]', texto_display),
             "glossario": "## Glossário" in texto_display,
         })

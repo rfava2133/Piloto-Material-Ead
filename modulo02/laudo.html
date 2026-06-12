@@ -897,7 +897,39 @@
         </div>
       </section>
 
-      <!-- 5. FUNDAÇÕES -->
+      <!-- 5. TABELA AUDITÁVEL (movido para abaixo dos indicadores) -->
+      <section class="tabela-section">
+        <h2>Tabela Auditável</h2>
+        <div class="tabela-legenda" aria-label="Legenda de faixas por nota">
+          <span class="legenda-item nota-solido">Sólido (≥ 8,0) — aprovar</span>
+          <span class="legenda-item nota-ressalva">Ressalva (6,5–7,9) — ajustes pontuais</span>
+          <span class="legenda-item nota-intervencao">Intervenção (5,0–6,4) — corrigir</span>
+          <span class="legenda-item nota-deficiente">Deficiente (&lt; 5,0) — recriar base</span>
+        </div>
+        <table class="tabela-auditavel">
+          <thead>
+            <tr>
+              <th>Indicador</th>
+              <th>Peso</th>
+              <th>Nota</th>
+              <th>Contribuição</th>
+            </tr>
+          </thead>
+          <tbody id="tabela-corpo">
+            <!-- Preenchido via JS -->
+          </tbody>
+          <tfoot>
+            <tr>
+              <td>TOTAL</td>
+              <td>100%</td>
+              <td>—</td>
+              <td id="tabela-total">6,30</td>
+            </tr>
+          </tfoot>
+        </table>
+      </section>
+
+      <!-- 6. FUNDAÇÕES -->
       <section class="fundamentos-section">
         <h2>Verificação de Fundamentos</h2>
 
@@ -933,38 +965,6 @@
             Um erro de substância não se compensa com qualidade de forma.
           </div>
         </div>
-      </section>
-
-      <!-- 6. TABELA AUDITÁVEL -->
-      <section class="tabela-section">
-        <h2>Tabela Auditável</h2>
-        <div class="tabela-legenda" aria-label="Legenda de faixas por nota">
-          <span class="legenda-item nota-solido">Sólido (≥ 8,0) — aprovar</span>
-          <span class="legenda-item nota-ressalva">Ressalva (6,5–7,9) — ajustes pontuais</span>
-          <span class="legenda-item nota-intervencao">Intervenção (5,0–6,4) — corrigir</span>
-          <span class="legenda-item nota-deficiente">Deficiente (&lt; 5,0) — recriar base</span>
-        </div>
-        <table class="tabela-auditavel">
-          <thead>
-            <tr>
-              <th>Indicador</th>
-              <th>Peso</th>
-              <th>Nota</th>
-              <th>Contribuição</th>
-            </tr>
-          </thead>
-          <tbody id="tabela-corpo">
-            <!-- Preenchido via JS -->
-          </tbody>
-          <tfoot>
-            <tr>
-              <td>TOTAL</td>
-              <td>100%</td>
-              <td>—</td>
-              <td id="tabela-total">6,30</td>
-            </tr>
-          </tfoot>
-        </table>
       </section>
 
       <!-- 7. RODAPÉ -->
@@ -1223,18 +1223,31 @@
           const st = ROTULO_FONTE[fonte.status] || ROTULO_FONTE.citada;
           const trunc = (s, n) => s && s.length > n ? s.substring(0, n) + '…' : (s || '');
           let corpo;
+          let bibliografia = '';
+
           if ((fonte.autor || '').length > 50) {
             // Trecho extraído do corpo do texto — exibir como citação
             corpo = `<span style="font-style:italic; color:var(--ink-muted);">"${trunc(fonte.autor, 90)}"</span>`;
+            // Se houver referência bibliográfica completa, exibir abaixo
+            if (fonte.referencia_completa) {
+              bibliografia = `<br><span style="font-size:12px; color:var(--ink-muted); font-style:italic;">📚 ${fonte.referencia_completa}</span>`;
+            }
           } else {
             // Entrada bibliográfica estruturada
             const ano = fonte.ano ? ` (${fonte.ano})` : '';
-            corpo = `<strong>${fonte.autor}</strong>${ano}${fonte.obra && fonte.obra !== 'Citação no corpo do texto' ? ' — ' + trunc(fonte.obra, 80) : ''}`;
+            const obraParte = fonte.obra && fonte.obra !== 'Citação no corpo do texto' ? ` — ${trunc(fonte.obra, 80)}` : '';
+            corpo = `<strong>${fonte.autor}</strong>${ano}${obraParte}`;
+            // Se houver URL ou DOI, exibir abaixo
+            if (fonte.url) {
+              bibliografia = `<br><span style="font-size:12px; color:var(--ink-muted);">🔗 <a href="${fonte.url}" target="_blank" style="color:var(--unigran-blue);">${trunc(fonte.url, 60)}</a></span>`;
+            } else if (fonte.doi) {
+              bibliografia = `<br><span style="font-size:12px; color:var(--ink-muted);">DOI: ${fonte.doi}</span>`;
+            }
           }
           fontesContainer.innerHTML += `
             <li>
               <span class="fonte-chip ${st.cls}">${st.icon} ${st.label}</span>
-              <span class="fonte-texto">${corpo}</span>
+              <span class="fonte-texto">${corpo}${bibliografia}</span>
             </li>
           `;
         }

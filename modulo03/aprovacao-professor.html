@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aprovação do Professor — UNIGRAN EAD</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Literata:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #1A1A1A;
+      --ink-strong: #0D1117;
+      --ink-muted: #6B7280;
+      --line: #E5E2DC;
+      --paper: #FFFFFF;
+      --paper-warm: #FBFAF7;
+      --unigran-blue: #0046A8;
+      --unigran-yellow: #FFC629;
+      --font-ui: 'Inter', sans-serif;
+      --font-corpo: 'Literata', serif;
+      --topbar-h: 52px;
+      --radius: 2px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      background: var(--paper-warm);
+      color: var(--ink);
+      font-family: var(--font-corpo);
+      line-height: 1.62;
+    }
+
+    /* TOPBAR */
+    .topbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: var(--topbar-h);
+      background: var(--paper-warm);
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      gap: 24px;
+      z-index: 100;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-ui);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--unigran-blue);
+      text-decoration: none;
+    }
+
+    .brand-dot {
+      width: 8px; height: 8px;
+      background: var(--unigran-yellow);
+      display: inline-block;
+    }
+
+    .topbar-crumb {
+      font-family: var(--font-ui);
+      font-size: 12px;
+      color: var(--ink-muted);
+      flex: 1;
+    }
+
+    .topbar-controls button {
+      font-family: var(--font-ui);
+      font-size: 11px;
+      font-weight: 500;
+      padding: 6px 12px;
+      margin-left: 8px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      color: var(--ink-muted);
+      cursor: pointer;
+    }
+
+    .topbar-controls button:hover {
+      background: var(--line);
+      color: var(--ink-strong);
+    }
+
+    .topbar-controls button.primary {
+      background: var(--unigran-blue);
+      border-color: var(--unigran-blue);
+      color: white;
+    }
+
+    .topbar-controls button.primary:hover {
+      background: #003680;
+    }
+
+    /* CONTAINER */
+    .main-container {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: calc(var(--topbar-h) + 48px) 24px 80px;
+    }
+
+    /* HEADER */
+    .page-header {
+      margin-bottom: 32px;
+      padding-bottom: 20px;
+      border-bottom: 1.5px solid var(--ink-strong);
+    }
+
+    .eyebrow {
+      font-family: var(--font-ui);
+      font-size: 9px;
+      font-weight: 500;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--unigran-blue);
+      margin-bottom: 10px;
+    }
+
+    .page-title {
+      font-family: var(--font-ui);
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--ink-strong);
+    }
+
+    .page-subtitle {
+      font-family: var(--font-corpo);
+      font-size: 14px;
+      color: var(--ink-muted);
+      margin-top: 6px;
+    }
+
+    /* CONTEÚDO */
+    .conteudo {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 40px;
+      margin-bottom: 32px;
+    }
+
+    .conteudo h1 {
+      font-family: var(--font-ui);
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 24px;
+      color: var(--ink-strong);
+    }
+
+    .conteudo h2 {
+      font-family: var(--font-ui);
+      font-size: 20px;
+      font-weight: 600;
+      margin: 32px 0 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+      color: var(--ink-strong);
+    }
+
+    .conteudo h3 {
+      font-family: var(--font-ui);
+      font-size: 17px;
+      font-weight: 600;
+      margin: 24px 0 12px;
+      color: var(--ink-strong);
+    }
+
+    .conteudo p {
+      font-size: 14.5px;
+      line-height: 1.62;
+      margin-bottom: 16px;
+    }
+
+    .conteudo ul, .conteudo ol {
+      margin: 16px 0;
+      padding-left: 24px;
+    }
+
+    .conteudo li {
+      font-size: 14.5px;
+      line-height: 1.62;
+      margin-bottom: 8px;
+    }
+
+    .conteudo blockquote {
+      border-left: 3px solid var(--unigran-blue);
+      padding-left: 16px;
+      margin: 24px 0;
+      color: var(--ink-muted);
+      font-style: italic;
+    }
+
+    /* Callouts */
+    .callout {
+      border-left: 3px solid;
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin: 24px 0;
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .callout.conceito-chave {
+      background: #EFF6FF;
+      border-color: #BFDBFE;
+      color: #1D4ED8;
+    }
+
+    .callout.atencao {
+      background: #FFFBEB;
+      border-color: #FDE68A;
+      color: #CA8A04;
+    }
+
+    .callout.resumo {
+      background: #F0FDF4;
+      border-color: #BBF7D0;
+      color: #15803D;
+    }
+
+    .callout.exercicio {
+      background: #F3E8FF;
+      border-color: #E9D5FF;
+      color: #7E22CE;
+    }
+
+    .callout.dica {
+      background: #DCFCE7;
+      border-color: #86EFAC;
+      color: #15803D;
+    }
+
+    .callout.leitura {
+      background: #F9FAFB;
+      border-color: #E5E7EB;
+      color: #4B5563;
+    }
+
+    .callout-title {
+      font-family: var(--font-ui);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Placeholders */
+    .placeholder-img,
+    .placeholder-video {
+      background: var(--paper-warm);
+      border: 2px dashed var(--line);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin: 24px 0;
+      text-align: center;
+    }
+
+    .placeholder-img {
+      min-height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .placeholder-video {
+      min-height: 80px;
+    }
+
+    .placeholder-label {
+      font-family: var(--font-ui);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+    }
+
+    .placeholder-desc {
+      font-family: var(--font-ui);
+      font-size: 12px;
+      color: var(--ink-muted);
+      font-style: italic;
+    }
+
+    /* Glossário */
+    .glossario-section {
+      margin-top: 48px;
+      padding-top: 32px;
+      border-top: 2px solid var(--ink-strong);
+    }
+
+    .glossario-section h3 {
+      font-family: var(--font-ui);
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
+    .glossario-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+    }
+
+    .glossario-termo {
+      background: var(--paper-warm);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 12px;
+      font-size: 13px;
+    }
+
+    .glossario-termo strong {
+      display: block;
+      font-family: var(--font-ui);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--unigran-blue);
+      margin-bottom: 4px;
+    }
+
+    /* RODAPÉ DE APROVAÇÃO */
+    .rodape-aprovacao {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--paper-warm);
+      border-top: 1px solid var(--line);
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      z-index: 50;
+    }
+
+    .rodape-status {
+      font-family: var(--font-ui);
+      font-size: 13px;
+      color: var(--ink);
+    }
+
+    .rodape-status strong {
+      font-weight: 600;
+    }
+
+    .btn {
+      font-family: var(--font-ui);
+      font-size: 13px;
+      font-weight: 500;
+      padding: 10px 20px;
+      border-radius: var(--radius);
+      border: 1.5px solid;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .btn-secondary {
+      background: var(--paper);
+      border-color: var(--line);
+      color: var(--ink-muted);
+    }
+
+    .btn-secondary:hover {
+      background: var(--line);
+      color: var(--ink-strong);
+    }
+
+    .btn-primary {
+      background: var(--unigran-blue);
+      border-color: var(--unigran-blue);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #003680;
+    }
+
+    /* IMPRESSÃO */
+    @media print {
+      .topbar, .rodape-aprovacao { display: none; }
+      .main-container { padding: 24px; max-width: none; }
+      .conteudo { border: none; padding: 0; }
+    }
+  </style>
+</head>
+<body>
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <a href="#" class="brand">
+      <span class="brand-dot"></span>
+      UNIGRAN EAD
+    </a>
+    <div class="topbar-crumb">
+      Aprovação do Professor · <strong id="topbar-aula">—</strong>
+    </div>
+    <div class="topbar-controls">
+      <button onclick="window.print()">🖨️ Imprimir</button>
+      <button onclick="window.close()">✕ Fechar</button>
+    </div>
+  </header>
+
+  <!-- CONTAINER -->
+  <main class="main-container">
+    <header class="page-header">
+      <div class="eyebrow">Versão para Aprovação</div>
+      <h1 class="page-title" id="page-title">Carregando...</h1>
+      <p class="page-subtitle" id="page-subtitle">Texto display formatado para revisão do professor.</p>
+    </header>
+
+    <div id="conteudo-area">
+      <!-- Conteúdo carregado via JS -->
+    </div>
+  </main>
+
+  <!-- RODAPÉ -->
+  <footer class="rodape-aprovacao" style="display: none;">
+    <div class="rodape-status">
+      <strong>Instruções:</strong> Revise o conteúdo e use "Imprimir" para gerar PDF ou imprimir.
+    </div>
+    <button class="btn btn-primary" onclick="window.print()">🖨️ Imprimir / Salvar PDF</button>
+  </footer>
+
+  <script>
+    // Carregar da URL
+    async function carregarDaURL() {
+      const params = new URLSearchParams(location.search);
+      const curso = params.get('curso') || '';
+      const codigo = params.get('codigo') || '';
+      const disciplina = params.get('disciplina') || '';
+      const aula = params.get('aula') || '';
+
+      if (!codigo || !aula) {
+        document.getElementById('conteudo-area').innerHTML = `
+          <div style="padding: 40px; text-align: center; color: var(--ink-muted);">
+            <p><strong>Parâmetros inválidos.</strong></p>
+            <p>Verifique a URL e tente novamente.</p>
+          </div>
+        `;
+        return;
+      }
+
+      // Atualizar header
+      const aulaId = `${codigo}-${aula.padStart(2, '0')}`;
+      document.getElementById('topbar-aula').textContent = aulaId;
+      document.getElementById('page-title').textContent = `Aula ${aula} — ${disciplina}`;
+      document.getElementById('page-subtitle').textContent = `${curso} · Texto formatado para aprovação`;
+
+      try {
+        const res = await fetch(`/api/m03-check?curso=${encodeURIComponent(curso)}&codigo=${encodeURIComponent(codigo)}&disciplina=${encodeURIComponent(disciplina)}&aula=${encodeURIComponent(aula)}`);
+        const dados = await res.json();
+
+        if (!dados.ok || !dados.markdown) {
+          document.getElementById('conteudo-area').innerHTML = `
+            <div style="padding: 40px; text-align: center; color: var(--ink-muted);">
+              <p><strong>Texto display não encontrado.</strong></p>
+              <p>O Módulo 03 ainda não foi executado para esta aula.</p>
+            </div>
+          `;
+          return;
+        }
+
+        renderizarConteudo(dados.markdown);
+      } catch (err) {
+        document.getElementById('conteudo-area').innerHTML = `
+          <div style="padding: 40px; text-align: center; color: var(--ink-muted);">
+            <p><strong>Erro ao carregar conteúdo.</strong></p>
+            <p>${err.message}</p>
+          </div>
+        `;
+      }
+    }
+
+    function renderizarConteudo(markdown) {
+      let html = markdown;
+
+      // Callouts
+      const icones = {
+        'conceito-chave': '💡',
+        'atencao': '⚠️',
+        'resumo': '📋',
+        'exercicio': '✏️',
+        'dica': '💡',
+        'leitura': '📖'
+      };
+      html = html.replace(/:::([\w-]+)\n([\s\S]*?):::/g, function(match, tipo, conteudo) {
+        const icon = icones[tipo] || '📌';
+        return `<div class="callout ${tipo}">
+          <div class="callout-title">${icon} ${tipo.replace('-', ' ')}</div>
+          ${renderizarMarkdown(conteudo.trim())}
+        </div>`;
+      });
+
+      // Placeholders de imagem
+      html = html.replace(/\[IMG-(\d+)(?:\s+alt="([^"]*)")?\]/g, function(match, num, alt) {
+        return `<div class="placeholder-img">
+          <span class="placeholder-label">[IMG-${num}]</span>
+          ${alt ? `<span class="placeholder-desc">${alt}</span>` : ''}
+        </div>`;
+      });
+
+      // Placeholders de vídeo
+      html = html.replace(/\[VIDEO-(\d+)\]/g, function(match, num) {
+        return `<div class="placeholder-video">
+          <span class="placeholder-label">🎬 [VIDEO-${num}]</span>
+          <span class="placeholder-desc">Sugestão de micro-roteiro</span>
+        </div>`;
+      });
+
+      // Títulos
+      html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>');
+      html = html.replace(/^## (.*$)/gim, '<h2>$1</h2>');
+      html = html.replace(/^# (.*$)/gim, '<h1>$1</h1>');
+
+      // Negrito e itálico
+      html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+      html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+      // Listas
+      html = html.replace(/^\- (.*$)/gim, '<li>$1</li>');
+      html = html.replace(/^(<li>.*<\/li>)$/gim, '<ul>$1</ul>');
+
+      // Parágrafos
+      html = html.replace(/\n\n/g, '</p><p>');
+      html = '<p>' + html + '</p>';
+
+      // Limpeza
+      html = html.replace(/<p><\/p>/g, '');
+      html = html.replace(/<p>(<h[123]>)/g, '$1');
+      html = html.replace(/(<\/h[123]>)<\/p>/g, '$1');
+      html = html.replace(/<p>(<ul>)/g, '$1');
+      html = html.replace(/(<\/ul>)<\/p>/g, '$1');
+      html = html.replace(/<p>(<div)/g, '$1');
+      html = html.replace(/(<\/div>)<\/p>/g, '$1');
+
+      document.getElementById('conteudo-area').innerHTML = `<div class="conteudo">${html}</div>`;
+      document.querySelector('.rodape-aprovacao').style.display = 'flex';
+    }
+
+    function renderizarMarkdown(md) {
+      let html = md;
+      html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+      html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+      html = html.replace(/\n/g, '<br>');
+      return html;
+    }
+
+    // Iniciar
+    carregarDaURL();
+  </script>
+</body>
+</html>

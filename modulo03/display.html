@@ -677,6 +677,7 @@
       Módulo 03 · Texto Display · <strong id="topbar-aula">—</strong>
     </div>
     <div class="topbar-controls">
+      <button onclick="abrirAprovacaoProfessor()"> Versão Professor</button>
       <button onclick="recarregarDisplay()">🔄 Recarregar</button>
       <button onclick="togglePainel()">📊 Painel</button>
     </div>
@@ -766,6 +767,12 @@
     let dadosValidacao = null;
     let textoDisplay = '';
     let textoOriginal = '';
+
+    // Abrir versão para aprovação do professor
+    function abrirAprovacaoProfessor() {
+      const params = new URLSearchParams(location.search);
+      window.open('/modulo03/aprovacao-professor.html?' + params.toString(), '_blank');
+    }
 
     // Carregamento automático via URL
     async function carregarDaURL() {
@@ -1025,8 +1032,13 @@
       if (dados.metricas) {
         document.getElementById('metrica-volume').textContent = dados.metricas.volume_display ?? '—';
         document.getElementById('metrica-proporcao').textContent = dados.metricas.proporcao_pct ? `${dados.metricas.proporcao_pct}%` : '—';
-        document.getElementById('metrica-imgs').textContent = dados.metricas.marcadores_img ?? '—';
-        document.getElementById('metrica-videos').textContent = dados.metricas.marcadores_video ?? '—';
+        // Imagens: pode ser número ou array
+        const imgs = dados.metricas.marcadores_img;
+        document.getElementById('metrica-imgs').textContent = Array.isArray(imgs) ? `${imgs.length} marcadores` : (imgs ?? '—');
+        // Vídeos: sugere 1 vídeo por aula para roteiros
+        const videos = dados.metricas.marcadores_video;
+        const videoCount = Array.isArray(videos) ? videos.length : (videos || 0);
+        document.getElementById('metrica-videos').textContent = `${videoCount} marcadores (${videoCount} roteiro${videoCount !== 1 ? 's' : ''} sugerido${videoCount !== 1 ? 's' : ''})`;
       }
 
       // Rodapé

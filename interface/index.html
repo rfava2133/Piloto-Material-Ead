@@ -602,8 +602,8 @@
     <!-- Indicador de Status da IA -->
     <div id="ia-status-indicator"
          style="display: flex; align-items: center; gap: 6px; padding: 4px 10px;
-                background: var(--paper); border: 1px solid var(--line);
-                border-radius: var(--radius); font-family: var(--font-ui);
+                background: #FFFFFF; border: 1px solid #E5E2DC;
+                border-radius: 2px; font-family: 'Inter', sans-serif;
                 font-size: 10px; font-weight: 600; margin-right: 8px;">
       <span id="ia-status-dot" style="width: 8px; height: 8px; border-radius: 50%; background: #ccc;"></span>
       <span id="ia-status-text">Verificando...</span>
@@ -997,8 +997,19 @@
         formData.append('documento', arquivoDocumento);
       }
 
+      // Conversa Inicial (aula 0) — pula M02 e M03, apenas extrai para conferência
+      const isConversaInicial = comboAula.value === '0';
+      if (isConversaInicial && modulo === 'analise') {
+        // Força apenas extração para Conversa Inicial
+        modulo = 'extrator';
+        formData.set('modulo', 'extrator');
+        alert('📝 Conversa Inicial detectada.\n\nEste material será apenas extraído para conferência, sem avaliação (M02) ou reescrita (M03).');
+      }
+
       if (comboAula.value === 'todas') {
         spinnerMensagem.textContent = 'Separando as aulas do arquivo único...';
+      } else if (isConversaInicial) {
+        spinnerMensagem.textContent = 'Extraindo Conversa Inicial para conferência...';
       } else {
         spinnerMensagem.textContent = modulo === 'analise'
           ? 'Enviando para análise de conteúdo...'
@@ -1037,18 +1048,29 @@
         } else if (modulo === 'analise' && resultado.redirect) {
           window.location.href = resultado.redirect;
         } else if (modulo === 'extrator') {
-          spinnerMensagem.textContent = 'Concluído! Redirecionando para avaliação...';
-          setTimeout(() => {
-            spinnerOverlay.style.display = 'none';
-            // Após M01, vai para M02 (laudo) para avaliação
-            const params = new URLSearchParams({
-              curso: comboCurso.value,
-              codigo: gerarCodigo(comboDisciplina.value),
-              disciplina: comboDisciplina.value,
-              aula: comboAula.value
-            });
-            window.location.href = '/modulo02/laudo.html?' + params.toString();
-          }, 1000);
+          // Conversa Inicial não vai para M02 — fica na home
+          const isConversaInicial = comboAula.value === '0';
+          if (isConversaInicial) {
+            spinnerMensagem.textContent = 'Concluído! Conversa Inicial extraída para conferência.';
+            setTimeout(() => {
+              spinnerOverlay.style.display = 'none';
+              alert('✅ Conversa Inicial extraída com sucesso!\n\nO material está disponível em:\n' + resultado.pasta_aula + '\n\nPróximo passo: revisão direta do conteúdo (sem M02/M03).');
+              // Não redireciona para M02 — fica na home para novo upload
+            }, 1000);
+          } else {
+            spinnerMensagem.textContent = 'Concluído! Redirecionando para avaliação...';
+            setTimeout(() => {
+              spinnerOverlay.style.display = 'none';
+              // Após M01, vai para M02 (laudo) para avaliação
+              const params = new URLSearchParams({
+                curso: comboCurso.value,
+                codigo: gerarCodigo(comboDisciplina.value),
+                disciplina: comboDisciplina.value,
+                aula: comboAula.value
+              });
+              window.location.href = '/modulo02/laudo.html?' + params.toString();
+            }, 1000);
+          }
         }
       } catch (err) {
         spinnerOverlay.style.display = 'none';
