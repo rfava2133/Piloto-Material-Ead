@@ -1088,6 +1088,8 @@
       if (!params.get('aula') || !params.get('codigo')) return;
 
       try {
+        // Adiciona timestamp para evitar cache
+        params.set('_t', Date.now().toString());
         const res = await fetch('/api/score?' + params.toString());
         const dados = await res.json();
 
