@@ -8,8 +8,8 @@
 ## Sessão atual
 
 **Data:** 2026-06-11
-**Branch:** `main`
-**Último commit:** ver `git log`
+**Branch:** `main` — 8 commits à frente do origin
+**Commits desta sessão:** `46e63de` → `dfa6d7a` (ver `git log --oneline -8`)
 
 ---
 
@@ -34,59 +34,84 @@
 - `m03-preview.html`: `actionBar` nunca era exibida — faltava `style.display = 'flex'` após M01 ok
 - Com M02 pendente: botão âmbar com aviso; com M02 ok: botão azul
 
-### 6. Fix M03 — chamada direta à API Anthropic (sem terminal) ✅
-- `servidor.py`: nova função `_executar_m03_via_api()` — chama `anthropic.Anthropic().messages.create(model="claude-sonnet-4-6")` com prompt do SKILL.md + voz-unigran.md; grava `texto-display.md` + `display_meta.json`; retorna `{"ok": True, "markdown": "..."}`
-- `interface/m03-preview.html`: `iniciarM03()` reescrita — ao receber `markdown` no response, renderiza diretamente (sem painel de terminal); botão muda para "✏️ Revisar texto"
-- Função `copiarComando()` removida (obsoleta)
+### 6. M03 — implementação sem terminal ✅ PRINCIPAL ENTREGA DA SESSÃO
+- `servidor.py`: nova função `_executar_m03_via_api()` chama SDK Anthropic diretamente
+  - Lê `skills/texto-display/SKILL.md` + `docs/voz-unigran.md` como contexto
+  - Prompt inclui contagem de palavras do original e mínimo obrigatório (80%)
+  - Saída estruturada com tags `<TEXTO_DISPLAY>` e `<DISPLAY_META>`
+  - Grava `03_reformulado/texto-display.md` + `display_meta.json`
+  - Retorna `{"ok": True, "markdown": "..."}`
+- `servidor.py`: carrega `ANTHROPIC_API_KEY` de `.env` automaticamente ao subir
+- `interface/m03-preview.html`: `iniciarM03()` renderiza markdown direto (sem terminal)
+  - Botão movido para o topo do conteúdo
+  - `verificarM03()` extraída como função independente com spinner e feedback
+- `modulo03/validador.py`: regex `:::([\w-]+)` para capturar callouts com hífen (`conceito-chave`)
+- `modulo03/display.html`: `carregarDaURL()` usa `/api/m03-check` (rotas inexistentes removidas)
+  - Callout regex corrigido com `[\w-]+`
+  - Palavras proibidas com word boundary `\b` (evita falso positivo em "unidade", "uniforme")
+- `modulo02/laudo.html`:
+  - A2: trechos de corpo (autor > 50 chars) exibidos como itálico, não como autor bibliográfico
+  - Truncagem: autor ≤ 80 chars, obra ≤ 70 chars para entradas estruturadas
+
+### 7. Teste de integração M03 ✅
+- Resultado: 3651 palavras, **80.2%** volume, 6 vídeos, 7 imagens, glossário ✅
+- Validação `validador.py`: **APROVADA**
+- Tela `display.html`: carrega direto via URL, painel lateral com métricas, botão Aprovar ativo
 
 ---
 
-## Pendências críticas (próxima sessão obrigatória)
+## Pendências críticas
 
-*Nenhuma — P1 resolvida nesta sessão.*
+*Nenhuma.*
 
 ---
 
 ## Pendências conhecidas (não críticas)
 
 ### P2 — Sumário do PDF vaza no markdown
-O intervalo de páginas pode incluir a página de sumário no início da Aula 01. O markdown começa com o final do texto da Conversa Inicial antes do `**AULA 1**`. Para resolver: excluir explicitamente as páginas de sumário do intervalo de qualquer aula em `02-separar-aulas.py`.
+O intervalo de páginas pode incluir a página de sumário no início da Aula 01. Para resolver: excluir explicitamente as páginas de sumário do intervalo em `02-separar-aulas.py`.
 
 ### P3 — PDF multi-aula enviado como aula individual não é detectado
 Quando o usuário sobe o livro inteiro selecionando "Aula 1" (não "Todas"), o extrator não avisa nem separa. Para resolver: detectar PDF multi-aula no fluxo individual e redirecionar para o separador.
+
+### P4 — `display.html` usa validação inline (cliente), não a do servidor
+A validação exibida no painel lateral é feita em JS no browser. Poderia buscar o resultado do `validador.py` via API para consistência. Não é crítico — o resultado é equivalente.
 
 ---
 
 ## Próximos passos sugeridos (em ordem)
 
-1. ~~**🔴 CRÍTICO:** Implementar M03 sem terminal~~ ✅ **CONCLUÍDO**
-2. **Comprar créditos Anthropic** (console.anthropic.com → Plans & Billing) — código pronto, saldo zerado bloqueia o teste
-3. Testar fluxo completo end-to-end: upload → M01 → M02 → M03 tudo na tela
+1. ~~**M03 sem terminal**~~ ✅ **CONCLUÍDO**
+2. ~~**Testar fluxo end-to-end**~~ ✅ **CONCLUÍDO**
 3. Resolver P2 (sumário vazando no markdown)
-4. M04–M08: ainda pendentes
+4. **M04 — PDF Full** (Puppeteer): próximo na fila
+5. M05–M08: pendentes
 
 ---
 
-## Teste de integração M03 (2026-06-11)
+## Custo de API (referência)
 
-- `.env` com `ANTHROPIC_API_KEY` criado na raiz do projeto ✅
-- `servidor.py` carrega `.env` automaticamente ao subir ✅
-- `pip install anthropic` executado ✅
-- Rota `/api/m03-executar` chama SDK corretamente ✅
-- Autenticação aceita pela API ✅
-- **Bloqueio:** `credit balance too low` — conta sem saldo
-- **Próxima ação:** adicionar créditos em console.anthropic.com → testar novamente
+| Módulo | Modelo | Custo por aula | Tokens (in/out) |
+|--------|--------|---------------|-----------------|
+| M02 — Analista | claude-opus-4-7 | ~USD 0.08 | ~3k / ~1k |
+| M03 — Texto Display | claude-sonnet-4-6 | ~USD 0.19 | ~7.5k / ~5k |
+
+Escala: 1.200 disciplinas × 8 aulas = 9.600 execuções × USD 0.19 = **~USD 1.820 só M03**
 
 ---
 
 ## Contexto crítico para o próximo agente
 
-- **Servidor rodando em `:5050`** — `python3 servidor.py` (porta 5000 ocupada pelo AirPlay do macOS)
-- **Código gerado automaticamente** pelo front-end: `gerarCodigo(disciplina)` = primeiras 3 letras sem acento. "Fundamentos de Administração" → `FUN` (não `ADM`)
-- **Score existe** em `cursos/administracao/FUN-fundamentos-de-administracao/aulas/01/03_avaliacao/score_v01.json` — gerado por análise heurística (fallback), não pelo Agente E completo
-- **PDF de testes:** `testes/adm_fund_aula01.pdf` — apostila UNIGRAN com CI (p.6) + Aula 01 (p.7–23)
-- **M02 laudo** funciona — acessível via `/modulo02/laudo.html?curso=Administração&codigo=FUN&disciplina=Fundamentos+de+Administração&aula=1`
-- **M03 preview** acessível via `/m03-preview?curso=Administração&codigo=FUN&disciplina=Fundamentos+de+Administração&aula=1`
-- **Usuário-alvo:** coordenadores pedagógicos sem conhecimento técnico — ZERO tolerância a terminal, CLI ou comandos manuais
-- **Modelo M03:** `claude-sonnet-4-6` (Agente A)
-- **Chave API:** usar `ANTHROPIC_API_KEY` do ambiente (já configurada no servidor)
+- **Servidor:** `python3 servidor.py` → `http://127.0.0.1:5050` (porta 5000 = AirPlay macOS)
+- **Chave API:** `ANTHROPIC_API_KEY` em `.env` na raiz do projeto (carregada automaticamente)
+- **SDK instalado:** `pip install anthropic` já executado
+- **Código gerado:** `gerarCodigo(disciplina)` = primeiras 3 letras sem acento → "Fundamentos de Administração" → `FUN`
+- **Material de teste:** `testes/adm_fund_aula01.pdf` — apostila UNIGRAN com CI (p.6) + Aula 01 (p.7–23)
+- **Score de teste:** `cursos/administracao/FUN-fundamentos-de-administracao/aulas/01/03_avaliacao/score_v01.json` — heurístico (fallback), não Agente E completo
+- **Texto Display gerado:** `cursos/administracao/FUN-fundamentos-de-administracao/aulas/01/03_reformulado/texto-display.md`
+- **URLs de teste:**
+  - Hub: `http://127.0.0.1:5050`
+  - Laudo M02: `/modulo02/laudo.html?curso=Administração&codigo=FUN&disciplina=Fundamentos+de+Administração&aula=1`
+  - M03 Preview: `/m03-preview?curso=Administração&codigo=FUN&disciplina=Fundamentos+de+Administração&aula=1`
+  - Display M03: `/modulo03/display.html?curso=Administração&codigo=FUN&disciplina=Fundamentos+de+Administração&aula=1`
+- **Usuário-alvo:** coordenadores pedagógicos — ZERO tolerância a terminal ou CLI
