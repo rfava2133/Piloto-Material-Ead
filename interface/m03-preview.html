@@ -675,7 +675,7 @@
     }
 
     async function iniciarM03() {
-      spinnerMensagem.textContent = 'Preparando ambiente M03...';
+      spinnerMensagem.textContent = 'Criando Texto Display...';
       spinnerOverlay.style.display = 'flex';
 
       try {
@@ -696,31 +696,39 @@
           return;
         }
 
-        // Sucesso - mostrar prompt e instruções
+        // Sucesso - mostrar painel com instrução inline
         spinnerOverlay.style.display = 'none';
 
         const cmd = `claude /texto-display "${resultado.detalhes.prompt_path}"`;
 
-        if (confirm(
-          '✅ Ambiente M03 preparado!\n\n' +
-          '📄 Prompt gerado em: ' + resultado.detalhes.prompt_path + '\n\n' +
-          '📝 INSTRUÇÕES:\n' +
-          '1. Abra o terminal\n' +
-          '2. Execute: ' + cmd + '\n' +
-          '3. Aguarde a geração dos arquivos\n' +
-          '4. Clique em OK para recarregar e verificar\n\n' +
-          'Deseja abrir o terminal agora?'
-        )) {
-          // Tentar abrir terminal (funciona em alguns sistemas)
-          window.open('terminal://');
-        }
+        contentArea.innerHTML = `
+          <div class="status-card" style="border-color: var(--unigran-blue); background: #EFF6FF;">
+            <p style="font-family:'Inter'; font-size:13px; font-weight:700; color:var(--unigran-blue); margin-bottom:16px;">
+              ✅ Prompt gerado — execute no terminal do Claude Code
+            </p>
+            <p style="font-family:'Inter'; font-size:12px; color:var(--ink-muted); margin-bottom:12px;">
+              Cole o comando abaixo no terminal onde o Claude Code está rodando:
+            </p>
+            <div style="display:flex; align-items:center; gap:8px; background:#fff;
+                        border:1px solid var(--line); border-radius:var(--radius); padding:12px 16px;">
+              <code id="cmd-box" style="font-family:'JetBrains Mono'; font-size:12px;
+                                        color:var(--ink-strong); flex:1; word-break:break-all;">${cmd}</code>
+              <button onclick="copiarComando()" style="flex-shrink:0; background:var(--unigran-blue);
+                      color:white; border:none; padding:6px 14px; border-radius:var(--radius);
+                      font-family:'Inter'; font-size:11px; font-weight:600; cursor:pointer;">
+                Copiar
+              </button>
+            </div>
+            <p style="font-family:'Inter'; font-size:11px; color:var(--ink-muted); margin-top:12px;">
+              Após a execução, clique em <strong>Verificar resultado</strong> abaixo.
+            </p>
+          </div>
+        `;
 
-        // Recarregar após alguns segundos para verificar se arquivos foram criados
-        setTimeout(() => {
-          if (confirm('Os arquivos foram gerados? Clique OK para verificar.')) {
-            window.location.reload();
-          }
-        }, 30000); // 30 segundos
+        // Troca botão para "Verificar resultado"
+        btnStart.textContent = '🔄 Verificar resultado';
+        btnStart.style.background = 'var(--unigran-blue)';
+        btnStart.onclick = () => window.location.reload();
 
       } catch (err) {
         spinnerOverlay.style.display = 'none';
@@ -744,6 +752,16 @@
         .replace(/[^a-z0-9]/g, '-')
         .replace(/-+/g, '-')
         .replace(/^-|-$/g, '');
+    }
+
+    function copiarComando() {
+      const cmd = document.getElementById('cmd-box').textContent;
+      navigator.clipboard.writeText(cmd).then(() => {
+        const btn = event.target;
+        btn.textContent = 'Copiado!';
+        btn.style.background = '#15803D';
+        setTimeout(() => { btn.textContent = 'Copiar'; btn.style.background = 'var(--unigran-blue)'; }, 2000);
+      });
     }
 
     // Iniciar
