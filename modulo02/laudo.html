@@ -1234,15 +1234,17 @@
             // Se houver referência bibliográfica completa, exibir abaixo
             if (fonte.referencia_completa) {
               bibliografia = `<br><span style="font-size:12px; color:var(--ink-muted); font-style:italic;">📚 ${fonte.referencia_completa}</span>`;
-            } else if (fonte.obra === 'Citação no corpo do texto' && referenciasBibliograficas.length > 0) {
-              // Buscar referência completa cruzando autor+ano
-              const sobrenome = (fonte.autor || '').split(' ')[0].toLowerCase();
-              const refCompleta = referenciasBibliograficas.find(
-                r => {
-                  const autorRef = (r.autor || r.citação || '').toLowerCase();
-                  return autorRef.includes(sobrenome) && r.ano === fonte.ano;
-                }
-              );
+            } else if (referenciasBibliograficas.length > 0) {
+              // Tentar encontrar referência completa por ano ou palavra-chave
+              const anoMatch = fonte.ano && referenciasBibliograficas.find(r => r.ano === fonte.ano);
+              const autorMatch = (() => {
+                const palavras = fonte.autor.toLowerCase().split(' ').filter(p => p.length > 3);
+                return referenciasBibliograficas.find(r =>
+                  palavras.some(p => (r.autor || '').toLowerCase().includes(p))
+                );
+              })();
+              const refCompleta = anoMatch || autorMatch;
+
               if (refCompleta) {
                 const obra = refCompleta.obra || refCompleta.titulo || '';
                 const ano = refCompleta.ano || fonte.ano;
