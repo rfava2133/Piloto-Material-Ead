@@ -510,8 +510,9 @@
           markdownOriginal = m01.markdown || '';
           step1.classList.add('completed');
 
-          // Mostrar markdown
+          // Mostrar markdown e liberar action bar
           mostrarMarkdownOriginal(m01.markdown, m01.caminho);
+          actionBar.style.display = 'flex';
         } else {
           statusM01.className = 'status-tag tag-pendente';
           statusM01.textContent = 'Pendente';
@@ -535,15 +536,27 @@
           statusM02.className = 'status-tag tag-concluido';
           statusM02.textContent = '✅ ' + (m02.score?.veredito?.rotulo || 'Avaliado');
           step2.classList.add('completed');
+          // M02 ok: botão com texto padrão
+          btnStart.textContent = '▶ Criar Texto Display (M03)';
         } else if (m02.status === 'aguardando_avaliacao') {
           statusM02.className = 'status-tag tag-pendente';
           statusM02.textContent = 'Aguardando';
+          // M02 pendente: botão disponível com aviso visual
+          btnStart.textContent = '▶ Criar Texto Display sem avaliação';
+          btnStart.style.background = '#92400E';
+          btnStart.title = 'M02 ainda não avaliou este material — você pode prosseguir mesmo assim';
         } else if (m02.status === 'erro_agente_e' || m02.status === 'score_invalido') {
           statusM02.className = 'status-tag tag-erro';
           statusM02.textContent = '❌ Erro M02';
+          btnStart.textContent = '▶ Criar Texto Display mesmo assim';
+          btnStart.style.background = '#92400E';
+          btnStart.title = 'Erro no M02 — prosseguindo sem avaliação';
         } else {
           statusM02.className = 'status-tag tag-pendente';
           statusM02.textContent = 'Pendente';
+          btnStart.textContent = '▶ Criar Texto Display sem avaliação';
+          btnStart.style.background = '#92400E';
+          btnStart.title = 'M02 não executado — você pode prosseguir mesmo assim';
         }
 
         // Verificar M03
@@ -557,7 +570,7 @@
           textoDisplay = m03.markdown || '';
           metaDisplay = m03.meta || null;
 
-          // Mostrar texto display
+          // Mostrar texto display e trocar botão para revisão
           mostrarTextoDisplay(m03.markdown, m03.meta, m03.caminho);
           btnStart.style.display = 'none';
           btnRevisar.style.display = 'inline-flex';
