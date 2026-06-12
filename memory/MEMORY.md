@@ -7,6 +7,7 @@
 - [M03 concluído — arquitetura e custo](projeto-m03-concluido.md) — SDK direto no servidor, ~R$1,10/aula, bugs de regex resolvidos
 - [Workflow ATUALIZAR](00-atualizar-workflow.md) — Padrão: atualizar memória + git push
 - [Correções 2026-06-12](correcoes-interface-2026-06-12.md) — A2 bibliografia, status M02, marcadores [IMG-NN], limite vídeos
+- [Correções Tarde 2026-06-12](correcoes-tarde-2026-06-12.md) — A2 busca simplificada, cache API, botão aprovação, métricas
 - [Status 2026-06-12 tarde](status-2026-06-12-tarde.md) — A2 fixado, imagens M01 implementado, vídeos aguarda re-execução
 
 ---
