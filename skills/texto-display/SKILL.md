@@ -101,4 +101,4 @@ Ativada ao pedir "reescreve para display" ou "M03 texto display".
 - [ ] Nenhuma palavra proibida ("vestibular", "a Uni", "Unicão", "estaremos")
 - [ ] Citações do original preservadas intactas
 - [ ] Callouts usados com critério (máx 2 por tópico)
-- [ ] 3–6 marcadores `[VIDEO-NN]` sugeridos
+- [ ] Exatamente 1 marcador `[VIDEO-01]` sugerido por aula

@@ -1,14 +1,21 @@
 # Memory Index
 
+## Correções Recentes (2026-06-12)
+
+- [Correção M02 — Skill + M03 vídeos](correcao-m02-skill-2026-06-12.md) — M02 usa skill `/analista-conteudo` (não API), M03: 1 vídeo/aula, imagens M01 contadas ✅
+- [Correção M02 — API direta (revertida)](correcao-m02-2026-06-12.md) — Versão com API Anthropic — REVERTIDA
+- [Correções Tarde 2026-06-12](correcoes-tarde-2026-06-12.md) — A2 busca simplificada, cache API, botão aprovação, métricas
+- [Correções 2026-06-12](correcoes-interface-2026-06-12.md) — A2 bibliografia, status M02, marcadores [IMG-NN], limite vídeos
+- [Status 2026-06-12 tarde](status-2026-06-12-tarde.md) — A2 fixado, imagens M01 implementado, vídeos aguarda re-execução
+
+## Documentação Permanente
+
 - [Alinhamento de documentação](alinhamento-docs-2026-06.md) — Decisões de consistência entre CLAUDE.md, README.md e AGENTS.md
 - [Pendências M01 — extrator/separador](projeto-pendencias-m01.md) — Sumário PDF vazando no markdown; PDF multi-aula enviado como aula única
 - [Feedback UX usuário final](feedback-ux-usuario-final.md) — Zero terminal/CLI; tudo via browser guiado
 - [Feedback tokens](feedback-tokens.md) — Informar estimativa de tokens ao final de cada resposta
 - [M03 concluído — arquitetura e custo](projeto-m03-concluido.md) — SDK direto no servidor, ~R$1,10/aula, bugs de regex resolvidos
 - [Workflow ATUALIZAR](00-atualizar-workflow.md) — Padrão: atualizar memória + git push
-- [Correções 2026-06-12](correcoes-interface-2026-06-12.md) — A2 bibliografia, status M02, marcadores [IMG-NN], limite vídeos
-- [Correções Tarde 2026-06-12](correcoes-tarde-2026-06-12.md) — A2 busca simplificada, cache API, botão aprovação, métricas
-- [Status 2026-06-12 tarde](status-2026-06-12-tarde.md) — A2 fixado, imagens M01 implementado, vídeos aguarda re-execução
 
 ---
 

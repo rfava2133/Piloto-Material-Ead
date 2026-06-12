@@ -16,10 +16,21 @@ def registrar(pasta_aula: Path, dados: dict) -> Path:
     if log_path.exists():
         with open(log_path, "r", encoding="utf-8") as f:
             historico = json.load(f)
+
+        # Corrige estrutura inválida (lista em vez de dicionário)
+        if isinstance(historico, list):
+            historico = {"aula": pasta_aula.name, "execucoes": []}
     else:
         historico = {"aula": pasta_aula.name, "execucoes": []}
 
     dados["timestamp"] = datetime.now().isoformat(timespec="seconds")
+
+    # Garante que "execucoes" é uma lista
+    if "execucoes" not in historico:
+        historico["execucoes"] = []
+    elif not isinstance(historico["execucoes"], list):
+        historico["execucoes"] = []
+
     historico["execucoes"].append(dados)
 
     with open(log_path, "w", encoding="utf-8") as f:

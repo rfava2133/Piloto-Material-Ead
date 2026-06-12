@@ -9,7 +9,18 @@
 
 **Data:** 2026-06-12
 **Branch:** `main` — limpo
-**Último commit:** `91397a2` — fix(laudo): timestamp na API para evitar cache
+**Último commit:** `9a1b920` — docs(memory): atualiza HANDOFF e cria correcoes-tarde-2026-06-12.md
+
+---
+
+## Correções Tardia (2026-06-12 14:50–15:30)
+
+| # | Correção | Arquivo | Descrição |
+|---|----------|---------|-----------|
+| 11 | **M02 — Reverter para skill** | `scripts/03-agente-e.py` | Revertido para commit `719b0df` — usa skill `/analista-conteudo`, não API direta |
+| 12 | **M03 — Limite vídeos** | `skills/texto-display/SKILL.md` | Corrigido: "exatamente 1 vídeo por aula" (linha 104) |
+| 13 | **Servidor — Contar imagens M01** | `servidor.py` | API `/api/m03-check` retorna `imagens_m01` |
+| 14 | **Servidor — Reverter** | `servidor.py` | Revertido para commit `719b0df` — remove `_executar_m02_via_api()` |
 
 ---
 

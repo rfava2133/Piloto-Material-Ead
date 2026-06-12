@@ -17,8 +17,8 @@ interativo + micro-roteiros de vídeo, com avaliação automática de qualidade.
 |--------|--------|--------|--------|---------------|
 | **M01 — Extrator** | — | determinístico | ✅ Implementado | Pandoc + PyMuPDF + marcadores [IMG-NN] |
 | **M01b — Separador** | — | determinístico | ✅ Implementado | Separa PDF multi-aula |
-| **M02 — Analista de Conteúdo** | Agente E | claude-opus-4-7 | ✅ Implementado | Avaliação + Relatório |
-| **M03 — Texto Display** | Agente A | claude-sonnet-4-6 | ✅ Implementado | API Anthropic direta |
+| **M02 — Analista de Conteúdo** | Agente E | claude-opus-4-7 | ✅ Implementado | Skill `/analista-conteudo` + `calculo.py` |
+| **M03 — Texto Display** | Agente A | claude-sonnet-4-6 | ✅ Implementado | API Anthropic direta (1 vídeo/aula) |
 | **M04 — PDF Full** | — | Puppeteer | 📋 Pendente | — |
 | **M05 — Micro-roteiros** | Agente B | claude-sonnet-4-6 | 📋 Pendente | — |
 | **M06 — Imagens** | Agente D | claude-haiku-4-5 | 📋 Pendente | — |
@@ -26,8 +26,9 @@ interativo + micro-roteiros de vídeo, com avaliação automática de qualidade.
 | **M08 — Montagem HTML** | — | determinístico | 📋 Pendente | — |
 
 > **Hub da esteira:** `python3 servidor.py` → `http://127.0.0.1:5050`
-> **Agente E:** skill `analista-conteudo` (Claude Code) grava `score_v01.json`; o servidor normaliza e recalcula via `calculo.py` antes de exibir o relatório.
+> **Agente E (M02):** skill `analista-conteudo` (Claude Code) grava `score_v01.json`; o servidor normaliza e recalcula via `calculo.py` antes de exibir o relatório.
 > **M03 sem terminal:** execução via API Anthropic direta (`_executar_m03_via_api()` no servidor) — nada de CLI para o usuário.
+> **Imagens M01:** contadas automaticamente no display (`04_imagens/antigas/`).
 
 > **Kaltura (separado):** o validador de links em `kaltura/` roda **à parte** da esteira — servidor próprio na porta `5070`, banco Supabase próprio. Documentação em [`kaltura/README.md`](kaltura/README.md).
 

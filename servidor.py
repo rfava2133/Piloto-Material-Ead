@@ -376,25 +376,19 @@ def api_score():
                 "arquivo": str(scores[-1]),
             }), 404
 
-        # Extrair referências bibliográficas completas do markdown (para cruzar com citações do corpo)
+        # Se o Agente E não preencheu bibliografia, extrai do markdown da aula (M01)
         a2 = score["fundamentos"].get("A2", {})
-        referencias_bibliograficas = ref_mod.extrair_referencias_pasta(pasta_aula, numero_aula=aula_num)
-
-        # Se não tem fontes verificadas, extrai do markdown
         if not a2.get("fontes_verificadas"):
-            if referencias_bibliograficas:
-                a2["fontes_verificadas"] = referencias_bibliograficas
+            fontes_md = ref_mod.extrair_referencias_pasta(pasta_aula, numero_aula=aula_num)
+            if fontes_md:
+                a2["fontes_verificadas"] = fontes_md
                 just = (a2.get("justificativa") or "").strip()
                 if just in ("Referências localizáveis.", "Verificado via skill analista-conteudo.", ""):
                     a2["justificativa"] = (
-                        f"{len(referencias_bibliograficas)} referência(s) citada(s) no material — "
+                        f"{len(fontes_md)} referência(s) citada(s) no material — "
                         "validação externa pendente (Agente E)."
                     )
                 score["fundamentos"]["A2"] = a2
-
-        # Adicionar referências_bibliograficas ao score (para o laudo cruzar dados)
-        if referencias_bibliograficas:
-            score["referencias_bibliograficas"] = referencias_bibliograficas
     except (json.JSONDecodeError, OSError, TypeError, ValueError) as e:
         return jsonify({
             "status": "score_invalido",
@@ -510,7 +504,8 @@ def api_m03_check():
     qtd_imagens_m01 = 0
     imagens_dir = pasta_aula / "04_imagens" / "antigas"
     if imagens_dir.exists():
-        qtd_imagens_m01 = len([f for f in imagens_dir.iterdir() if f.is_file() and f.suffix.lower() in ['.png', '.jpg', '.jpeg', '.gif', '.webp']])
+        qtd_imagens_m01 = len([f for f in imagens_dir.iterdir()
+                               if f.is_file() and f.suffix.lower() in ['.png', '.jpg', '.jpeg', '.gif', '.webp']])
 
     return jsonify({
         "ok": True,
