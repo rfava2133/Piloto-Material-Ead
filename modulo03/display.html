@@ -930,9 +930,9 @@
 
       // Palavras proibidas
       const proibidas = [];
-      if (/vestibular/i.test(textoDisplay)) proibidas.push('vestibular');
-      if (/a Uni/i.test(textoDisplay)) proibidas.push('a Uni');
-      if (/estaremos/i.test(textoDisplay)) proibidas.push('estaremos');
+      if (/\bvestibular\b/i.test(textoDisplay)) proibidas.push('vestibular');
+      if (/\ba Uni\b/i.test(textoDisplay)) proibidas.push('a Uni');
+      if (/\bestaremos\b/i.test(textoDisplay)) proibidas.push('estaremos');
 
       if (proibidas.length > 0) {
         falhas.push(`Palavras proibidas: ${proibidas.join(', ')}`);
