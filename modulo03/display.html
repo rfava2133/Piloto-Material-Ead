@@ -770,29 +770,27 @@
     // Carregamento automático via URL
     async function carregarDaURL() {
       const params = new URLSearchParams(location.search);
-      if (!params.get('aula') || !params.get('codigo')) return;
+      const curso = params.get('curso') || '';
+      const codigo = params.get('codigo') || '';
+      const disciplina = params.get('disciplina') || '';
+      const aula = params.get('aula') || '';
+
+      if (!codigo || !aula) return;
+
+      // Atualiza topbar
+      document.getElementById('topbar-aula').textContent =
+        `${codigo}-${aula.padStart(2,'0')}${disciplina ? ' · ' + disciplina : ''}`;
 
       try {
-        // Carrega texto display
-        const resDisplay = await fetch(`/api/display-texto?${params.toString()}`);
-        if (!resDisplay.ok) throw new Error('Display não encontrado');
-        textoDisplay = await resDisplay.text();
+        const url = `/api/m03-check?curso=${encodeURIComponent(curso)}&codigo=${encodeURIComponent(codigo)}&disciplina=${encodeURIComponent(disciplina)}&aula=${encodeURIComponent(aula)}`;
+        const res = await fetch(url);
+        if (!res.ok) return;
+        const dados = await res.json();
+        if (!dados.ok || !dados.markdown) return;
 
-        // Carrega original
-        const resOriginal = await fetch(`/api/original-texto?${params.toString()}`);
-        if (resOriginal.ok) {
-          textoOriginal = await resOriginal.text();
-        }
-
-        // Carrega validação
-        const resValidacao = await fetch(`/api/display-validacao?${params.toString()}`);
-        if (resValidacao.ok) {
-          dadosValidacao = await resValidacao.json();
-        }
-
+        textoDisplay = dados.markdown;
         renderizarDisplay();
       } catch (err) {
-        // Servidor fora ou arquivos não existem
         console.log('Carregamento automático não disponível:', err);
       }
     }
@@ -848,7 +846,7 @@
       let html = md;
 
       // Callouts
-      html = html.replace(/:::(\w+)\n([\s\S]*?):::/g, function(match, tipo, conteudo) {
+      html = html.replace(/:::([\w-]+)\n([\s\S]*?):::/g, function(match, tipo, conteudo) {
         const icones = {
           'conceito-chave': '💡',
           'atencao': '⚠️',

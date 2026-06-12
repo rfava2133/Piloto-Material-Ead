@@ -1221,14 +1221,20 @@
         semFontes.style.display = 'none';
         for (const fonte of a2.fontes_verificadas) {
           const st = ROTULO_FONTE[fonte.status] || ROTULO_FONTE.citada;
-          const ano = fonte.ano ? ` (${fonte.ano})` : '';
           const trunc = (s, n) => s && s.length > n ? s.substring(0, n) + '…' : (s || '');
-          const autorCurto = trunc(fonte.autor, 80);
-          const obraCurta  = trunc(fonte.obra,  70);
+          let corpo;
+          if ((fonte.autor || '').length > 50) {
+            // Trecho extraído do corpo do texto — exibir como citação
+            corpo = `<span style="font-style:italic; color:var(--ink-muted);">"${trunc(fonte.autor, 90)}"</span>`;
+          } else {
+            // Entrada bibliográfica estruturada
+            const ano = fonte.ano ? ` (${fonte.ano})` : '';
+            corpo = `<strong>${fonte.autor}</strong>${ano}${fonte.obra && fonte.obra !== 'Citação no corpo do texto' ? ' — ' + trunc(fonte.obra, 80) : ''}`;
+          }
           fontesContainer.innerHTML += `
             <li>
               <span class="fonte-chip ${st.cls}">${st.icon} ${st.label}</span>
-              <span class="fonte-texto"><strong>${autorCurto}</strong>${ano} — ${obraCurta}</span>
+              <span class="fonte-texto">${corpo}</span>
             </li>
           `;
         }
