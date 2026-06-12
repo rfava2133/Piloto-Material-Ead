@@ -8,8 +8,8 @@
 ## Sessão atual
 
 **Data:** 2026-06-11
-**Branch:** `main` (tudo commitado)
-**Último commit:** `2aa0ee9` — fix(M03): substituir confirm() por painel inline com botão copiar
+**Branch:** `main`
+**Último commit:** ver `git log`
 
 ---
 
@@ -34,39 +34,16 @@
 - `m03-preview.html`: `actionBar` nunca era exibida — faltava `style.display = 'flex'` após M01 ok
 - Com M02 pendente: botão âmbar com aviso; com M02 ok: botão azul
 
-### 6. Fix M03 — UX do fluxo de execução
-- Substituído `confirm()` do browser por painel inline com comando + botão Copiar
-- **⚠️ AINDA INADEQUADO** — ver pendência crítica P1 abaixo
+### 6. Fix M03 — chamada direta à API Anthropic (sem terminal) ✅
+- `servidor.py`: nova função `_executar_m03_via_api()` — chama `anthropic.Anthropic().messages.create(model="claude-sonnet-4-6")` com prompt do SKILL.md + voz-unigran.md; grava `texto-display.md` + `display_meta.json`; retorna `{"ok": True, "markdown": "..."}`
+- `interface/m03-preview.html`: `iniciarM03()` reescrita — ao receber `markdown` no response, renderiza diretamente (sem painel de terminal); botão muda para "✏️ Revisar texto"
+- Função `copiarComando()` removida (obsoleta)
 
 ---
 
 ## Pendências críticas (próxima sessão obrigatória)
 
-### 🔴 P1 — M03 exige terminal: INACEITÁVEL para usuário final
-**Problema:** O fluxo atual de M03 gera um arquivo `_prompt_m03.txt` e pede ao usuário para rodar `claude /texto-display "..."` no terminal. Isso é impossível para o público-alvo (coordenadores pedagógicos sem conhecimento técnico).
-
-**Causa raiz:** O `scripts/04-agente-a.py` foi projetado para rodar via skill do Claude Code, não via API direta. O `/api/m03-executar` no servidor apenas gera o prompt e devolve instruções.
-
-**Solução necessária:** Reescrever `/api/m03-executar` para chamar a API Anthropic diretamente (SDK Python `anthropic`) com o mesmo prompt que está em `skills/texto-display/SKILL.md`. O servidor executa o Agente A internamente e grava `texto-display.md` + `display_meta.json` sem precisar de terminal.
-
-**Arquivos-chave:**
-- `servidor.py` → rota `/api/m03-executar` (linhas ~561–600)
-- `scripts/04-agente-a.py` → lógica do Agente A (tem o prompt e fluxo completo)
-- `skills/texto-display/SKILL.md` → rubrica do Agente A
-- `.claude/agents/texto-display.md` → prompt do Agente A (Sonnet 4.6)
-
-**Como fazer:**
-```python
-import anthropic
-client = anthropic.Anthropic()
-# Ler markdown da aula
-# Montar prompt com rubrica de skills/texto-display/SKILL.md
-# Chamar client.messages.create(model="claude-sonnet-4-6", ...)
-# Gravar 03_reformulado/texto-display.md + display_meta.json
-# Retornar {"ok": True, "markdown": "..."}
-```
-
-O frontend (`m03-preview.html`) já está pronto para receber o resultado direto — basta o servidor retornar `{"ok": True, "markdown": "..."}` e o painel de instrução de terminal some automaticamente.
+*Nenhuma — P1 resolvida nesta sessão.*
 
 ---
 
@@ -82,10 +59,23 @@ Quando o usuário sobe o livro inteiro selecionando "Aula 1" (não "Todas"), o e
 
 ## Próximos passos sugeridos (em ordem)
 
-1. **🔴 CRÍTICO:** Implementar M03 sem terminal — chamar Anthropic SDK diretamente em `servidor.py`
-2. Testar fluxo completo end-to-end: upload → M01 → M02 → M03 tudo na tela
+1. ~~**🔴 CRÍTICO:** Implementar M03 sem terminal~~ ✅ **CONCLUÍDO**
+2. **Comprar créditos Anthropic** (console.anthropic.com → Plans & Billing) — código pronto, saldo zerado bloqueia o teste
+3. Testar fluxo completo end-to-end: upload → M01 → M02 → M03 tudo na tela
 3. Resolver P2 (sumário vazando no markdown)
 4. M04–M08: ainda pendentes
+
+---
+
+## Teste de integração M03 (2026-06-11)
+
+- `.env` com `ANTHROPIC_API_KEY` criado na raiz do projeto ✅
+- `servidor.py` carrega `.env` automaticamente ao subir ✅
+- `pip install anthropic` executado ✅
+- Rota `/api/m03-executar` chama SDK corretamente ✅
+- Autenticação aceita pela API ✅
+- **Bloqueio:** `credit balance too low` — conta sem saldo
+- **Próxima ação:** adicionar créditos em console.anthropic.com → testar novamente
 
 ---
 

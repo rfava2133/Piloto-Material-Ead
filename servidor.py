@@ -10,6 +10,7 @@ Uso:
   (depois abra http://127.0.0.1:5050 no navegador)
 """
 import sys
+import os
 import json
 import shutil
 import tempfile
@@ -18,6 +19,15 @@ from datetime import datetime
 from pathlib import Path
 from collections import defaultdict
 from urllib.parse import urlencode
+
+# Carrega ANTHROPIC_API_KEY de .env se não estiver no ambiente
+_env_path = Path(__file__).parent / ".env"
+if _env_path.exists() and not os.environ.get("ANTHROPIC_API_KEY"):
+    for _line in _env_path.read_text(encoding="utf-8").splitlines():
+        _line = _line.strip()
+        if _line and not _line.startswith("#") and "=" in _line:
+            _k, _, _v = _line.partition("=")
+            os.environ.setdefault(_k.strip(), _v.strip().strip('"').strip("'"))
 
 from flask import Flask, request, jsonify, send_from_directory
 from werkzeug.utils import secure_filename
@@ -558,9 +568,117 @@ def api_m02_decisao():
     return jsonify({"ok": False, "erro": "Decisão não reconhecida."}), 400
 
 
+def _executar_m03_via_api(pasta_aula: Path, forcar: bool = False) -> dict:
+    """Executa M03 chamando Anthropic API diretamente, sem terminal."""
+    import re
+    try:
+        import anthropic
+    except ImportError:
+        return {"ok": False, "erro": "SDK Anthropic não instalado. Rode: pip install anthropic"}
+
+    raiz = Path(__file__).parent
+    skill_path = raiz / "skills" / "texto-display" / "SKILL.md"
+    voz_path = raiz / "docs" / "voz-unigran.md"
+    skill_content = skill_path.read_text(encoding="utf-8") if skill_path.exists() else ""
+    voz_content = voz_path.read_text(encoding="utf-8") if voz_path.exists() else ""
+
+    input_files = list((pasta_aula / "02_markdown").glob("*.md"))
+    if not input_files:
+        return {"ok": False, "erro": "Nenhum .md em 02_markdown/"}
+    texto_original = input_files[0].read_text(encoding="utf-8")
+
+    palavras_orig = len(texto_original.split())
+    minimo_palavras = int(palavras_orig * 0.80)
+
+    system_prompt = f"""Você é o Agente A da esteira UNIGRAN EAD — Módulo 03 Texto Display.
+
+## REGRAS DE REESCRITA
+{skill_content}
+
+## VOZ E TOM
+{voz_content}
+
+## REGRA DE VOLUME — CRÍTICA
+O texto original tem {palavras_orig} palavras. Sua versão display DEVE ter no mínimo {minimo_palavras} palavras.
+REESCREVA e EXPANDA — nunca resuma. Cada conceito do original deve aparecer na versão display,
+desenvolvido com exemplos, analogias e linguagem cotidiana. Se ao revisar seu texto perceber que
+está abaixo de {minimo_palavras} palavras, expanda antes de entregar.
+
+## CALLOUTS — SINTAXE OBRIGATÓRIA
+Use exatamente estes nomes (com hífen): conceito-chave, atencao, resumo, exercicio, dica, leitura
+Formato: :::conceito-chave\\n texto \\n:::
+
+## FORMATO DE SAÍDA OBRIGATÓRIO
+Produza a resposta em DUAS seções separadas por tags:
+1. Entre <TEXTO_DISPLAY> e </TEXTO_DISPLAY>: o markdown reformulado completo
+2. Entre <DISPLAY_META> e </DISPLAY_META>: o JSON de metadados conforme schema do SKILL.md
+
+Não inclua nenhum texto fora dessas duas tags."""
+
+    user_message = f"""Reformule o markdown abaixo para versão display de tela seguindo todas as regras.
+LEMBRE: mínimo de {minimo_palavras} palavras na versão final.
+
+--- MATERIAL ORIGINAL ({palavras_orig} palavras) ---
+{texto_original}
+--- FIM DO MATERIAL ORIGINAL ---"""
+
+    try:
+        client = anthropic.Anthropic()
+        response = client.messages.create(
+            model="claude-sonnet-4-6",
+            max_tokens=16384,
+            system=system_prompt,
+            messages=[{"role": "user", "content": user_message}],
+        )
+        resposta = response.content[0].text
+
+        texto_match = re.search(r'<TEXTO_DISPLAY>(.*?)</TEXTO_DISPLAY>', resposta, re.DOTALL)
+        meta_match = re.search(r'<DISPLAY_META>(.*?)</DISPLAY_META>', resposta, re.DOTALL)
+
+        texto_display = texto_match.group(1).strip() if texto_match else resposta.strip()
+        meta_json = {}
+        if meta_match:
+            try:
+                meta_json = json.loads(meta_match.group(1).strip())
+            except json.JSONDecodeError:
+                pass
+
+        output_dir = pasta_aula / "03_reformulado"
+        output_dir.mkdir(parents=True, exist_ok=True)
+        display_path = output_dir / "texto-display.md"
+        meta_path = output_dir / "display_meta.json"
+
+        if display_path.exists() and forcar:
+            ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+            shutil.copy2(display_path, output_dir / f"texto-display_v{ts}.md")
+            if meta_path.exists():
+                shutil.copy2(meta_path, output_dir / f"display_meta_v{ts}.json")
+
+        display_path.write_text(texto_display, encoding="utf-8")
+
+        palavras_orig = len(texto_original.split())
+        palavras_display = len(texto_display.split())
+        meta_json.update({
+            "modelo": "claude-sonnet-4-6",
+            "timestamp": datetime.now().isoformat(),
+            "volume_original": palavras_orig,
+            "volume_display": palavras_display,
+            "proporcao_pct": round(palavras_display / palavras_orig * 100, 1) if palavras_orig else 0,
+            "marcadores_img": re.findall(r'\[IMG-\d+\]', texto_display),
+            "marcadores_video": re.findall(r'\[VIDEO-\d+\]', texto_display),
+            "glossario": "## Glossário" in texto_display,
+        })
+        meta_path.write_text(json.dumps(meta_json, indent=2, ensure_ascii=False), encoding="utf-8")
+
+        return {"ok": True, "markdown": texto_display, "meta": meta_json}
+
+    except Exception as e:
+        return {"ok": False, "erro": f"{type(e).__name__}: {e}"}
+
+
 @app.route("/api/m03-executar", methods=["POST"])
 def api_m03_executar():
-    """Executa o M03 — Texto Display (Agente A)."""
+    """Executa o M03 — Texto Display via API Anthropic direta (sem terminal)."""
     dados = request.get_json() or {}
     curso = dados.get("curso", "").strip()
     codigo = dados.get("codigo", "").strip()
@@ -576,23 +694,42 @@ def api_m03_executar():
     except ValueError:
         return jsonify({"ok": False, "erro": "Número da aula inválido."}), 400
 
-    # Import dinâmica do script M03 (nome com hífen)
-    agente_a = _importar_script("agente_a", "04-agente-a.py")
-
-    resultado = agente_a.executar_agente_a_tela(
-        curso, codigo, disciplina, aula_num, forcar
+    raiz = Path(cfg()["raiz"]).expanduser()
+    pasta_aula = (
+        raiz / "cursos" / pastas.slugify(curso)
+        / pastas.nome_pasta_disciplina(codigo, disciplina)
+        / "aulas" / f"{aula_num:02d}"
     )
 
+    if not pasta_aula.exists():
+        return jsonify({"ok": False, "erro": "Pasta da aula não encontrada."}), 404
+
+    markdown_dir = pasta_aula / "02_markdown"
+    if not markdown_dir.exists() or not list(markdown_dir.glob("*.md")):
+        return jsonify({"ok": False, "erro": "Material não extraído (M01 pendente)."}), 400
+
+    display_path = pasta_aula / "03_reformulado" / "texto-display.md"
+    if display_path.exists() and not forcar:
+        markdown = display_path.read_text(encoding="utf-8")
+        return jsonify({"ok": True, "markdown": markdown, "ja_existia": True})
+
+    score_path = pasta_aula / "03_avaliacao" / "score_v01.json"
+    if score_path.exists():
+        score = json.loads(score_path.read_text(encoding="utf-8"))
+        veredito_raw = score.get("veredito", "")
+        veredito = veredito_raw.get("rotulo", "") if isinstance(veredito_raw, dict) else veredito_raw
+        if veredito == "RECRIAR":
+            return jsonify({"ok": False, "erro": "Veredito RECRIAR — aguardando aprovação do coordenador."}), 400
+
+    resultado = _executar_m03_via_api(pasta_aula, forcar)
+
     if not resultado.get("ok"):
-        return jsonify({
-            "ok": False,
-            "erro": resultado.get("erro", "Erro ao executar M03"),
-        }), 400
+        return jsonify({"ok": False, "erro": resultado.get("erro")}), 500
 
     return jsonify({
         "ok": True,
-        "mensagem": "M03 executado com sucesso.",
-        "detalhes": resultado.get("detalhes", {}),
+        "markdown": resultado["markdown"],
+        "meta": resultado.get("meta"),
     })
 
 

@@ -168,7 +168,7 @@ def validar(pasta_aula: Path) -> Dict[str, Any]:
 
     # 9. Callouts (verificação de sintaxe)
     callouts_validos = ["conceito-chave", "atencao", "resumo", "exercicio", "dica", "leitura"]
-    callouts_encontrados = re.findall(r':::(\w+)', display_text)
+    callouts_encontrados = re.findall(r':::([\w-]+)', display_text)
     callouts_invalidos = [c for c in callouts_encontrados if c not in callouts_validos]
 
     if callouts_invalidos:

@@ -255,8 +255,9 @@
       display: flex;
       gap: 16px;
       justify-content: flex-end;
-      padding-top: 24px;
-      border-top: 1px solid var(--line);
+      padding-bottom: 20px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--line);
     }
 
     .btn {
@@ -422,12 +423,7 @@
       </div>
     </div>
 
-    <!-- CONTENT -->
-    <div id="content-area">
-      <!-- Dynamic content loaded here -->
-    </div>
-
-    <!-- ACTION BAR -->
+    <!-- ACTION BAR (topo do conteúdo) -->
     <div class="action-bar" id="action-bar" style="display: none;">
       <button class="btn btn-secondary" onclick="window.location.href='/'">← Voltar</button>
       <button class="btn btn-primary" id="btn-start" onclick="iniciarM03()">
@@ -436,6 +432,11 @@
       <button class="btn btn-primary" id="btn-revisar" onclick="revisarTexto()" style="display: none;">
         ✓ Revisar e Salvar
       </button>
+    </div>
+
+    <!-- CONTENT -->
+    <div id="content-area">
+      <!-- Dynamic content loaded here -->
     </div>
   </main>
 
@@ -560,8 +561,21 @@
         }
 
         // Verificar M03
+        await verificarM03();
+
+      } catch (err) {
+        console.error('Erro ao carregar status:', err);
+        contentArea.innerHTML = `<p>❌ Erro ao carregar: ${err.message}</p>`;
+      }
+    }
+
+    async function verificarM03() {
+      spinnerMensagem.textContent = 'Verificando resultado...';
+      spinnerOverlay.style.display = 'flex';
+      try {
         const resM03 = await fetch(`/api/m03-check?curso=${encodeURIComponent(curso)}&codigo=${encodeURIComponent(codigo)}&disciplina=${encodeURIComponent(disciplina)}&aula=${encodeURIComponent(aula)}`);
         const m03 = await resM03.json();
+        spinnerOverlay.style.display = 'none';
 
         if (m03.ok) {
           statusM03.className = 'status-tag tag-concluido';
@@ -569,19 +583,26 @@
           step3.classList.add('completed');
           textoDisplay = m03.markdown || '';
           metaDisplay = m03.meta || null;
-
-          // Mostrar texto display e trocar botão para revisão
           mostrarTextoDisplay(m03.markdown, m03.meta, m03.caminho);
           btnStart.style.display = 'none';
           btnRevisar.style.display = 'inline-flex';
         } else {
           statusM03.className = 'status-tag tag-pendente';
           statusM03.textContent = 'Pendente';
+          contentArea.innerHTML = `
+            <div style="padding: 24px; background: #FFF7ED; border: 1px solid #FED7AA;
+                        border-radius: var(--radius); font-family: 'Inter'; font-size: 13px; color: #92400E;">
+              <strong>⚠ Texto Display ainda não foi gerado.</strong><br><br>
+              O processamento pode não ter sido concluído. Clique em
+              <strong>"Criar Texto Display"</strong> para tentar novamente.
+            </div>`;
+          btnStart.textContent = '▶ Criar Texto Display';
+          btnStart.style.background = '';
+          btnStart.onclick = iniciarM03;
         }
-
       } catch (err) {
-        console.error('Erro ao carregar status:', err);
-        contentArea.innerHTML = `<p>❌ Erro ao carregar: ${err.message}</p>`;
+        spinnerOverlay.style.display = 'none';
+        contentArea.innerHTML = `<p>❌ Erro ao verificar: ${err.message}</p>`;
       }
     }
 
@@ -692,43 +713,23 @@
 
         if (!resultado.ok) {
           spinnerOverlay.style.display = 'none';
-          alert('⚠ ' + (resultado.erro || 'Erro ao preparar M03'));
+          alert('⚠ ' + (resultado.erro || 'Erro ao executar M03'));
           return;
         }
 
-        // Sucesso - mostrar painel com instrução inline
         spinnerOverlay.style.display = 'none';
 
-        const cmd = `claude /texto-display "${resultado.detalhes.prompt_path}"`;
-
-        contentArea.innerHTML = `
-          <div class="status-card" style="border-color: var(--unigran-blue); background: #EFF6FF;">
-            <p style="font-family:'Inter'; font-size:13px; font-weight:700; color:var(--unigran-blue); margin-bottom:16px;">
-              ✅ Prompt gerado — execute no terminal do Claude Code
-            </p>
-            <p style="font-family:'Inter'; font-size:12px; color:var(--ink-muted); margin-bottom:12px;">
-              Cole o comando abaixo no terminal onde o Claude Code está rodando:
-            </p>
-            <div style="display:flex; align-items:center; gap:8px; background:#fff;
-                        border:1px solid var(--line); border-radius:var(--radius); padding:12px 16px;">
-              <code id="cmd-box" style="font-family:'JetBrains Mono'; font-size:12px;
-                                        color:var(--ink-strong); flex:1; word-break:break-all;">${cmd}</code>
-              <button onclick="copiarComando()" style="flex-shrink:0; background:var(--unigran-blue);
-                      color:white; border:none; padding:6px 14px; border-radius:var(--radius);
-                      font-family:'Inter'; font-size:11px; font-weight:600; cursor:pointer;">
-                Copiar
-              </button>
-            </div>
-            <p style="font-family:'Inter'; font-size:11px; color:var(--ink-muted); margin-top:12px;">
-              Após a execução, clique em <strong>Verificar resultado</strong> abaixo.
-            </p>
-          </div>
-        `;
-
-        // Troca botão para "Verificar resultado"
-        btnStart.textContent = '🔄 Verificar resultado';
-        btnStart.style.background = 'var(--unigran-blue)';
-        btnStart.onclick = () => window.location.reload();
+        if (resultado.markdown) {
+          mostrarTextoDisplay(resultado.markdown, resultado.meta || null, '03_reformulado/texto-display.md');
+          btnStart.textContent = '✏️ Revisar texto';
+          btnStart.style.background = 'var(--unigran-blue)';
+          btnStart.style.display = 'flex';
+          btnStart.onclick = revisarTexto;
+        } else {
+          btnStart.textContent = '🔄 Verificar resultado';
+          btnStart.style.background = 'var(--unigran-blue)';
+          btnStart.onclick = verificarM03;
+        }
 
       } catch (err) {
         spinnerOverlay.style.display = 'none';
@@ -752,16 +753,6 @@
         .replace(/[^a-z0-9]/g, '-')
         .replace(/-+/g, '-')
         .replace(/^-|-$/g, '');
-    }
-
-    function copiarComando() {
-      const cmd = document.getElementById('cmd-box').textContent;
-      navigator.clipboard.writeText(cmd).then(() => {
-        const btn = event.target;
-        btn.textContent = 'Copiado!';
-        btn.style.background = '#15803D';
-        setTimeout(() => { btn.textContent = 'Copiar'; btn.style.background = 'var(--unigran-blue)'; }, 2000);
-      });
     }
 
     // Iniciar

@@ -1222,10 +1222,13 @@
         for (const fonte of a2.fontes_verificadas) {
           const st = ROTULO_FONTE[fonte.status] || ROTULO_FONTE.citada;
           const ano = fonte.ano ? ` (${fonte.ano})` : '';
+          const trunc = (s, n) => s && s.length > n ? s.substring(0, n) + '…' : (s || '');
+          const autorCurto = trunc(fonte.autor, 80);
+          const obraCurta  = trunc(fonte.obra,  70);
           fontesContainer.innerHTML += `
             <li>
               <span class="fonte-chip ${st.cls}">${st.icon} ${st.label}</span>
-              <span class="fonte-texto"><strong>${fonte.autor}</strong>${ano} — ${fonte.obra}</span>
+              <span class="fonte-texto"><strong>${autorCurto}</strong>${ano} — ${obraCurta}</span>
             </li>
           `;
         }
