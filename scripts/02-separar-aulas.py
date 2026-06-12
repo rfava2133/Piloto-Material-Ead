@@ -49,6 +49,11 @@ RE_AULA_INLINE = re.compile(
 RE_SO_NUMERO = re.compile(r"^\d{1,2}$")
 # Linha de sumário: "Título......................NN"
 RE_LINHA_SUMARIO = re.compile(r"\.{3,}\s*(\d{1,3})\s*$")
+# "Conversa Inicial" como heading ou linha isolada
+RE_CONVERSA_INICIAL = re.compile(
+    r"^(?:#+\s*)?conversa\s+inicial\s*$",
+    re.MULTILINE | re.IGNORECASE,
+)
 
 
 def carregar_config() -> dict:
@@ -82,6 +87,10 @@ def _parse_sumario(texto: str) -> dict:
     paginas = {}
     aula_atual = None
     for linha in linhas:
+        # Detecta "Conversa inicial" no sumário → aula 0
+        if re.match(r"^\s*conversa\s+inicial\s*$", linha, re.IGNORECASE):
+            aula_atual = 0
+            continue
         m_aula = re.match(r"^\s*aula\s+(\d{1,2})\s*$", linha, re.IGNORECASE)
         if m_aula:
             aula_atual = int(m_aula.group(1))
@@ -113,10 +122,18 @@ def detectar_inicios_aulas(doc) -> dict:
         linhas = texto.splitlines()
 
         marcadores = {int(m) for m in RE_AULA_INLINE.findall(texto)}
+        tem_conversa = bool(RE_CONVERSA_INICIAL.search(texto))
+
         if len(marcadores) >= 3:
             if not sumario:
                 sumario = _parse_sumario(texto)
             continue  # página de sumário não é divisor
+
+        # Detecta "Conversa Inicial" como aula 0
+        if tem_conversa and 0 not in inicios:
+            inicios[0] = idx
+            print(f"   ℹ️  Conversa Inicial detectada na p.{idx+1}")
+            continue
 
         num = _detectar_abertura(linhas)
         if num is None and len(marcadores) == 1:
@@ -126,7 +143,8 @@ def detectar_inicios_aulas(doc) -> dict:
             continue
 
         # exige sequência crescente (evita falsos positivos no meio do texto)
-        if inicios and num <= max(inicios):
+        nums_numerados = {k for k in inicios if k > 0}
+        if nums_numerados and num <= max(nums_numerados):
             continue
 
         inicios[num] = idx
@@ -134,14 +152,16 @@ def detectar_inicios_aulas(doc) -> dict:
     # Completa com o sumário as aulas não detectadas diretamente
     if sumario:
         # calibra offset (pagina impressa N costuma ser doc[N-1])
-        offsets = [inicios[n] - (sumario[n] - 1) for n in inicios if n in sumario]
+        # usa apenas aulas numeradas (>0) para calcular offset
+        offsets = [inicios[n] - (sumario[n] - 1) for n in inicios if n > 0 and n in sumario]
         offset = max(set(offsets), key=offsets.count) if offsets else 0
 
         for num, pag_impressa in sumario.items():
             idx = pag_impressa - 1 + offset
             if num not in inicios and 0 <= idx < len(doc):
                 inicios[num] = idx
-                print(f"   ℹ️  Aula {num:02d}: início obtido pelo sumário (p.{idx+1})")
+                label = "Conversa Inicial" if num == 0 else f"Aula {num:02d}"
+                print(f"   ℹ️  {label}: início obtido pelo sumário (p.{idx+1})")
 
     return inicios
 
@@ -202,8 +222,12 @@ def separar_aulas(
         inicios = {1: 0}
 
     numeros = sorted(inicios)
-    print(f"✅ {len(numeros)} aula(s) detectada(s): "
-          + ", ".join(f"Aula {n:02d} (p.{inicios[n]+1})" for n in numeros))
+
+    def _label(n):
+        return "Conversa Inicial" if n == 0 else f"Aula {n:02d}"
+
+    print(f"✅ {len(numeros)} seção(ões) detectada(s): "
+          + ", ".join(f"{_label(n)} (p.{inicios[n]+1})" for n in numeros))
 
     aulas_processadas = []
     puladas = []
@@ -214,7 +238,7 @@ def separar_aulas(
         pag_fim = inicios[numeros[i + 1]] - 1 if i + 1 < len(numeros) else total_paginas - 1
         paginas = list(range(pag_ini, pag_fim + 1))
 
-        print(f"\n📚 Aula {num_aula:02d} — páginas {pag_ini+1} a {pag_fim+1}")
+        print(f"\n📚 {_label(num_aula)} — páginas {pag_ini+1} a {pag_fim+1}")
 
         aid = pastas.id_aula(codigo, num_aula)
         pasta_aula = pastas.criar_estrutura(
@@ -278,7 +302,7 @@ def separar_aulas(
             "nome": disciplina,
             "slug": pastas.nome_pasta_disciplina(codigo, disciplina),
             "curso": curso,
-            "aulas_total": len(numeros),
+            "aulas_total": sum(1 for n in numeros if n > 0),  # CI (0) não conta como aula
             "professor": {"nome": "", "email": ""},
             "coordenador": {"nome": "", "email": ""},
         }

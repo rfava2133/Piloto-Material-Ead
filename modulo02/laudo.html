@@ -1091,13 +1091,13 @@
         const res = await fetch('/api/score?' + params.toString());
         const dados = await res.json();
 
-        if (res.ok && dados.status === 'ok') {
+        if (res.ok && dados.status === 'avaliada') {
           renderizarLaudo(dados.score);
           return;
         }
 
         // Material existe mas o Agente E ainda não avaliou (ou nem foi extraído)
-        const aulaId = dados.aula_id || '—';
+        const aulaId = dados.aula_id || dados.score?.aula_id || '—';
         document.getElementById('topbar-aula').textContent = aulaId;
         document.getElementById('vazio-titulo').textContent =
           'Aula ' + aulaId + ' — avaliação pendente';

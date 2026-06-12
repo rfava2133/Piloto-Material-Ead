@@ -152,17 +152,17 @@ Retorne apenas o JSON, sem markdown ou explicações."""
 
 def avaliar_com_ia(texto: str, aula_id: str, disciplina: str, curso: str) -> tuple:
     """
-    Chama o Agente E via Skill 'analista-conteudo' com fallback para Ollama.
+    Chama o Agente E via Skill 'analista-conteudo' (Claude Opus) com fallback para Ollama.
 
-    A skill deve gravar diretamente o JSON estruturado em:
-    {pasta_aula}/03_avaliacao/score_vNN.json
+    Prioridade:
+    1. Skill /analista-conteudo (claude-opus-4-7) — avaliação completa
+    2. Ollama codex — fallback local
+    3. Ollama llama3 — fallback local alternativo
 
     Returns
     -------
     tuple
         (sucesso: bool, resultado: dict ou erro: str)
-        - Se sucesso: (True, dict_com_dados)
-        - Se falha: (False, "mensagem_de_erro")
     """
     print("\n🔍 Agente E — Avaliando material...")
     print(f"   Aula: {aula_id}")

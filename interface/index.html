@@ -598,8 +598,41 @@
       Esteira de Produção
     </a>
     <div class="topbar-crumb"></div>
+
+    <!-- Indicador de Status da IA -->
+    <div id="ia-status-indicator"
+         style="display: flex; align-items: center; gap: 6px; padding: 4px 10px;
+                background: var(--paper); border: 1px solid var(--line);
+                border-radius: var(--radius); font-family: var(--font-ui);
+                font-size: 10px; font-weight: 600; margin-right: 8px;">
+      <span id="ia-status-dot" style="width: 8px; height: 8px; border-radius: 50%; background: #ccc;"></span>
+      <span id="ia-status-text">Verificando...</span>
+    </div>
+
+    <button id="btn-teste-rapido"
+            style="background: var(--unigran-blue); color: white; border: none;
+                   padding: 6px 12px; border-radius: var(--radius);
+                   font-family: var(--font-ui); font-size: 11px; font-weight: 600;
+                   cursor: pointer; margin-right: 8px;"
+            onclick="preencherTudoParaTestes()">
+      ⚡ Preencher para Testes
+    </button>
+    <button id="btn-limpar-tudo"
+            style="background: var(--ink-faint); color: var(--ink); border: none;
+                   padding: 6px 12px; border-radius: var(--radius);
+                   font-family: var(--font-ui); font-size: 11px; font-weight: 600;
+                   cursor: pointer;"
+            onclick="limparTudoParaOrigianl()">
+      🧹 LIMPAR TESTES
+    </button>
     <a href="#" class="topbar-link">Histórico</a>
   </header>
+
+  <!-- Alerta de Fallback (oculto por padrão) -->
+  <div id="ia-fallback-alert" style="display: none; background: #FFFBEB; border-bottom: 1px solid #FDE68A;
+       padding: 10px 24px; font-family: var(--font-ui); font-size: 12px; color: #92400E;">
+    ⚠️ <strong>IA indisponível:</strong> M02 e M03 usarão modelos locais (Ollama). Algumas funcionalidades podem ser limitadas.
+  </div>
 
   <!-- CONTAINER -->
   <main class="main-container">
@@ -631,7 +664,8 @@
           <label for="combo-aula">Aula</label>
           <select id="combo-aula" disabled>
             <option value="">—</option>
-            <option value="todas">Todas (01-08)</option>
+            <option value="todas">Todas (CI + 01-08)</option>
+            <option value="0">Conversa Inicial</option>
             <option value="1">1</option>
             <option value="2">2</option>
             <option value="3">3</option>
@@ -811,10 +845,13 @@
           comboCurso.innerHTML += `<option value="${curso}">${curso}</option>`;
         });
         comboCurso.disabled = false;
+
+        return true;
       } catch (err) {
         console.error('Erro ao carregar catálogo:', err);
         comboCurso.innerHTML = '<option value="">Erro ao carregar</option>';
         comboCurso.disabled = true;
+        return false;
       }
     }
 
@@ -1025,8 +1062,164 @@
       return semAcento.replace(/[^A-Za-z]/g, '').substring(0, 3).toUpperCase();
     }
 
+    // MODO DE TESTES - Auto-preenche combos e carrega PDF ao carregar
+    // Comando "LIMPAR TESTES" na topbar restaura formato original
+    const MODO_TESTES = true;
+    let testesExecutado = false;  // Flag para executar apenas uma vez
+
+    // Funções globais para botões da topbar
+    window.preencherTudoParaTestes = async function() {
+      if (testesExecutado) {
+        console.log('[TESTES] Já executado, ignorando...');
+        return;
+      }
+      testesExecutado = true;
+
+      console.log('[TESTES] Iniciando preenchimento...');
+
+      // Seleciona curso: Administração (valor exato)
+      const comboCurso = document.getElementById('combo-curso');
+      for (let i = 0; i < comboCurso.options.length; i++) {
+        const val = comboCurso.options[i].value;
+        if (val === 'Administração') {
+          comboCurso.value = val;
+          comboCurso.dispatchEvent(new Event('change'));
+          console.log('[TESTES] Curso selecionado:', val);
+          break;
+        }
+      }
+
+      // Aguarda disciplinas carregarem (evento change do curso popula disciplinas)
+      await new Promise(r => setTimeout(r, 500));
+
+      // Seleciona disciplina: Fundamentos de Administração (valor exato)
+      const comboDisc = document.getElementById('combo-disciplina');
+      for (let i = 0; i < comboDisc.options.length; i++) {
+        const val = comboDisc.options[i].value;
+        if (val === 'Fundamentos de Administração') {
+          comboDisc.value = val;
+          comboDisc.dispatchEvent(new Event('change'));
+          console.log('[TESTES] Disciplina selecionada:', val);
+          break;
+        }
+      }
+
+      await new Promise(r => setTimeout(r, 300));
+
+      // Seleciona aula 01
+      document.getElementById('combo-aula').value = '1';
+      document.getElementById('combo-aula').dispatchEvent(new Event('change'));
+      console.log('[TESTES] Aula selecionada: 1');
+
+      // Carrega PDF de testes automaticamente via fetch
+      await carregarPdfDeTestes();
+    };
+
+    async function carregarPdfDeTestes() {
+      try {
+        console.log('[TESTES] Buscando PDF de testes...');
+        const res = await fetch('/api/teste-pdf');
+        if (!res.ok) throw new Error('PDF não encontrado');
+
+        const blob = await res.blob();
+        const file = new File([blob], 'adm_fund_aula01.pdf', { type: 'application/pdf' });
+
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        const inputDoc = document.getElementById('input-documento');
+        inputDoc.files = dataTransfer.files;
+
+        // Dispara evento change para habilitar botões
+        inputDoc.dispatchEvent(new Event('change', { bubbles: true }));
+
+        const dropzone = document.getElementById('dropzone-principal');
+        dropzone.classList.add('has-file');
+        dropzone.querySelector('.dropzone-text').innerHTML = '✅ <strong>adm_fund_aula01.pdf</strong> carregado automaticamente!';
+
+        // Força verificação do formulário
+        verificarFormulario();
+
+        console.log('[TESTES] PDF carregado com sucesso!');
+      } catch (err) {
+        console.error('[TESTES] Erro ao carregar PDF:', err);
+        alert('⚠️ PDF de testes não carregou automaticamente.\n\nSelecione manualmente: testes/adm_fund_aula01.pdf');
+      }
+    }
+
+    window.limparTudoParaOrigianl = function() {
+      testesExecutado = false;
+      document.getElementById('combo-curso').value = '';
+      document.getElementById('combo-disciplina').value = '';
+      document.getElementById('combo-aula').value = '';
+      document.getElementById('input-documento').value = '';
+      const dropzone = document.getElementById('dropzone-principal');
+      dropzone.classList.remove('has-file');
+      dropzone.querySelector('.dropzone-text').innerHTML = 'Arraste <strong>Word</strong> ou <strong>PDF</strong><br>ou clique para selecionar';
+      alert('🧹 LIMPAR TESTES executado.\n\nApp restaurado para formato original.');
+    };
+
+    // Auto-preenche combos após catálogo carregar
+    async function ativarModoTestes() {
+      if (!MODO_TESTES || testesExecutado) return;
+      console.log('[TESTES] Aguardando catálogo...');
+      await new Promise(r => setTimeout(r, 300));
+      console.log('[TESTES] Executando preenchimento automático...');
+      try {
+        await window.preencherTudoParaTestes();
+      } catch (err) {
+        console.error('[TESTES] Erro:', err);
+      }
+    }
+
+    // Verificar status da IA ao carregar
+    async function verificarStatusIA() {
+      try {
+        const res = await fetch('/api/ia-status');
+        const data = await res.json();
+
+        const dot = document.getElementById('ia-status-dot');
+        const text = document.getElementById('ia-status-text');
+        const alert = document.getElementById('ia-fallback-alert');
+
+        if (data.geral === 'online') {
+          dot.style.background = '#15803D';  // verde
+          dot.style.boxShadow = '0 0 8px #15803D';
+          text.textContent = 'IA Online (Claude Opus)';
+          text.style.color = '#15803D';
+          alert.style.display = 'none';
+        } else if (data.modo_fallback) {
+          dot.style.background = '#CA8A04';  // amarelo
+          dot.style.boxShadow = '0 0 8px #CA8A04';
+          text.textContent = 'IA Fallback (Ollama)';
+          text.style.color = '#CA8A04';
+          alert.style.display = 'block';
+        } else {
+          dot.style.background = '#DC2626';  // vermelho
+          dot.style.boxShadow = '0 0 8px #DC2626';
+          text.textContent = 'IA Offline';
+          text.style.color = '#DC2626';
+          alert.style.display = 'block';
+        }
+
+        console.log('[IA Status]', data);
+      } catch (err) {
+        console.error('[IA Status] Erro:', err);
+        const dot = document.getElementById('ia-status-dot');
+        const text = document.getElementById('ia-status-text');
+        dot.style.background = '#DC2626';
+        text.textContent = 'IA Erro';
+        text.style.color = '#DC2626';
+      }
+    }
+
     // Inicializar
-    carregarCatalogo();
+    carregarCatalogo().then(() => {
+      console.log('[TESTES] Catálogo carregou, MODO_TESTES=', MODO_TESTES);
+      if (MODO_TESTES) ativarModoTestes();
+    });
+
+    // Verifica status da IA após carregar página
+    verificarStatusIA();
   </script>
 </body>
 </html>

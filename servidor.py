@@ -63,6 +63,16 @@ def index():
     return send_from_directory("interface", "index.html")
 
 
+@app.route("/api/teste-pdf")
+def api_teste_pdf():
+    """Serve o PDF de testes para modo de demonstração."""
+    from flask import send_file
+    pdf_path = Path(__file__).parent / "testes" / "adm_fund_aula01.pdf"
+    if pdf_path.exists():
+        return send_file(str(pdf_path), mimetype="application/pdf")
+    return jsonify({"erro": "PDF de testes não encontrado"}), 404
+
+
 @app.route("/modulo02/<path:arquivo>")
 def modulo02_estatico(arquivo):
     """Serve as telas do M02 (ex.: /modulo02/laudo.html)."""

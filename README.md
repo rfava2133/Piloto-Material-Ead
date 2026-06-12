@@ -322,24 +322,25 @@ Use `--forcar` para reavaliar — cria nova versão, não sobrescreve.
 
 Quando os créditos da IA se esgotam ou a skill está offline, o sistema opera em **modo fallback**:
 
-| Módulo | Com IA | Fallback (sem IA) |
-|--------|--------|-------------------|
-| **M02** | Claude Opus (skill) | **Ollama local** (codex, llama3) → JSON estruturado |
-| **M03** | Claude Sonnet (skill) | **Ollama local** (codex, llama3) → texto-display.md |
+| Módulo | Prioridade (IA) | Fallback (local) |
+|--------|-----------------|------------------|
+| **M02** | Claude Opus (skill `/analista-conteudo`) | Ollama local (codex → llama3) |
+| **M03** | Claude Sonnet (skill `/texto-display`) | Ollama local (codex → llama3) |
 
 **Fluxo automático:**
-1. Tenta skill `/analista-conteudo` ou `/texto-display`
-2. Se falhar (timeout, erro, sem créditos) → tenta Ollama com `codex`
-3. Se `codex` falhar → tenta `llama3`
+1. **Tenta skill** `/analista-conteudo` (M02) ou `/texto-display` (M03)
+2. Se falhar (timeout, erro, créditos esgotados) → **Ollama `codex`**
+3. Se `codex` falhar → **Ollama `llama3`**
 4. Se tudo falhar → retorna erro explícito
 
-**Instalar Ollama:**
+**Instalar Ollama (opcional):**
 ```bash
 brew install ollama
-ollama pull codex      # ou llama3
+ollama pull codex      # modelo principal
+ollama pull llama3     # fallback alternativo
 ```
 
-**Indicador visual:** Topbar mostra status (🟢 online / 🟡 fallback Ollama / 🔴 offline).
+**Indicador visual:** Topbar mostra status (🟢 online /  fallback Ollama /  offline).
 
 **API `/api/ia-status`:** Retorna status geral e por módulo.
 
