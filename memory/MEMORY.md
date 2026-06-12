@@ -6,6 +6,7 @@
 - [Feedback tokens](feedback-tokens.md) — Informar estimativa de tokens ao final de cada resposta
 - [M03 concluído — arquitetura e custo](projeto-m03-concluido.md) — SDK direto no servidor, ~R$1,10/aula, bugs de regex resolvidos
 - [Workflow ATUALIZAR](00-atualizar-workflow.md) — Padrão: atualizar memória + git push
+- [Correções 2026-06-12](correcoes-interface-2026-06-12.md) — A2 bibliografia, status M02, marcadores [IMG-NN], limite vídeos
 
 ---
 

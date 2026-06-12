@@ -15,7 +15,7 @@ interativo + micro-roteiros de vídeo, com avaliação automática de qualidade.
 
 | Módulo | Agente | Modelo | Status | Implementação |
 |--------|--------|--------|--------|---------------|
-| **M01 — Extrator** | — | determinístico | ✅ Implementado | Pandoc + PyMuPDF |
+| **M01 — Extrator** | — | determinístico | ✅ Implementado | Pandoc + PyMuPDF + marcadores [IMG-NN] |
 | **M01b — Separador** | — | determinístico | ✅ Implementado | Separa PDF multi-aula |
 | **M02 — Analista de Conteúdo** | Agente E | claude-opus-4-7 | ✅ Implementado | Avaliação + Relatório |
 | **M03 — Texto Display** | Agente A | claude-sonnet-4-6 | ✅ Implementado | API Anthropic direta |
@@ -127,6 +127,18 @@ python3 scripts/01-processar-entrada.py \
 ```
 
 > O parâmetro `--curso` aceita o nome legível (ex.: `"Administração"`); internamente vira slug (`administracao`).
+
+## M01 — Marcadores de Imagem [IMG-NN]
+
+O M01 agora **cria automaticamente** marcadores de imagem a partir de referências no texto:
+
+**Detecta e converte:**
+- `**Figura 1 -** descrição` → `[IMG-01 alt="descrição"]`
+- `**Figura 2:** descrição` → `[IMG-02 alt="descrição"]`
+- `Figura N: descrição` (sem negrito) → `[IMG-NN alt="descrição"]`
+- `![alt](media/image.png)` → `[IMG-NN alt="alt"]`
+
+Isso permite que as métricas de imagens funcionem corretamente e que o M03 preserve os marcadores durante a reescrita.
 
 ## Estrutura de Pastas Gerada
 
@@ -411,7 +423,7 @@ python3 scripts/04-agente-a.py --forcar ...
 - **Citações:** preservar intactas (M02 já validou)
 - **Marcadores IMG:** todos os `[IMG-NN]` devem ser mantidos
 - **Callouts:** máximo 2 por tópico (6 tipos: conceito, atenção, resumo, exercício, dica, leitura)
-- **Vídeos:** sugerir 3–6 marcadores `[VIDEO-NN]`
+- **Vídeos:** sugerir **exatamente 1 marcador** `[VIDEO-01]` por aula
 - **Glossário:** 5–8 termos no final
 - **Estrutura:** abertura (pergunta-gancho) → H2 humanos → tópicos (explica→exemplifica→aplica→checa) → fechamento (bullets)
 

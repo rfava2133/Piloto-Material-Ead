@@ -8,8 +8,8 @@
 ## Sessão atual
 
 **Data:** 2026-06-12
-**Branch:** `main` — limpo (sem commits pendentes)
-**Último commit:** `7d11dfe docs(handoff): registro completo da sessão 2026-06-11`
+**Branch:** `main` — limpo
+**Último commit:** `719b0df` — fix: múltiplas correções (A2, status M02, marcadores [IMG-NN], limite vídeos)
 
 ---
 
@@ -20,13 +20,22 @@
 - `README.md`: expandido com M01b Separador, detalhes do M03, melhorias no laudo, pendências P2/P3/P4, custos de API
 - `HANDOFF.md`: este arquivo — estado consolidado para handoff
 
+### 2. Correções de Interface e Funcionalidades (commit `719b0df`)
+
+| # | Correção | Arquivo | Descrição |
+|---|----------|---------|-----------|
+| 1 | **A2 com bibliografia completa** | `modulo02/laudo.html` | Quando `obra == "Citação no corpo do texto"`, busca referência completa cruzando autor+ano com `referencias_bibliograficas` |
+| 2 | **Status M02 "PENDENTE" corrigido** | `interface/m03-preview.html` | Veredito é string direta (`"APROVAR"`), não objeto com `rotulo` |
+| 3 | **M01 cria marcadores [IMG-NN]** | `scripts/01-processar-entrada.py` | Função `normalizar_marcadores_imagens()` converte `**Figura N -**` e `Figura N:` para `[IMG-NN alt="..."]` |
+| 4 | **Limite de vídeos: 1 por aula** | `skills/texto-display/SKILL.md` | Mudado de "3 a 6 vídeos" para "exatamente 1 vídeo por aula" |
+
 ---
 
 ## Estado Atual dos Módulos
 
 | Módulo | Status | Implementação |
 |--------|--------|---------------|
-| **M01 — Extrator** | ✅ Completo | Pandoc + PyMuPDF, 100% determinístico |
+| **M01 — Extrator** | ✅ Completo | Pandoc + PyMuPDF + **marcadores [IMG-NN] automáticos** |
 | **M01b — Separador** | ✅ Completo | Detecta "Conversa Inicial" (aula 00) + "Aula 01-08" |
 | **M02 — Analista** | ✅ Completo | Skill `analista-conteudo` + `calculo.py` (aritmética auditável) |
 | **M03 — Texto Display** | ✅ Completo | API Anthropic direta (`_executar_m03_via_api()`), sem terminal |
@@ -60,17 +69,24 @@
 
 ---
 
-## Melhorias Recentes (sessão 2026-06-11)
+## Melhorias Recentes
 
-1. **Fix crítico — laudo.html:** `dados.status === 'ok'` → `'avaliada'`; fallback `aula_id` corrigido
-2. **Conversa Inicial como aula 00:** `02-separar-aulas.py` detecta "Conversa Inicial" → pasta `aulas/00/`
-3. **Interface — modo de testes:** botões "⚡ Preencher para Testes" e "🧹 LIMPAR TESTES"
-4. **Indicador de IA:** status via `/api/ia-status` (🟢/🟡/🔴)
-5. **Reprocessamento com `--forcar`:** material de teste atualizado (31.018 chars, 7 imgs)
-6. **Fix M03 — botão visível:** `actionBar` exibida corretamente
-7. **M03 sem terminal:** execução via API Anthropic direta
-8. **Validador M03:** regex callouts com hífen, word boundary em palavras proibidas
-9. **Laudo M02:** A2 com trechos de corpo como itálico, truncagem de autor/obra
+### Sessão 2026-06-12 (commit `719b0df`)
+1. **A2 com bibliografia completa** — laudo.html busca referência completa cruzando autor+ano
+2. **Status M02 corrigido** — m03-preview.html acessa veredito como string direta
+3. **M01 cria marcadores [IMG-NN]** — `normalizar_marcadores_imagens()` detecta "Figura N:" no texto
+4. **Vídeos: 1 por aula** — SKILL.md alterada de "3-6" para "exatamente 1"
+
+### Sessão 2026-06-11
+5. **Fix crítico — laudo.html:** `dados.status === 'ok'` → `'avaliada'`; fallback `aula_id` corrigido
+6. **Conversa Inicial como aula 00:** `02-separar-aulas.py` detecta "Conversa Inicial" → pasta `aulas/00/`
+7. **Interface — modo de testes:** botões "⚡ Preencher para Testes" e "🧹 LIMPAR TESTES"
+8. **Indicador de IA:** status via `/api/ia-status` (🟢/🟡/🔴)
+9. **Reprocessamento com `--forcar`:** material de teste atualizado (31.018 chars, 7 imgs)
+10. **Fix M03 — botão visível:** `actionBar` exibida corretamente
+11. **M03 sem terminal:** execução via API Anthropic direta
+12. **Validador M03:** regex callouts com hífen, word boundary em palavras proibidas
+13. **Laudo M02:** A2 com trechos de corpo como itálico, truncagem de autor/obra
 
 ---
 
@@ -107,7 +123,8 @@
 - **PDF:** `testes/adm_fund_aula01.pdf` — apostila UNIGRAN com CI (p.6) + Aula 01 (p.7–23)
 - **Pasta de teste:** `cursos/administracao/FUN-fundamentos-de-administracao/aulas/01/`
 - **Score:** `03_avaliacao/score_v01.json` — heurístico (fallback), não Agente E completo
-- **Texto Display:** `03_reformulado/texto-display.md` — 80.2% volume, 6 vídeos, 7 imagens, glossário ✅
+- **Texto Display:** `03_reformulado/texto-display.md` — 80.2% volume, 1 vídeo, 7 imagens, glossário ✅
+- **Imagens no M01:** marcadores `[IMG-NN]` criados automaticamente a partir de `**Figura N -**`
 
 ### URLs de Teste
 - Hub: `http://127.0.0.1:5050`
