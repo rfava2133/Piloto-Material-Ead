@@ -737,7 +737,11 @@
             </div>
             <div class="metrica-item">
               <div id="metrica-imgs" class="metrica-valor">—</div>
-              <div class="metrica-label">Imagens</div>
+              <div class="metrica-label">Imagens (display)</div>
+            </div>
+            <div class="metrica-item">
+              <div id="metrica-imgs-m01" class="metrica-valor">—</div>
+              <div class="metrica-label">Imagens (M01)</div>
             </div>
             <div class="metrica-item">
               <div id="metrica-videos" class="metrica-valor">—</div>
@@ -757,6 +761,7 @@
       Validação: <strong>—</strong>
     </div>
     <div class="rodape-actions">
+      <button class="btn btn-secondary" onclick="abrirAprovacaoProfessor()">📄 Aprovação do Professor</button>
       <button class="btn btn-secondary" onclick="solicitarReescrita()">Solicitar nova reescrita</button>
       <a id="btn-aprovar" class="btn btn-primary" style="pointer-events: none; opacity: 0.5;">Aprovar e seguir para imagens →</a>
     </div>
@@ -1032,13 +1037,17 @@
       if (dados.metricas) {
         document.getElementById('metrica-volume').textContent = dados.metricas.volume_display ?? '—';
         document.getElementById('metrica-proporcao').textContent = dados.metricas.proporcao_pct ? `${dados.metricas.proporcao_pct}%` : '—';
-        // Imagens: pode ser número ou array
+        // Imagens display
         const imgs = dados.metricas.marcadores_img;
-        document.getElementById('metrica-imgs').textContent = Array.isArray(imgs) ? `${imgs.length} marcadores` : (imgs ?? '—');
-        // Vídeos: sugere 1 vídeo por aula para roteiros
+        const imgCount = Array.isArray(imgs) ? imgs.length : (imgs || 0);
+        document.getElementById('metrica-imgs').textContent = `${imgCount} encontrada${imgCount !== 1 ? 's' : ''}`;
+        // Imagens M01 (extraídas)
+        const imgsM01 = dados.imagens_m01 ?? 0;
+        document.getElementById('metrica-imgs-m01').textContent = `${imgsM01} extraída${imgsM01 !== 1 ? 's' : ''}`;
+        // Vídeos: encontrados (não sugeridos)
         const videos = dados.metricas.marcadores_video;
         const videoCount = Array.isArray(videos) ? videos.length : (videos || 0);
-        document.getElementById('metrica-videos').textContent = `${videoCount} marcadores (${videoCount} roteiro${videoCount !== 1 ? 's' : ''} sugerido${videoCount !== 1 ? 's' : ''})`;
+        document.getElementById('metrica-videos').textContent = `${videoCount} encontrado${videoCount !== 1 ? 's' : ''}`;
       }
 
       // Rodapé
